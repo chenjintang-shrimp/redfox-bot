@@ -4,8 +4,6 @@ from discord import Intents
 import discord
 from discord.ext import commands
 
-from variable import BOT_TOKEN
-
 bot = commands.Bot(command_prefix="!",intents=Intents.all())
 
 
