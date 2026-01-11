@@ -1,6 +1,18 @@
+# main.py
+import logging
 from discord import Intents
+import discord
 from discord.ext import commands
 
+from variable import BOT_TOKEN
 
-bot = commands.Bot(command_prefix="!",intents=Intents(6263241286473728))
+bot = commands.Bot(command_prefix="!",intents=Intents.all())
 
+
+@bot.event
+async def on_ready():
+    await bot.load_extension("commands.user")
+    await bot.tree.sync(guild=discord.Object(id=1404817877504229426))
+    logging.getLogger("discord").info("Ready.")
+
+bot.run("REMOVE")
