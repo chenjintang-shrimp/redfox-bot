@@ -14,7 +14,7 @@ bot = commands.Bot(command_prefix="!", intents=intents)
 
 @bot.event
 async def on_ready():
-    get_logger("Bot").info(f"Bot 已上线：{bot.user}")
+    get_logger("Bot").info(f"Bot Online:{bot.user}")
 
 
 # 加载所有 Cog

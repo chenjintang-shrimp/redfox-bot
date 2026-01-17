@@ -118,19 +118,3 @@ def get_osu_api_client() -> APIClient:
         },
         timeout=30.0
     )
-
-
-# 简化的API调用函数
-async def api_get(endpoint: str, params: Optional[Dict[str, Any]] = None, 
-                  headers: Optional[Dict[str, str]] = None, **kwargs) -> Response:
-    """简单的GET请求函数"""
-    client = get_osu_api_client()
-    return await client.get(endpoint, params=params, headers=headers, **kwargs)
-
-
-async def api_post(endpoint: str, data: Optional[Dict[str, Any]] = None, 
-                   json_data: Optional[Dict[str, Any]] = None, headers: Optional[Dict[str, str]] = None, 
-                   **kwargs) -> Response:
-    """简单的POST请求函数"""
-    client = get_osu_api_client()
-    return await client.post(endpoint, data=data, json_data=json_data, headers=headers, **kwargs)

@@ -10,9 +10,8 @@
         ]
     },
     "USER_QUERY_ERROR_TEMPLATE": {
-        "template": "Error querying user {user}:\nError: {error_msg}",
+        "template": "Error querying user:\n{error_msg}",
         "fields": [
-            "user",
             "error_msg"
         ]
     },
@@ -27,6 +26,21 @@
         "fields": [
             "username"
         ]
+    },
+    "USER_UNBIND_SUCCESS_TEMPLATE":{
+        "template": "Successfully unbound your osu account from our bot.",
+        "fields": []
+    },
+    "USER_NOT_BOUND_TEMPLATE":{
+        "template": "{user} did NOT bind an osu account to our bot.",
+        "fields": [
+            "user"
+        ]
+    },
+    "RENDERER_ERROR_TEMPLATE":{
+        "template": "Error occured in renderer:\n{error_msg}",
+        "fields": [
+            "error_msg"
+        ]
     }
-    
 }
