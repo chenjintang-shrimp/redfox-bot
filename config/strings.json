@@ -15,5 +15,18 @@
             "user",
             "error_msg"
         ]
+    },
+    "USER_BIND_EXISTING_TEMPLATE":{
+        "template": "You have already binded to osu user {username}\nIf you want to change it, please unbind first.",
+        "fields": [
+            "username"
+        ]
+    },
+    "USER_BIND_SUCCESS_TEMPLATE":{
+        "template": "Successfully binded to osu user {username}",
+        "fields": [
+            "username"
+        ]
     }
+    
 }

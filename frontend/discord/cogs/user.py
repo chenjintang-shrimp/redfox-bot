@@ -1,9 +1,8 @@
 from utils.logger import get_logger
 from discord.ext import commands
 from discord import app_commands, Interaction
-from typing import Optional
 
-from backend.user import get_user_info
+from backend.user import bind_user, get_user_info
 
 
 class User(commands.Cog):
@@ -13,16 +12,23 @@ class User(commands.Cog):
 
     @commands.command(name="info")
     async def info_prefix(self, ctx: commands.Context, user: str):
-        assert user is not None
         msg = await get_user_info(user)
         await ctx.send(msg)
 
     @app_commands.command(name="info", description="查询用户信息")
     async def info_slash(self, interaction: Interaction, user: str):
-        assert user is not None
         msg = await get_user_info(user)
         await interaction.response.send_message(msg)
 
+    @commands.command(name="bind")
+    async def bind_prefix(self, ctx: commands.Context, user: str):
+        msg = await bind_user(ctx.author.id, user)
+        await ctx.send(msg)
+
+    @app_commands.command(name="bind",description="Bind user to the bot")
+    async def bind_slash(self, interaction: Interaction, user: str):
+        msg = await bind_user(interaction.user.id, user)
+        await interaction.response.send_message(msg)
 
 async def setup(bot: commands.Bot):
     await bot.add_cog(User(bot))

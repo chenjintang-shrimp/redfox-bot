@@ -30,7 +30,7 @@ async def load_cogs():
 async def setup_hook():
     from backend.database import create_db_and_tables
 
-    create_db_and_tables()
+    await create_db_and_tables()
     await load_cogs()
 
 
