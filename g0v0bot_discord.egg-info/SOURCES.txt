@@ -1,0 +1,17 @@
+README.md
+pyproject.toml
+backend/__init__.py
+backend/database.py
+backend/oauth.py
+backend/user.py
+frontend/__init__.py
+g0v0bot_discord.egg-info/PKG-INFO
+g0v0bot_discord.egg-info/SOURCES.txt
+g0v0bot_discord.egg-info/dependency_links.txt
+g0v0bot_discord.egg-info/entry_points.txt
+g0v0bot_discord.egg-info/requires.txt
+g0v0bot_discord.egg-info/top_level.txt
+utils/__init__.py
+utils/logger.py
+utils/strings.py
+utils/variable.py

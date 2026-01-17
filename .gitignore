@@ -1,0 +1,9 @@
+# Stuff when running
+.env
+logs
+*.db
+
+# Python stuff
+*/__pycache__/*
+__pycache__
+.venv

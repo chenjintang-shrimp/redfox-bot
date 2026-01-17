@@ -1,0 +1,25 @@
+[project]
+name = "g0v0bot-discord"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = [
+    "discord>=2.3.2",
+    "fastapi>=0.128.0",
+    "httpx>=0.28.1",
+    "loguru>=0.7.3",
+    "python-dotenv>=1.0.0",
+    "sqlmodel>=0.0.31",
+    "uvicorn>=0.40.0",
+]
+
+[project.scripts]
+discord-bot = "frontend.discord.main:main"
+qq-bot = "frontend.qq.main:main"
+
+[tool.uv]
+package = true
+
+[tool.setuptools]
+packages = ["frontend", "backend", "utils"]

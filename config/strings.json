@@ -1,0 +1,19 @@
+{
+    "USER_INFO_TEMPLATE": {
+        "template": "User info for {username}:\nid: {id}\nplaymode: {playmode}\npp: {pp}\nglobal rank: #{global_rank}",
+        "fields": [
+            "username",
+            "id",
+            "playmode",
+            "statistics.pp",
+            "statistics.global_rank"
+        ]
+    },
+    "USER_QUERY_ERROR_TEMPLATE": {
+        "template": "Error querying user {user}:\nError: {error_msg}",
+        "fields": [
+            "user",
+            "error_msg"
+        ]
+    }
+}
