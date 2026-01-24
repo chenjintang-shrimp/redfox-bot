@@ -1,13 +1,9 @@
 from discord import Member, User
-from discord.ext.commands import CommandError, Context
+from discord.ext.commands import Context
+from backend.expections.user import UserNotBindError
 import re
 
 from backend.database import get_osu_user_by_discord_id
-
-
-class UserNotBindError(CommandError):
-    pass
-
 
 async def resolve_username(ctx: Context, user_arg: str | User | Member | None) -> str:
     target_discord_id: int = 0
