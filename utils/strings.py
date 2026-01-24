@@ -1,5 +1,5 @@
 import json
-from utils.variable import STRINGS_FILE, working_dir
+from utils.variable import STRINGS_FILE, API_FILE, working_dir
 
 _STRINGS: dict = dict()
 
@@ -11,6 +11,16 @@ def load_strings():
         with open(path, "r", encoding="utf-8") as f:
             _STRINGS = json.load(f)
     return _STRINGS
+
+
+API_DICT = json.load(open(working_dir / API_FILE, "r", encoding="utf-8"))
+
+
+def get_api_url(endpoint: str, **kwargs) -> str:
+    """根据端点名称获取完整的 API URL"""
+    api_config = API_DICT["apis"]
+    base_url = API_DICT["api_prefix"]
+    return f"{base_url}{api_config[endpoint]}".format(**kwargs)
 
 
 def get_nested_value(obj, path: str):

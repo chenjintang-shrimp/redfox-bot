@@ -30,6 +30,8 @@ API_URL = os.getenv("API_URL", "https://lazer-api.g0v0.top")
 # Strings JSON configuration file path
 STRINGS_FILE = os.getenv("STRINGS_FILE", "config/strings.json")
 
+# API JSON configuration file path
+API_FILE = os.getenv("API_FILE", "config/api.json")
 
 # Validated variable
 if OAUTH_APP_ID.isdigit():
