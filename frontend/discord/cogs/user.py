@@ -21,12 +21,8 @@ class User(commands.Cog):
 
     @commands.hybrid_command(name="bind", description="Bind user to the bot")
     @app_commands.describe(user="osu!username or @mention")
-    async def bind(self, ctx: commands.Context, user: str | None = None):
+    async def bind(self, ctx: commands.Context, user: str):
         await ctx.defer()
-
-        if user is None:
-            await ctx.send("请提供 osu! 用户名进行绑定。用法: /bind <osu用户名>")
-            return
 
         msg = await render_binding_user(ctx.author.id, user)
         await ctx.send(msg)
