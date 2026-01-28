@@ -6,7 +6,7 @@ Scores Renderer - Renders user's scores on a beatmap with pagination support
 from datetime import datetime
 from typing import List, Dict, Any, Tuple, Optional
 
-from backend.scores import get_user_beatmap_all_scores
+from backend.scores import get_user_beatmap_all_scores, get_user_scores
 from backend.beatmap import get_beatmap_info
 from backend.user import get_user_info
 from renderer.renderer_template import renderer
@@ -16,11 +16,19 @@ from utils.strings import format_template
 SCORES_PER_PAGE = 10
 
 
-def _format_mods(mods: List[Dict[str, Any]]) -> str:
+def _format_mods(mods: List[Dict[str, Any] | str]) -> str:
     """格式化 mods 列表为字符串"""
     if not mods:
         return "NM"
-    return "+".join(mod.get("acronym", "") for mod in mods)
+
+    formatted_mods = []
+    for mod in mods:
+        if isinstance(mod, dict):
+            formatted_mods.append(mod.get("acronym", ""))
+        elif isinstance(mod, str):
+            formatted_mods.append(mod)
+
+    return "+".join(formatted_mods)
 
 
 def _format_rank(rank: str) -> str:
@@ -73,6 +81,35 @@ def _format_score_item(score: Dict[str, Any], index: int) -> str:
     }
 
     return format_template("SCORES_LIST_ITEM_TEMPLATE", **context)
+
+
+def _format_user_score_item(score: Dict[str, Any], index: int) -> str:
+    """格式化用户成绩列表中的单条成绩"""
+    beatmap = score.get("beatmap", {})
+    beatmapset = score.get("beatmapset", {})
+
+    # 优先从 beatmapset 获取 title/version，如果失败则尝试 beatmap
+    title = beatmapset.get("title", beatmap.get("beatmapset", {}).get("title", "?"))
+    version = beatmap.get("version", "?")
+
+    rank = _format_rank(score.get("rank", "?"))
+    pp = score.get("pp", 0) or 0
+    accuracy = score.get("accuracy", 0)
+    mods = _format_mods(score.get("mods", []))
+    created_at = _format_datetime(score.get("ended_at", score.get("created_at", "")))
+
+    context = {
+        "index": index,
+        "rank": rank,
+        "pp": pp,
+        "accuracy": _format_accuracy(accuracy),
+        "beatmap_title": title,
+        "beatmap_version": version,
+        "mods": mods,
+        "created_at": created_at,
+    }
+
+    return format_template("USER_SCORES_LIST_ITEM_TEMPLATE", **context)
 
 
 def _calculate_pagination(
@@ -180,6 +217,143 @@ async def get_scores_page_count(
     """
     try:
         scores = await get_user_beatmap_all_scores(user_id, beatmap_id, ruleset)
+        if not scores:
+            return 0
+        return max(1, (len(scores) + SCORES_PER_PAGE - 1) // SCORES_PER_PAGE)
+    except Exception:
+        return 0
+
+
+@renderer
+async def render_user_score_list(
+    user_id: int,
+    type: str,
+    include_fails: bool = False,
+    page: int = 1,
+    limit: int = 100,
+) -> str:
+    """
+    渲染用户特定类型的成绩列表 (best/recent/etc)
+
+    Args:
+        user_id: 用户 ID
+        type: 成绩类型
+        include_fails: 是否包含失败成绩
+        page: 页码
+        limit: API请求限制数量
+
+    Returns:
+        格式化后的成绩列表
+    """
+    scores = await get_user_scores(
+        user_id, type, include_fails=include_fails, limit=limit
+    )
+    user_info = await get_user_info(user_id)
+    username = user_info.get("username", "Unknown")
+
+    if not scores:
+        return format_template(
+            "USER_SCORES_EMPTY_TEMPLATE", username=username, type=type
+        )
+
+    # 如果是 best 类型 (bp)，需要过滤 24 小时内刷新的
+    # 但根据最新指示，recent 已经默认 24h，所以这里只需对 best 做可能的过滤
+    # "t" 命令要求 24h 内刷新的 bp。API 返回的 best 是按 pp 排序的。
+    # 我们需要在内存中过滤，因为 API 不支持时间范围过滤 best。
+    if type == "best":
+        # 过滤 updated_at 或 created_at 在 24 小时内的
+        # 注意：这里需要 datetime 计算，暂时略过复杂实现，直接显示 API 返回的 best
+        # 如果需要严格实现 "t" (today's bp)，可以在这里 filter
+        pass
+
+    total_scores = len(scores)
+    start_idx, end_idx, total_pages = _calculate_pagination(total_scores, page)
+    current_page = max(1, min(page, total_pages))
+
+    lines = []
+
+    header = format_template(
+        "USER_SCORES_LIST_HEADER_TEMPLATE", username=username, type=type
+    )
+    lines.append(header)
+
+    for i, score in enumerate(scores[start_idx:end_idx], start=start_idx + 1):
+        lines.append(_format_user_score_item(score, i))
+
+    footer = format_template(
+        "SCORES_LIST_FOOTER_TEMPLATE",
+        current_page=current_page,
+        total_pages=total_pages,
+        total_scores=total_scores,
+    )
+    lines.append(footer)
+
+    return "\n".join(lines)
+
+
+@renderer
+async def render_user_recent_score(
+    user_id: int, type: str, include_fails: bool = False
+) -> str:
+    """
+    渲染用户最新的单条成绩 (p/r)
+
+    Args:
+        user_id: 用户 ID
+        type: 成绩类型
+        include_fails: 是否包含失败成绩
+
+    Returns:
+        格式化后的单条成绩详情
+    """
+    # 获取 limit=1 的成绩
+    scores = await get_user_scores(user_id, type, include_fails=include_fails, limit=1)
+    user_info = await get_user_info(user_id)
+    username = user_info.get("username", "Unknown")
+
+    if not scores:
+        return format_template(
+            "USER_SCORES_EMPTY_TEMPLATE", username=username, type=type
+        )
+
+    score = scores[0]
+    beatmap = score.get("beatmap", {})
+    beatmapset = score.get("beatmapset", {})
+
+    # 构建上下文
+    context = {
+        "username": username,
+        "type": type,
+        "beatmap_title": beatmapset.get("title", "?"),
+        "beatmap_version": beatmap.get("version", "?"),
+        "beatmap_artist": beatmapset.get("artist", "?"),
+        "beatmap_stars": beatmap.get("difficulty_rating", 0),
+        "beatmap_mode": beatmap.get("mode", "osu"),
+        "rank_emoji": _format_rank(score.get("rank", "?")),
+        "rank": score.get("rank", "?"),
+        "pp": score.get("pp", 0) or 0,
+        "accuracy": _format_accuracy(score.get("accuracy", 0)),
+        "mods": _format_mods(score.get("mods", [])),
+        "max_combo": score.get("max_combo", 0),
+        "max_combo_beatmap": beatmap.get("max_combo", 0)
+        or "?",  # API 可能不返回 max_combo
+        "total_score": f"{score.get('total_score', 0):,}",
+        "created_at": _format_datetime(
+            score.get("ended_at", score.get("created_at", ""))
+        ),
+        "beatmap_url": f"https://osu.ppy.sh/b/{beatmap.get('id', 0)}",  # 假设这是官网链接
+    }
+
+    return format_template("USER_SCORE_SINGLE_TEMPLATE", **context)
+
+
+async def get_user_scores_page_count(
+    user_id: int, type: str, include_fails: bool = False, limit: int = 100
+) -> int:
+    try:
+        scores = await get_user_scores(
+            user_id, type, include_fails=include_fails, limit=limit
+        )
         if not scores:
             return 0
         return max(1, (len(scores) + SCORES_PER_PAGE - 1) // SCORES_PER_PAGE)

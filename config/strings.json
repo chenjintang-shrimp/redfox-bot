@@ -61,20 +61,91 @@
         ]
     },
     "SCORES_LIST_HEADER_TEMPLATE": {
-        "template": "📊 **{username}**'s scores on **{beatmap_title}** [{beatmap_version}]\n🎵 {beatmap_artist} | ⭐ {beatmap_stars:.2f}★ | 🎮 {beatmap_mode}\n━━━━━━━━━━━━━━━━━━━━━━",
-        "fields": []
+        "template": "📊 **{username}**'s scores on **{beatmap_title}** [{beatmap_version}]🎵 {beatmap_artist} | ⭐ {beatmap_stars:.2f}★ | 🎮 {beatmap_mode}\n━━━━━━━━━━━━━━━━━━━━━━",
+        "fields": [
+            "username",
+            "beatmap_title",
+            "beatmap_version",
+            "beatmap_artist",
+            "beatmap_stars",
+            "beatmap_mode"
+        ]
     },
     "SCORES_LIST_ITEM_TEMPLATE": {
         "template": "#{index:<2} │ {rank:<6} │ {total_score:>10} │ {accuracy:>7} │ {max_combo:>4}x │ {pp:>7.2f}pp\n     └─ 🎯 {mods} │ 📅 {created_at}",
-        "fields": []
+        "fields": [
+            "index",
+            "rank",
+            "total_score",
+            "accuracy",
+            "max_combo",
+            "pp",
+            "mods",
+            "created_at"
+        ]
     },
     "SCORES_LIST_FOOTER_TEMPLATE": {
         "template": "━━━━━━━━━━━━━━━━━━━━━━\n📄 Page {current_page}/{total_pages} | Total: {total_scores} scores",
-        "fields": []
+        "fields": [
+            "current_page",
+            "total_pages",
+            "total_scores"
+        ]
     },
     "SCORES_LIST_EMPTY_TEMPLATE": {
         "template": "📭 **{username}** has no scores on this beatmap.",
-        "fields": []
+        "fields": [
+            "username"
+        ]
+    },
+    "USER_SCORES_LIST_HEADER_TEMPLATE": {
+        "template": "📊 **{username}**'s {type} scores\n━━━━━━━━━━━━━━━━━━━━━━",
+        "fields": [
+            "username",
+            "type"
+        ]
+    },
+    "USER_SCORES_LIST_ITEM_TEMPLATE": {
+        "template": "#{index:<2} │ {rank:<6} │ {pp:>7.2f}pp │ {accuracy:>7}\n     └─ 🎵 {beatmap_title} [{beatmap_version}] \n     └─ 🎯 {mods} │ 📅 {created_at}",
+        "fields": [
+            "index",
+            "rank",
+            "pp",
+            "accuracy",
+            "beatmap_title",
+            "beatmap_version",
+            "mods",
+            "created_at"
+        ]
+    },
+    "USER_SCORE_SINGLE_TEMPLATE": {
+        "template": "📊 **{username}**'s {type} score on **{beatmap_title}** [{beatmap_version}]\n🎵 {beatmap_artist} | ⭐ {beatmap_stars:.2f}★ | 🎮 {beatmap_mode}\n━━━━━━━━━━━━━━━━━━━━━━\n{rank_emoji} **{rank}** │ {pp}pp │ {accuracy}\n🎯 {mods} │ x{max_combo}/{max_combo_beatmap}\n🏅 Score: {total_score} │ 📅 {created_at}\n\n🔗 [Beatmap]({beatmap_url})",
+        "fields": [
+            "username",
+            "type",
+            "beatmap_title",
+            "beatmap_version",
+            "beatmap_artist",
+            "beatmap_stars",
+            "beatmap_mode",
+            "rank_emoji",
+            "rank",
+            "pp",
+            "accuracy",
+            "mods",
+            "max_combo",
+            "max_combo_beatmap",
+            "total_score",
+            "created_at",
+            "beatmap_url"
+        ]
+    },
+    "USER_SCORES_EMPTY_TEMPLATE": {
+        "template": "📭 **{username}** has no {type} scores.",
+        "fields": [
+            "username",
+            "type"
+        ]
     },
     "RANK_EMOJIS": {
         "XH": "🏆 XH",

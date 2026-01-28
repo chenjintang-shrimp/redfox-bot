@@ -7,6 +7,7 @@
         "user_info": "/users/{user_id}",
         "batch_user_info": "/users/{user_id}",
         "oauth_token": "/oauth/token",
-        "beatmap_info": "/beatmaps/{beatmap_id}"
+        "beatmap_info": "/beatmaps/{beatmap_id}",
+        "user_scores": "/users/{user_id}/scores/{type}"
     }
 }

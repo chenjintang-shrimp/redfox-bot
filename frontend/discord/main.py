@@ -15,6 +15,12 @@ bot = commands.Bot(command_prefix="!", intents=intents)
 @bot.event
 async def on_ready():
     get_logger("Bot").info(f"Bot Online:{bot.user}")
+    # 同步应用命令
+    try:
+        synced = await bot.tree.sync()
+        get_logger("Bot").info(f"Synced {len(synced)} application commands")
+    except Exception as e:
+        get_logger("Bot").error(f"Failed to sync application commands: {e}")
 
 
 # 加载所有 Cog

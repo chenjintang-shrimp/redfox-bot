@@ -83,7 +83,10 @@ async def get_user_beatmap_all_scores(
             response.status_code,
         )
 
-    return response.json()
+    data = response.json()
+    if isinstance(data, dict) and "scores" in data:
+        return data["scores"]
+    return data
 
 
 async def get_user_beatmap_best_score(user_id: int, beatmap_id: int):
@@ -107,6 +110,67 @@ async def get_user_beatmap_best_score(user_id: int, beatmap_id: int):
         raise ScoreQueryError(
             username,
             beatmap_id,
+            f"API returned {response.status_code} when requesting endpoint {url}",
+            response.status_code,
+        )
+
+    return response.json()
+
+
+async def get_user_scores(
+    user_id: int,
+    type: str,
+    include_fails: bool = False,
+    mode: Optional[str] = None,
+    limit: int = 100,
+    offset: int = 0,
+):
+    """
+    获取用户的成绩列表 (best/recent/firsts/pinned)
+
+    Args:
+        user_id: 用户 ID
+        type: 成绩类型 (best, recent, firsts, pinned)
+        include_fails: 是否包含失败成绩
+        mode: 游戏模式 (可选)
+        limit: 返回数量
+        offset: 偏移量
+
+    Returns:
+        成绩列表
+    """
+    client = get_osu_api_client()
+    try:
+        user_info = await get_user_info(user_id)
+        username = user_info.get("username", str(user_id))
+    except Exception:
+        username = str(user_id)
+
+    url = get_api_url(
+        "user_scores",
+        user_id=user_id,
+        type=type,
+    )
+
+    params = {
+        "include_fails": str(include_fails).lower(),
+        "limit": limit,
+        "offset": offset,
+    }
+    if mode:
+        params["mode"] = mode
+
+    response = await client.get(url, params=params)
+    get_logger("backend").info(
+        f"Requesting endpoint {url} with user_id {user_id} and type {type} returned {response.status_code}"
+    )
+    if response.status_code != 200:
+        get_logger("backend").error(
+            f"API error: {response.status_code} - {response.text}"
+        )
+        raise ScoreQueryError(
+            username,
+            0,  # No specific beatmap_id
             f"API returned {response.status_code} when requesting endpoint {url}",
             response.status_code,
         )
