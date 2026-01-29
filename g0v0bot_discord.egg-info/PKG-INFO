@@ -4,6 +4,7 @@ Version: 0.1.0
 Summary: Add your description here
 Requires-Python: >=3.14
 Description-Content-Type: text/markdown
+Requires-Dist: aiocache>=0.12.3
 Requires-Dist: aiosqlite>=0.22.1
 Requires-Dist: discord>=2.3.2
 Requires-Dist: fastapi>=0.128.0
@@ -12,3 +13,242 @@ Requires-Dist: loguru>=0.7.3
 Requires-Dist: python-dotenv>=1.0.0
 Requires-Dist: sqlmodel>=0.0.31
 Requires-Dist: uvicorn>=0.40.0
+
+# g0v0bot-discord
+
+一个功能强大的 osu! 游戏 Discord/QQ 机器人，支持查询用户信息、谱面详情、成绩记录等功能。
+
+## 🎯 功能特性
+
+### 用户管理
+
+- **用户信息查询** - 查看用户的 PP、排名、游戏模式等信息
+- **账号绑定** - 将 Discord/QQ 账号与 osu! 账号绑定
+- **账号解绑** - 解除账号绑定关系
+
+### 谱面系统
+
+- **谱面详情查询** - 获取谱面的详细信息（难度、长度、BPM等）
+- **谱面属性计算** - 计算谱面的详细属性
+- **批量谱面查询** - 支持批量获取谱面信息
+
+### 成绩系统
+
+- **成绩查询** - 查询用户在特定谱面上的成绩
+- **最佳成绩** - 获取用户的最佳成绩记录
+- **成绩列表** - 展示用户的成绩历史
+- **成绩格式化** - 美观的成绩展示格式
+
+### 多平台支持
+
+- **Discord** - 完整的 Discord 机器人支持
+- **QQ** - QQ 机器人支持（开发中）
+- **统一API** - 基于相同的后端 API 服务
+
+## 🚀 快速开始
+
+### 环境要求
+
+- Python 3.14+
+- Discord Bot Token
+- osu! API 访问权限
+
+### 安装步骤
+
+1. **克隆项目**
+
+```bash
+git clone https://github.com/your-username/g0v0bot-discord.git
+cd g0v0bot-discord
+```
+
+1. **安装依赖**
+
+```bash
+uv sync
+```
+
+1. **配置环境变量**
+复制 `.env.example` 为 `.env` 并填写相应配置：
+
+```bash
+cp .env.example .env
+```
+
+编辑 `.env` 文件：
+
+```env
+BOT_TOKEN=your_discord_bot_token
+OAUTH_APP_ID=your_oauth_app_id
+OAUTH_APP_TOKEN=your_app_token
+SQL_DB_FILE=./database.db
+API_URL=https://lazer-api.g0v0.top
+STRINGS_FILE=config/strings.json
+OAUTH_REDIRECT_URI=http://localhost:8000/callback
+WEB_SERVER_PORT=8000
+WEB_SERVER_HOST=0.0.0.0
+```
+
+1. **运行机器人**
+
+```bash
+# 运行 Discord 机器人
+uv run discord-bot
+
+# 或者运行 QQ 机器人
+uv run qq-bot
+```
+
+## 📖 使用说明
+
+### Discord 命令
+
+#### 用户相关命令
+
+```text
+!info [用户名]        # 查询用户信息
+!bind <用户名>        # 绑定 osu! 账号
+!unbind              # 解绑 osu! 账号
+```
+
+#### 谱面相关命令
+
+```text
+!beatmap <谱面ID>    # 查询谱面详情
+!lookup <查询条件>   # 查找谱面
+```
+
+#### 成绩相关命令
+
+```text
+!score <谱面ID>      # 查询成绩
+!scores <谱面ID>     # 查询成绩列表
+!best <用户名>       # 查询最佳成绩
+!recent <用户名>     # 查询最近成绩
+```
+
+### 使用示例
+
+#### 查询用户信息
+
+```text
+!info g0v0
+```
+
+**输出示例：**
+
+```text
+User info for g0v0:
+id: 123456
+playmode: osu
+pp: 4500.25
+global rank: #1500
+```
+
+#### 查询谱面详情
+
+```text
+!beatmap 123456
+```
+
+**输出示例：**
+
+```text
+🎵 **Blue Zenith** [FOUR DIMENSIONS]
+👤 Artist: Fractal
+✍️ Creator: g0v0
+⭐ Stars: 5.25★ | 🕒 Length: 2:15
+💿 Status: ranked | 💓 BPM: 180
+📊 CS: 4.2 | AR: 9.5 | OD: 8.0 | HP: 6.0
+🔗 [Link](https://osu.ppy.sh/beatmaps/123456)
+```
+
+## 🏗️ 技术架构
+
+### 项目结构
+
+```
+g0v0bot-discord/
+├── backend/           # 后端核心逻辑
+│   ├── api_client.py  # API 客户端
+│   ├── database.py    # 数据库操作
+│   ├── user.py       # 用户相关逻辑
+│   ├── beatmap.py    # 谱面相关逻辑
+│   └── scores.py     # 成绩相关逻辑
+├── frontend/          # 前端机器人实现
+│   ├── discord/      # Discord 机器人
+│   └── qq/           # QQ 机器人
+├── renderer/          # 消息渲染模块
+├── utils/            # 工具函数
+├── config/           # 配置文件
+└── 项目配置文件
+```
+
+### 核心特性
+
+- **异步架构** - 基于 async/await 的高性能处理
+- **模块化设计** - 清晰的代码组织和职责分离
+- **OAuth2 认证** - 安全的 API 访问机制
+- **模板化消息** - 可配置的消息格式化系统
+- **多平台支持** - 易于扩展新的聊天平台
+
+### 技术栈
+
+- **Python 3.14+** - 编程语言
+- **FastAPI** - Web 框架
+- **discord.py** - Discord 机器人库
+- **SQLModel** - 数据库 ORM
+- **httpx** - HTTP 客户端
+- **loguru** - 日志记录
+
+## 🔧 开发指南
+
+### 添加新功能
+
+1. **后端逻辑** - 在 `backend/` 目录添加业务逻辑
+2. **前端命令** - 在 `frontend/` 对应平台添加命令处理
+3. **消息渲染** - 在 `renderer/` 添加消息格式化逻辑
+4. **字符串模板** - 在 `config/strings.json` 配置消息模板
+
+### 代码规范
+
+- 使用类型注解
+- 遵循 PEP 8 代码风格
+- 使用异步编程模式
+- 添加适当的错误处理
+
+## 🤝 贡献指南
+
+我们欢迎任何形式的贡献！
+
+### 如何贡献
+
+1. Fork 本项目
+2. 创建功能分支 (`git checkout -b feature/AmazingFeature`)
+3. 提交更改 (`git commit -m 'Add some AmazingFeature'`)
+4. 推送到分支 (`git push origin feature/AmazingFeature`)
+5. 创建 Pull Request
+
+### 报告问题
+
+请使用 GitHub Issues 报告 bug 或提出功能请求。
+
+## 📄 许可证
+
+本项目采用 MIT 许可证 - 查看 [LICENSE](LICENSE) 文件了解详情。
+
+## 🙏 致谢
+
+- 感谢 [osu!](https://osu.ppy.sh/) 游戏提供的 API
+- 感谢 [lazer-api.g0v0.top](https://lazer-api.g0v0.top/docs) 提供的 API 服务
+- 感谢所有贡献者和用户的支持
+
+## 📞 联系方式
+
+- 项目主页: [GitHub Repository](https://github.com/your-username/g0v0bot-discord)
+- 问题反馈: [GitHub Issues](https://github.com/your-username/g0v0bot-discord/issues)
+- 邮箱: <your-email@example.com>
+
+---
+
+⭐ 如果这个项目对你有帮助，请给个 Star 支持一下！

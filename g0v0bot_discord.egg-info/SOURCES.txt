@@ -2,7 +2,9 @@ README.md
 pyproject.toml
 backend/__init__.py
 backend/api_client.py
+backend/beatmap.py
 backend/database.py
+backend/scores.py
 backend/user.py
 frontend/__init__.py
 g0v0bot_discord.egg-info/PKG-INFO
@@ -12,8 +14,12 @@ g0v0bot_discord.egg-info/entry_points.txt
 g0v0bot_discord.egg-info/requires.txt
 g0v0bot_discord.egg-info/top_level.txt
 renderer/__init__.py
+renderer/beatmap.py
+renderer/renderer_template.py
+renderer/scores.py
 renderer/user.py
 utils/__init__.py
+utils/caches.py
 utils/logger.py
 utils/strings.py
 utils/variable.py

@@ -4,6 +4,7 @@ import os
 
 from utils.logger import get_logger
 from utils.variable import BOT_TOKEN
+from utils.scheduler import start_scheduler, stop_scheduler
 
 
 intents = discord.Intents.default()
@@ -15,6 +16,12 @@ bot = commands.Bot(command_prefix="!", intents=intents)
 @bot.event
 async def on_ready():
     get_logger("Bot").info(f"Bot Online:{bot.user}")
+    await start_scheduler()
+
+
+@bot.event
+async def on_disconnect():
+    await stop_scheduler()
 
 
 # 加载所有 Cog
