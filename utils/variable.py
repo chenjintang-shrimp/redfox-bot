@@ -35,7 +35,7 @@ API_FILE = os.getenv("API_FILE", "config/api.json")
 
 # Validated variable
 if OAUTH_APP_ID.isdigit():
-    OAUTH_APP_ID = int(OAUTH_APP_ID)
+    OAUTH_APP_ID = OAUTH_APP_ID
 
 # OAuth Redirect URI
 OAUTH_REDIRECT_URI = os.getenv("OAUTH_REDIRECT_URI", "http://localhost:8080/callback")
@@ -44,6 +44,9 @@ OAUTH_REDIRECT_URI = os.getenv("OAUTH_REDIRECT_URI", "http://localhost:8080/call
 OAUTH_SECRET = os.getenv("OAUTH_SECRET", "")
 if OAUTH_SECRET == "":
     get_logger("envs").warning("OAUTH_SECRET is not set, some features may not work")
+
+# OAuth Token TTL (seconds), default 86400 (24 hours)
+OAUTH_TOKEN_TTL = int(os.getenv("OAUTH_TOKEN_TTL", "86400"))
 
 # Automatically validate on import if desired, or call explicitly
 # Variable.validate()

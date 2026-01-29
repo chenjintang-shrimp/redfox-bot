@@ -37,17 +37,14 @@ async def _run_loop(task: ScheduledTask) -> None:
 
     while task.enabled:
         try:
-            task.next_run = datetime.now() + timedelta(seconds=task.interval)
-            await asyncio.sleep(task.interval)
-
-            if not task.enabled:
-                break
-
             logger.debug(f"执行任务: {task.name}")
             await task.func(*task.args, **task.kwargs)
 
             task.last_run = datetime.now()
             task.run_count += 1
+
+            task.next_run = datetime.now() + timedelta(seconds=task.interval)
+            await asyncio.sleep(task.interval)
 
         except asyncio.CancelledError:
             logger.debug(f"任务 {task.name} 被取消")

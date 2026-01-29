@@ -4,7 +4,7 @@ from typing import Optional, Dict, Any
 from httpx import AsyncClient, Response
 from utils.logger import get_logger
 from utils.scheduler_registry import register
-from utils.variable import API_URL, OAUTH_APP_ID, OAUTH_SECRET
+from utils.variable import API_URL, OAUTH_APP_ID, OAUTH_SECRET, OAUTH_TOKEN_TTL
 from utils.caches import get_cache, set_cache
 
 
@@ -38,7 +38,6 @@ class OAuth2Handler:
 
         return await self.refresh_token()
 
-    @register(name="refresh_token", interval=86400) # 先这么写吧，以后如果遇到不是86400的情况再想办法从服务端获取这个数
     async def refresh_token(self) -> str:
         """从服务器刷新访问令牌并缓存"""
         self.logger.info("Refreshing OAuth2 token...")
@@ -77,6 +76,30 @@ class OAuth2Handler:
 
             self.logger.info(f"Token refreshed successfully. Expires in {expires_in}s")
             return token
+
+
+# 全局 OAuth handler 实例（用于定时任务）
+_oauth_handler: Optional[OAuth2Handler] = None
+
+
+def _get_global_oauth_handler() -> OAuth2Handler:
+    """获取全局 OAuth handler（内部使用）"""
+    global _oauth_handler
+    if _oauth_handler is None:
+        token_url = f"{API_URL}/oauth/token"
+        _oauth_handler = OAuth2Handler(OAUTH_APP_ID, OAUTH_SECRET, token_url)
+    return _oauth_handler
+
+
+@register(name="refresh_token", interval=OAUTH_TOKEN_TTL // 2)
+async def scheduled_refresh_token():
+    """
+    定时刷新 OAuth token
+    间隔为 TTL 的一半，确保 token 不会过期
+    """
+    handler = _get_global_oauth_handler()
+    # get_access_token 内部会检查是否需要刷新
+    await handler.get_access_token()
 
 
 class APIClient:
