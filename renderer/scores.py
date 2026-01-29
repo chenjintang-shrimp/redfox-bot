@@ -157,6 +157,19 @@ async def render_user_beatmap_scores(
     if not scores:
         return format_template("SCORES_LIST_EMPTY_TEMPLATE", username=username)
 
+    # 按 score_id 去重（防止 API 返回重复数据）
+    seen_ids = set()
+    unique_scores = []
+    for score in scores:
+        score_id = score.get("id") or score.get("score_id")
+        if score_id and score_id not in seen_ids:
+            seen_ids.add(score_id)
+            unique_scores.append(score)
+        elif not score_id:
+            # 如果没有 id，保留该成绩
+            unique_scores.append(score)
+    scores = unique_scores
+
     # 获取谱面信息
     beatmapset = beatmap_info.get("beatmapset", {})
     beatmap_title = beatmapset.get("title", "Unknown")

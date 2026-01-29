@@ -38,15 +38,16 @@ async def get_user_beatmap_score(user_id: int, beatmap_id: int):
 
 
 async def get_user_beatmap_all_scores(
-    user_id: int, beatmap_id: int, ruleset: Optional[str] = None
+    user_id: int, beatmap_id: int, ruleset: Optional[str] = None, limit: int = 100
 ):
     """
-    获取用户在某个谱面上的全部成绩
+    获取用户在某个谱面上的全部成绩（支持分页获取所有成绩）
 
     Args:
         user_id: 用户 ID
         beatmap_id: 谱面 ID
         ruleset: 游戏模式 (可选，默认使用谱面模式)
+        limit: 每次请求的最大数量
 
     Returns:
         成绩列表
@@ -64,29 +65,56 @@ async def get_user_beatmap_all_scores(
         user_id=user_id,
     )
 
-    params = {}
-    if ruleset:
-        params["ruleset"] = ruleset
+    all_scores = []
+    offset = 0
 
-    response = await client.get(url, params=params if params else None)
+    while True:
+        params: dict[str, int | str] = {"limit": limit, "offset": offset}
+        if ruleset:
+            params["ruleset"] = ruleset
+
+        response = await client.get(url, params=params)
+        get_logger("backend").info(
+            f"Requesting endpoint {url} for all scores with user_id {user_id} and beatmap_id {beatmap_id} (offset={offset}) returned {response.status_code}"
+        )
+
+        if response.status_code != 200:
+            get_logger("backend").error(
+                f"API error: {response.status_code} - {response.text}"
+            )
+            raise ScoreQueryError(
+                username,
+                beatmap_id,
+                f"API returned {response.status_code} when requesting endpoint {url}",
+                response.status_code,
+            )
+
+        data = response.json()
+
+        # 处理响应格式
+        if isinstance(data, dict) and "scores" in data:
+            scores = data["scores"]
+        elif isinstance(data, list):
+            scores = data
+        else:
+            scores = []
+
+        if not scores:
+            break
+
+        all_scores.extend(scores)
+
+        # 如果返回的数量小于 limit，说明已经获取完所有成绩
+        if len(scores) < limit:
+            break
+
+        offset += limit
+
     get_logger("backend").info(
-        f"Requesting endpoint {url} for all scores with user_id {user_id} and beatmap_id {beatmap_id} returned {response.status_code}"
+        f"Total scores fetched for user {user_id} on beatmap {beatmap_id}: {len(all_scores)}"
     )
-    if response.status_code != 200:
-        get_logger("backend").error(
-            f"API error: {response.status_code} - {response.text}"
-        )
-        raise ScoreQueryError(
-            username,
-            beatmap_id,
-            f"API returned {response.status_code} when requesting endpoint {url}",
-            response.status_code,
-        )
 
-    data = response.json()
-    if isinstance(data, dict) and "scores" in data:
-        return data["scores"]
-    return data
+    return all_scores
 
 
 async def get_user_beatmap_best_score(user_id: int, beatmap_id: int):
