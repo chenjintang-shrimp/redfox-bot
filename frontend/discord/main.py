@@ -4,7 +4,8 @@ import os
 
 from utils.logger import get_logger
 from utils.variable import BOT_TOKEN
-from utils.scheduler import start_scheduler, stop_scheduler
+from utils.scheduler import add_task, start_scheduler, stop_scheduler
+from utils.scheduler_registry import auto_discover_tasks, get_all_tasks
 
 
 intents = discord.Intents.default()
@@ -16,6 +17,13 @@ bot = commands.Bot(command_prefix="!", intents=intents)
 @bot.event
 async def on_ready():
     get_logger("Bot").info(f"Bot Online:{bot.user}")
+
+    # 自动发现并注册定时任务
+    auto_discover_tasks("backend")
+    for task in get_all_tasks():
+        add_task(task.name, task.func, task.interval, *task.args, **task.kwargs)
+    get_logger("Bot").info(f"已注册 {len(get_all_tasks())} 个定时任务")
+
     await start_scheduler()
 
 

@@ -3,32 +3,44 @@ import base64
 from typing import Optional, Dict, Any
 from httpx import AsyncClient, Response
 from utils.logger import get_logger
+from utils.scheduler_registry import register
 from utils.variable import API_URL, OAUTH_APP_ID, OAUTH_SECRET
+from utils.caches import get_cache, set_cache
 
 
 class OAuth2Handler:
     """
     OAuth2 验证处理器，处理 client_credentials 流程
+    使用缓存系统存储 token，支持多实例共享
     """
 
     def __init__(self, client_id: str, client_secret: str, token_url: str):
         self.client_id = client_id
         self.client_secret = client_secret
         self.token_url = token_url
-        self._access_token: Optional[str] = None
-        self._expires_at: float = 0
         self.logger = get_logger("oauth2_handler")
+
+    @property
+    def _cache_key(self) -> str:
+        """生成缓存 key"""
+        return f"oauth:token:{self.client_id}"
 
     async def get_access_token(self) -> str:
         """获取有效的访问令牌"""
-        # 如果令牌还在有效期内（提前30秒刷新），直接返回
-        if self._access_token and time.time() < self._expires_at - 30:
-            return self._access_token
+        cached = await get_cache(self._cache_key)
+
+        if cached:
+            token = cached.get("token")
+            expires_at = cached.get("expires_at", 0)
+            # 提前30秒刷新
+            if token and time.time() < expires_at - 30:
+                return token
 
         return await self.refresh_token()
 
+    @register(name="refresh_token", interval=86400) # 先这么写吧，以后如果遇到不是86400的情况再想办法从服务端获取这个数
     async def refresh_token(self) -> str:
-        """从服务器刷新访问令牌"""
+        """从服务器刷新访问令牌并缓存"""
         self.logger.info("Refreshing OAuth2 token...")
         data = {
             "client_id": self.client_id,
@@ -37,8 +49,6 @@ class OAuth2Handler:
             "scope": "public",
         }
 
-        # 很多 OAuth2 服务器要求使用 Basic Auth 头部，或者支持在 POST Body 中传参
-        # 我们这里尝试同时兼容。如果服务器对 body 中的 client_secret 敏感，可以移除它。
         auth_str = f"{self.client_id}:{self.client_secret}"
         encoded_auth = base64.b64encode(auth_str.encode()).decode()
         headers = {
@@ -47,8 +57,6 @@ class OAuth2Handler:
         }
 
         async with AsyncClient() as client:
-            # 注意：某些 API 不允许在 body 中再次传 client_secret 如果已经有了 Basic Auth
-            # 我们先尝试标准做法
             response = await client.post(self.token_url, data=data, headers=headers)
             if response.status_code != 200:
                 self.logger.error(
@@ -57,12 +65,18 @@ class OAuth2Handler:
                 raise Exception(f"OAuth2 token fetch failed: {response.text}")
 
             result = response.json()
-            self._access_token = result["access_token"]
-            # 记录过期时间
+            token = result["access_token"]
             expires_in = result.get("expires_in", 3600)
-            self._expires_at = time.time() + expires_in
+            expires_at = time.time() + expires_in
+
+            # 缓存 token
+            await set_cache(self._cache_key, {
+                "token": token,
+                "expires_at": expires_at
+            }, ttl=expires_in)
+
             self.logger.info(f"Token refreshed successfully. Expires in {expires_in}s")
-            return self._access_token if self._access_token is not None else ""
+            return token
 
 
 class APIClient:
