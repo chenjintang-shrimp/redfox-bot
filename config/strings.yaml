@@ -41,7 +41,7 @@ SCORES_LIST_HEADER_TEMPLATE: |
 
 SCORES_LIST_ITEM_TEMPLATE: |
   #{index:<2} │ {rank:<6} │ {total_score:>10} │ {accuracy:>7} │ {max_combo:>4}x │ {pp:>7.2f}pp
-       └─ 🎯 {mods} │ 📅 {created_at}
+        └─ 🎯 {mods} │ 📅 {created_at}
 
 SCORES_LIST_FOOTER_TEMPLATE: |
   ━━━━━━━━━━━━━━━━━━━━━━
@@ -56,16 +56,16 @@ USER_SCORES_LIST_HEADER_TEMPLATE: |
 
 USER_SCORES_LIST_ITEM_TEMPLATE: |
   #{index:<2} │ {rank:<6} │ {pp:>7.2f}pp │ {accuracy:>7}
-       └─ 🎵 {beatmap_title} [{beatmap_version}] 
-       └─ 🎯 {mods} │ 📅 {created_at}
+        └─ 🎵 {beatmap_title} [{beatmap_version}] 
+        └─ {mods} │ {created_at}
 
 USER_SCORE_SINGLE_TEMPLATE: |
   📊 **{username}**'s {type} score on **{beatmap_title}** [{beatmap_version}]
   🎵 {beatmap_artist} | ⭐ {beatmap_stars:.2f}★ | 🎮 {beatmap_mode}
   ━━━━━━━━━━━━━━━━━━━━━━
   {rank_emoji} **{rank}** │ {pp}pp │ {accuracy}
-  🎯 {mods} │ x{max_combo}/{max_combo_beatmap}
-  🏅 Score: {total_score} │ 📅 {created_at}
+  {mods} │ x{max_combo}/{max_combo_beatmap}
+  Score: {total_score} │ {created_at}
 
   🔗 [Beatmap]({beatmap_url})
 
