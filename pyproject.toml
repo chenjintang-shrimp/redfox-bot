@@ -27,3 +27,9 @@ package = true
 
 [tool.setuptools]
 packages = ["frontend", "backend", "utils", "renderer"]
+
+[dependency-groups]
+dev = [
+    "pyright>=1.1.408",
+    "ruff>=0.14.14",
+]

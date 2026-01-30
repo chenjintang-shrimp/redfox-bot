@@ -4,6 +4,7 @@ Version: 0.1.0
 Summary: Add your description here
 Requires-Python: >=3.14
 Description-Content-Type: text/markdown
+License-File: LICENSE
 Requires-Dist: aiocache>=0.12.3
 Requires-Dist: aiosqlite>=0.22.1
 Requires-Dist: discord>=2.3.2
@@ -15,31 +16,14 @@ Requires-Dist: python-dotenv>=1.0.0
 Requires-Dist: pyyaml>=6.0.3
 Requires-Dist: sqlmodel>=0.0.31
 Requires-Dist: uvicorn>=0.40.0
+Dynamic: license-file
 
-# g0v0bot-discord
-
-一个功能强大的 osu! 游戏 Discord/QQ 机器人，支持查询用户信息、谱面详情、成绩记录等功能。
+# Redfox osu! bot
+<img width="1448" height="623" alt="Bot-banner" src="https://github.com/user-attachments/assets/ee1bab70-e7f1-465b-892a-99182bdf61af" />
 
 ## 🎯 功能特性
 
-### 用户管理
-
-- **用户信息查询** - 查看用户的 PP、排名、游戏模式等信息
-- **账号绑定** - 将 Discord/QQ 账号与 osu! 账号绑定
-- **账号解绑** - 解除账号绑定关系
-
-### 谱面系统
-
-- **谱面详情查询** - 获取谱面的详细信息（难度、长度、BPM等）
-- **谱面属性计算** - 计算谱面的详细属性
-- **批量谱面查询** - 支持批量获取谱面信息
-
-### 成绩系统
-
-- **成绩查询** - 查询用户在特定谱面上的成绩
-- **最佳成绩** - 获取用户的最佳成绩记录
-- **成绩列表** - 展示用户的成绩历史
-- **成绩格式化** - 美观的成绩展示格式
+为了保障用户体验，命令参考 [yumu-bot](https://github.com/yumu-bot/yumu-bot) 进行设计，基本保持功能特性高度一致
 
 ### 多平台支持
 
@@ -100,71 +84,6 @@ uv run discord-bot
 # 或者运行 QQ 机器人
 uv run qq-bot
 ```
-
-## 📖 使用说明
-
-### Discord 命令
-
-#### 用户相关命令
-
-```text
-!info [用户名]        # 查询用户信息
-!bind <用户名>        # 绑定 osu! 账号
-!unbind              # 解绑 osu! 账号
-```
-
-#### 谱面相关命令
-
-```text
-!beatmap <谱面ID>    # 查询谱面详情
-!lookup <查询条件>   # 查找谱面
-```
-
-#### 成绩相关命令
-
-```text
-!score <谱面ID>      # 查询成绩
-!scores <谱面ID>     # 查询成绩列表
-!best <用户名>       # 查询最佳成绩
-!recent <用户名>     # 查询最近成绩
-```
-
-### 使用示例
-
-#### 查询用户信息
-
-```text
-!info g0v0
-```
-
-**输出示例：**
-
-```text
-User info for g0v0:
-id: 123456
-playmode: osu
-pp: 4500.25
-global rank: #1500
-```
-
-#### 查询谱面详情
-
-```text
-!beatmap 123456
-```
-
-**输出示例：**
-
-```text
-🎵 **Blue Zenith** [FOUR DIMENSIONS]
-👤 Artist: Fractal
-✍️ Creator: g0v0
-⭐ Stars: 5.25★ | 🕒 Length: 2:15
-💿 Status: ranked | 💓 BPM: 180
-📊 CS: 4.2 | AR: 9.5 | OD: 8.0 | HP: 6.0
-🔗 [Link](https://osu.ppy.sh/beatmaps/123456)
-```
-
 ## 🏗️ 技术架构
 
 ### 项目结构
@@ -238,18 +157,6 @@ g0v0bot-discord/
 ## 📄 许可证
 
 本项目采用 MIT 许可证 - 查看 [LICENSE](LICENSE) 文件了解详情。
-
-## 🙏 致谢
-
-- 感谢 [osu!](https://osu.ppy.sh/) 游戏提供的 API
-- 感谢 [lazer-api.g0v0.top](https://lazer-api.g0v0.top/docs) 提供的 API 服务
-- 感谢所有贡献者和用户的支持
-
-## 📞 联系方式
-
-- 项目主页: [GitHub Repository](https://github.com/your-username/g0v0bot-discord)
-- 问题反馈: [GitHub Issues](https://github.com/your-username/g0v0bot-discord/issues)
-- 邮箱: <your-email@example.com>
 
 ---
 
