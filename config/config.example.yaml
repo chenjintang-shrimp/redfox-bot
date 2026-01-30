@@ -1,0 +1,40 @@
+# g0v0bot Discord Bot Configuration
+# 复制此文件为 config/config.yaml 并填写实际值
+
+bot:
+  # Discord Bot Token (必填)
+  # 从 Discord Developer Portal 获取
+  token: ""
+
+  # Web 服务器配置 (用于 OAuth 回调)
+  web_server:
+    host: "0.0.0.0"
+    port: 8000
+
+oauth:
+  # OAuth App ID (必填)
+  # 从 Discord Developer Portal 获取
+  app_id: ""
+
+  # OAuth Secret (可选但推荐)
+  # 用于 OAuth 登录功能
+  secret: ""
+
+  # OAuth 回调地址
+  redirect_uri: "http://localhost:8000/callback"
+
+  # Token 有效期 (秒), 默认 24 小时
+  token_ttl: 86400
+
+database:
+  # SQLite 数据库文件路径
+  file: "./database.db"
+
+api:
+  # osu! API 基础 URL
+  url: "https://lazer-api.g0v0.top"
+
+config_files:
+  # 其他配置文件路径
+  strings: "config/strings.yaml"
+  api: "config/api.yaml"

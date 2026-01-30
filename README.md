@@ -1,5 +1,6 @@
 # Redfox osu! bot
-<img width="1448" height="623" alt="Bot-banner" src="https://github.com/user-attachments/assets/ee1bab70-e7f1-465b-892a-99182bdf61af" />
+
+![Bot-banner](https://github.com/user-attachments/assets/ee1bab70-e7f1-465b-892a-99182bdf61af)
 
 ## 🎯 功能特性
 
@@ -34,25 +35,37 @@ cd g0v0bot-discord
 uv sync
 ```
 
-1. **配置环境变量**
-复制 `.env.example` 为 `.env` 并填写相应配置：
+1. **配置**
+复制配置文件模板并填写相应配置：
 
 ```bash
-cp .env.example .env
+cp config/config.example.yaml config/config.yaml
 ```
 
-编辑 `.env` 文件：
+编辑 `config/config.yaml` 文件：
 
-```env
-BOT_TOKEN=your_discord_bot_token
-OAUTH_APP_ID=your_oauth_app_id
-OAUTH_APP_TOKEN=your_app_token
-SQL_DB_FILE=./database.db
-API_URL=https://lazer-api.g0v0.top
-STRINGS_FILE=config/strings.json
-OAUTH_REDIRECT_URI=http://localhost:8000/callback
-WEB_SERVER_PORT=8000
-WEB_SERVER_HOST=0.0.0.0
+```yaml
+bot:
+  token: "your_discord_bot_token"
+  web_server:
+    host: "0.0.0.0"
+    port: 8000
+
+oauth:
+  app_id: "your_oauth_app_id"
+  secret: "your_oauth_secret"
+  redirect_uri: "http://localhost:8000/callback"
+  token_ttl: 86400
+
+database:
+  file: "./database.db"
+
+api:
+  url: "https://lazer-api.g0v0.top"
+
+config_files:
+  strings: "config/strings.yaml"
+  api: "config/api.yaml"
 ```
 
 1. **运行机器人**
@@ -64,6 +77,7 @@ uv run discord-bot
 # 或者运行 QQ 机器人
 uv run qq-bot
 ```
+
 ## 🏗️ 技术架构
 
 ### 项目结构
