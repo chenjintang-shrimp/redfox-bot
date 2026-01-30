@@ -1,8 +1,12 @@
 import yaml
+from jinja2 import Environment, BaseLoader
 from utils.variable import STRINGS_FILE, API_FILE, working_dir
 from utils.logger import get_logger
 
 _STRINGS: dict = dict()
+
+# 创建 Jinja2 环境
+_jinja_env = Environment(loader=BaseLoader())
 
 
 def load_strings():
@@ -26,10 +30,26 @@ def get_api_url(endpoint: str, **kwargs) -> str:
     return f"{base_url}{api_config[endpoint]}".format(**kwargs)
 
 
-def format_template(name: str, **context) -> str:
+def format_template(name: str, context: dict | None = None, **kwargs) -> str:
     """
-    name: 模板名称
-    context: 模板变量
+    使用 Jinja2 渲染模板
+
+    Args:
+        name: 模板名称
+        context: 模板变量字典（可选）
+        kwargs: 额外的模板变量
+
+    Returns:
+        渲染后的字符串
     """
-    template = load_strings()[name]
-    return template.format(**context)
+    template_str = load_strings()[name]
+
+    # 合并字典参数和关键字参数
+    merged_context = {}
+    if context:
+        merged_context.update(context)
+    merged_context.update(kwargs)
+
+    # 使用 Jinja2 渲染模板
+    template = _jinja_env.from_string(template_str)
+    return template.render(**merged_context)

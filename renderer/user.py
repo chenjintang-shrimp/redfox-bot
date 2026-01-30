@@ -19,7 +19,7 @@ async def render_unbinding_user(discord_id: int):
     """
     deleted = await unbind_user(discord_id)
     if deleted:
-        return format_template("USER_UNBIND_SUCCESS_TEMPLATE", {})
+        return format_template("USER_UNBIND_SUCCESS_TEMPLATE")
     else:
         return format_template("USER_NOT_BOUND_TEMPLATE", {"user": "You"})
 

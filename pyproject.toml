@@ -10,6 +10,7 @@ dependencies = [
     "discord>=2.3.2",
     "fastapi>=0.128.0",
     "httpx>=0.28.1",
+    "jinja2>=3.1.6",
     "loguru>=0.7.3",
     "python-dotenv>=1.0.0",
     "pyyaml>=6.0.3",

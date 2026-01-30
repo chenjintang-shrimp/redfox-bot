@@ -42,6 +42,6 @@ async def render_beatmap_info(beatmap_id: int):
         return format_template("BEATMAP_INFO_TEMPLATE", **context)
 
     except BeatmapNotFoundError:
-        return format_template("BEATMAP_NOT_FOUND_TEMPLATE", {})
+        return format_template("BEATMAP_NOT_FOUND_TEMPLATE")
     except Exception as e:
         return ExceptionHandler.handle(e)
