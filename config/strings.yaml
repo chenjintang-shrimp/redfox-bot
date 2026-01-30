@@ -94,3 +94,10 @@ BEATMAP_INFO_TEMPLATE: |
   🔗 [Link]({url})
 
 BEATMAP_NOT_FOUND_TEMPLATE: ❌ Beatmap not found! Please check the beatmap ID.
+
+# 今日BP模板
+TODAY_BP_HEADER_TEMPLATE: |
+  🌟 **{username}**'s Today's Best Scores (24h)
+  ━━━━━━━━━━━━━━━━━━━━━━
+
+TODAY_BP_EMPTY_TEMPLATE: 📭 **{username}** has no new best scores in the last 24 hours.
