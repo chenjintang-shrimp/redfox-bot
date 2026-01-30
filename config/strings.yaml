@@ -1,0 +1,96 @@
+# 用户相关模板
+USER_INFO_TEMPLATE: |
+  User info for {username}:
+  id: {id}
+  playmode: {playmode}
+  pp: {pp}
+  global rank: #{global_rank}
+
+USER_QUERY_ERROR_TEMPLATE: |
+  Error querying user:
+  {error_msg}
+
+USER_BIND_EXISTING_TEMPLATE: |
+  You have already binded to osu user {username}
+  If you want to change it, please unbind first.
+
+USER_BIND_SUCCESS_TEMPLATE: Successfully binded to osu user {username}
+
+USER_UNBIND_SUCCESS_TEMPLATE: Successfully unbound your osu account from our bot.
+
+USER_NOT_BOUND_TEMPLATE: |
+  {user} did NOT bind an osu account to our bot.
+
+USER_NOT_FOUND_TEMPLATE: User not found! Please check the username.
+
+# 渲染器错误
+RENDERER_ERROR_TEMPLATE: |
+  Error occured in renderer:
+  {error_msg}
+
+# 成绩相关模板
+SCORE_NOT_FOUND_TEMPLATE: User {username} did not play beatmap {beatmap_id}.
+
+SCORE_QUERY_ERROR_TEMPLATE: |
+  Error querying score:
+  {error_msg}
+
+SCORES_LIST_HEADER_TEMPLATE: |
+  📊 **{username}**'s scores on **{beatmap_title}** [{beatmap_version}]🎵 {beatmap_artist} | ⭐ {beatmap_stars:.2f}★ | 🎮 {beatmap_mode}
+  ━━━━━━━━━━━━━━━━━━━━━━
+
+SCORES_LIST_ITEM_TEMPLATE: |
+  #{index:<2} │ {rank:<6} │ {total_score:>10} │ {accuracy:>7} │ {max_combo:>4}x │ {pp:>7.2f}pp
+       └─ 🎯 {mods} │ 📅 {created_at}
+
+SCORES_LIST_FOOTER_TEMPLATE: |
+  ━━━━━━━━━━━━━━━━━━━━━━
+  📄 Page {current_page}/{total_pages} | Total: {total_scores} scores
+
+SCORES_LIST_EMPTY_TEMPLATE: 📭 **{username}** has no scores on this beatmap.
+
+# 用户成绩列表模板
+USER_SCORES_LIST_HEADER_TEMPLATE: |
+  📊 **{username}**'s {type} scores
+  ━━━━━━━━━━━━━━━━━━━━━━
+
+USER_SCORES_LIST_ITEM_TEMPLATE: |
+  #{index:<2} │ {rank:<6} │ {pp:>7.2f}pp │ {accuracy:>7}
+       └─ 🎵 {beatmap_title} [{beatmap_version}] 
+       └─ 🎯 {mods} │ 📅 {created_at}
+
+USER_SCORE_SINGLE_TEMPLATE: |
+  📊 **{username}**'s {type} score on **{beatmap_title}** [{beatmap_version}]
+  🎵 {beatmap_artist} | ⭐ {beatmap_stars:.2f}★ | 🎮 {beatmap_mode}
+  ━━━━━━━━━━━━━━━━━━━━━━
+  {rank_emoji} **{rank}** │ {pp}pp │ {accuracy}
+  🎯 {mods} │ x{max_combo}/{max_combo_beatmap}
+  🏅 Score: {total_score} │ 📅 {created_at}
+
+  🔗 [Beatmap]({beatmap_url})
+
+USER_SCORES_EMPTY_TEMPLATE: 📭 **{username}** has no {type} scores.
+
+# 评级 emoji
+RANK_EMOJIS:
+  XH: 🏆 XH
+  X: 🥇 X
+  SH: ✨ SH
+  S: ⭐ S
+  A: 🟢 A
+  B: 🔵 B
+  C: 🟡 C
+  D: 🔴 D
+  F: 💀 F
+
+# 谱面信息模板
+BEATMAP_INFO_TEMPLATE: |
+  🎵 **{title}** [{version}]
+  👤 Artist: {artist}
+  ✍️ Creator: {creator}
+  ⭐ Stars: {stars:.2f}★ | 🕒 Length: {length}
+  💿 Status: {status} | 💓 BPM: {bpm}
+  📊 CS: {cs} | AR: {ar} | OD: {od} | HP: {hp}
+  🔗 [Link]({url})
+
+BEATMAP_NOT_FOUND_TEMPLATE: ❌ Beatmap not found! Please check the beatmap ID.

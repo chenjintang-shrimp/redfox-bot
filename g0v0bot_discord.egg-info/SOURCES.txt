@@ -21,5 +21,7 @@ renderer/user.py
 utils/__init__.py
 utils/caches.py
 utils/logger.py
+utils/scheduler.py
+utils/scheduler_registry.py
 utils/strings.py
 utils/variable.py
