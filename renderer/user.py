@@ -1,33 +1,34 @@
-from backend.user import bind_user, get_user_info, unbind_user
-from renderer.renderer_template import renderer
-from utils.strings import format_template
+from typing import TYPE_CHECKING
+
+from minifilters import apply_minifilter
+from renderer.skin_loader import render_template
+from utils.html2image import html_to_image
+
+if TYPE_CHECKING:
+    from playwright.async_api import Browser
 
 
-@renderer
-async def render_user_info(username: str):
+async def render_user_card(
+    browser: "Browser",
+    data: dict,
+    skin: str = "default",
+) -> bytes:
     """
-    获取用户信息并渲染
-    """
-    user_info = await get_user_info(username)
-    return format_template("USER_INFO_TEMPLATE", user_info)
+    渲染用户卡片为图片
 
+    Args:
+        browser: Playwright Browser 实例（外部传入，复用）
+        data: API 返回的用户数据
+        skin: 皮肤名称，默认 "default"
 
-@renderer
-async def render_unbinding_user(discord_id: int):
+    Returns:
+        PNG 图片字节
     """
-    解绑用户并渲染结果
-    """
-    deleted = await unbind_user(discord_id)
-    if deleted:
-        return format_template("USER_UNBIND_SUCCESS_TEMPLATE")
-    else:
-        return format_template("USER_NOT_BOUND_TEMPLATE", {"user": "You"})
+    # 1. 应用 minifilter（如果有）
+    processed = apply_minifilter("user_card", data)
 
+    # 2. 渲染 HTML 模板
+    html = render_template(skin, "user_card", processed)
 
-@renderer
-async def render_binding_user(discord_id: int, username: str):
-    """
-    绑定用户并渲染结果
-    """
-    await bind_user(discord_id, username)
-    return format_template("USER_BIND_SUCCESS_TEMPLATE", {"username": username})
+    # 3. 转换为图片
+    return await html_to_image(browser, html, width=800, height=400)
