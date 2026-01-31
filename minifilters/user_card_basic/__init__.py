@@ -1,12 +1,12 @@
-from minifilters import minifilter
+"""
+基础用户卡片 minifilter
+格式化基础统计数据
+"""
 
 
-@minifilter("user_card")
 def process(data: dict) -> dict:
     """
-    用户卡片数据加工
-
-    添加格式化字段供模板使用
+    基础格式化：PP、排名、游戏时间
     """
     statistics = data.get("statistics") or {}
 

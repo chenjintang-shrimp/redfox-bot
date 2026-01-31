@@ -8,28 +8,12 @@ from utils.strings import format_template
 logger = get_logger("renderer.user")
 
 
-def _apply_minifilter_if_exists(template_name: str, data: dict) -> dict:
-    """
-    如果 minifilters 模块存在，应用 minifilter
-    不存在则直接返回原始数据
-    """
-    try:
-        from minifilters import apply_minifilter
-        logger.info(f"[renderer] 开始应用 minifilter: {template_name}")
-        result = apply_minifilter(template_name, data)
-        logger.info(f"[renderer] minifilter 应用完成: {template_name}")
-        return result
-    except ImportError as e:
-        logger.warning(f"[renderer] minifilters 模块未找到: {e}")
-        return data
-
-
 # ============ 原有的文字渲染 API ============
 
-@renderer
+@renderer()
 async def render_user_info(username: str) -> str:
     """
-    获取用户信息
+    获取用户信息（文字版）
 
     Args:
         username: osu!用户名
@@ -41,7 +25,7 @@ async def render_user_info(username: str) -> str:
     return format_template("USER_INFO_TEMPLATE", user_info)
 
 
-@renderer
+@renderer()
 async def render_unbinding_user(discord_id: int) -> str:
     """
     解绑用户
@@ -59,7 +43,7 @@ async def render_unbinding_user(discord_id: int) -> str:
         return format_template("USER_NOT_BOUND_TEMPLATE", {"user": "You"})
 
 
-@renderer
+@renderer()
 async def render_binding_user(discord_id: int, username: str) -> str:
     """
     绑定用户
@@ -77,13 +61,15 @@ async def render_binding_user(discord_id: int, username: str) -> str:
 
 # ============ 新的图片渲染 API ============
 
-@renderer
+@renderer("user_card")
 async def render_user_card_image(
     data: dict,
     skin: str = "default",
 ) -> bytes:
     """
     渲染用户卡片为图片
+
+    会自动应用所有声明了 hooks: [user_card] 的 minifilter
 
     Args:
         data: API 返回的用户数据
@@ -93,19 +79,13 @@ async def render_user_card_image(
         PNG 图片字节
     """
     logger.info(f"[render_user_card_image] 开始渲染，skin={skin}")
-    logger.debug(f"[render_user_card_image] 输入数据 keys: {list(data.keys())}")
+    logger.debug(f"[render_user_card_image] 数据 keys: {list(data.keys())}")
 
-    # 1. 应用 minifilter（如果存在）
-    processed = _apply_minifilter_if_exists("user_card", data)
-    logger.debug(f"[render_user_card_image] minifilter 后数据 keys: {list(processed.keys())}")
-
-    # 2. 渲染 HTML 模板
-    logger.info(f"[render_user_card_image] 渲染模板: user_card (skin={skin})")
-    html = render_skin_template(skin, "user_card", processed)
+    # 渲染 HTML 模板（数据已经被 minifilter 处理过）
+    html = render_skin_template(skin, "user_card", data)
     logger.debug(f"[render_user_card_image] HTML 长度: {len(html)} chars")
 
-    # 3. 转换为图片（使用全局 browser）
-    logger.info("[render_user_card_image] 开始转换 HTML 到图片")
+    # 转换为图片
     image_bytes = await html_to_image(html, width=800, height=400)
     logger.info(f"[render_user_card_image] 图片生成完成，大小: {len(image_bytes)} bytes")
 
@@ -115,6 +95,8 @@ async def render_user_card_image(
 def render_user_card_text(data: dict) -> str:
     """
     渲染用户卡片为文字（使用原有模板）
+
+    注意：此函数不使用 @renderer 装饰器，也不应用 minifilter
 
     Args:
         data: API 返回的用户数据
