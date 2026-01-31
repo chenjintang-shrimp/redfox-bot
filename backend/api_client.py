@@ -69,10 +69,11 @@ class OAuth2Handler:
             expires_at = time.time() + expires_in
 
             # 缓存 token
-            await set_cache(self._cache_key, {
-                "token": token,
-                "expires_at": expires_at
-            }, ttl=expires_in)
+            await set_cache(
+                self._cache_key,
+                {"token": token, "expires_at": expires_at},
+                ttl=expires_in,
+            )
 
             self.logger.info(f"Token refreshed successfully. Expires in {expires_in}s")
             return token

@@ -398,9 +398,7 @@ def _is_today_score(score: Dict[str, Any]) -> bool:
 
 
 @renderer
-async def render_user_today_bp(
-    user_id: int, page: int = 1, limit: int = 100
-) -> str:
+async def render_user_today_bp(user_id: int, page: int = 1, limit: int = 100) -> str:
     """
     渲染用户今日（24小时内）刷新的BP
 
@@ -413,24 +411,18 @@ async def render_user_today_bp(
         格式化后的今日BP列表字符串
     """
     # 获取用户的best成绩
-    scores = await get_user_scores(
-        user_id, "best", include_fails=False, limit=limit
-    )
+    scores = await get_user_scores(user_id, "best", include_fails=False, limit=limit)
     user_info = await get_user_info(user_id)
     username = user_info.get("username", "Unknown")
 
     if not scores:
-        return format_template(
-            "TODAY_BP_EMPTY_TEMPLATE", username=username
-        )
+        return format_template("TODAY_BP_EMPTY_TEMPLATE", username=username)
 
     # 过滤24小时内的成绩
     today_scores = [score for score in scores if _is_today_score(score)]
 
     if not today_scores:
-        return format_template(
-            "TODAY_BP_EMPTY_TEMPLATE", username=username
-        )
+        return format_template("TODAY_BP_EMPTY_TEMPLATE", username=username)
 
     total_scores = len(today_scores)
     start_idx, end_idx, total_pages = _calculate_pagination(total_scores, page)
@@ -455,9 +447,7 @@ async def render_user_today_bp(
     return "\n".join(lines)
 
 
-async def get_today_bp_page_count(
-    user_id: int, limit: int = 100
-) -> int:
+async def get_today_bp_page_count(user_id: int, limit: int = 100) -> int:
     """
     获取今日BP的总页数
 

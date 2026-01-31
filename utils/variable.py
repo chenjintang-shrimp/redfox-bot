@@ -12,7 +12,9 @@ def _load_config() -> dict:
 
     if not config_path.exists():
         get_logger("config").error(f"配置文件不存在: {config_path}")
-        get_logger("config").error("请复制 config/config.example.yaml 为 config/config.yaml 并填写配置")
+        get_logger("config").error(
+            "请复制 config/config.example.yaml 为 config/config.yaml 并填写配置"
+        )
         return {}
 
     with open(config_path, "r", encoding="utf-8") as f:

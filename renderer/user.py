@@ -1,6 +1,7 @@
 from backend.user import bind_user, get_user_info, unbind_user
 from renderer.renderer_template import renderer
 from renderer.skin_loader import render_template as render_skin_template
+from utils.flt_mgr import apply_minifilters
 from utils.html2image import html_to_image
 from utils.logger import get_logger
 from utils.strings import format_template
@@ -10,7 +11,8 @@ logger = get_logger("renderer.user")
 
 # ============ 原有的文字渲染 API ============
 
-@renderer()
+
+@renderer
 async def render_user_info(username: str) -> str:
     """
     获取用户信息（文字版）
@@ -25,7 +27,7 @@ async def render_user_info(username: str) -> str:
     return format_template("USER_INFO_TEMPLATE", user_info)
 
 
-@renderer()
+@renderer
 async def render_unbinding_user(discord_id: int) -> str:
     """
     解绑用户
@@ -43,7 +45,7 @@ async def render_unbinding_user(discord_id: int) -> str:
         return format_template("USER_NOT_BOUND_TEMPLATE", {"user": "You"})
 
 
-@renderer()
+@renderer
 async def render_binding_user(discord_id: int, username: str) -> str:
     """
     绑定用户
@@ -61,15 +63,14 @@ async def render_binding_user(discord_id: int, username: str) -> str:
 
 # ============ 新的图片渲染 API ============
 
-@renderer("user_card")
+
+@renderer
 async def render_user_card_image(
     data: dict,
     skin: str = "default",
 ) -> bytes:
     """
     渲染用户卡片为图片
-
-    会自动应用所有声明了 hooks: [user_card] 的 minifilter
 
     Args:
         data: API 返回的用户数据
@@ -79,15 +80,19 @@ async def render_user_card_image(
         PNG 图片字节
     """
     logger.info(f"[render_user_card_image] 开始渲染，skin={skin}")
-    logger.debug(f"[render_user_card_image] 数据 keys: {list(data.keys())}")
 
-    # 渲染 HTML 模板（数据已经被 minifilter 处理过）
-    html = render_skin_template(skin, "user_card", data)
+    # 1. 应用 minifilter（数据交给 Jinja2 前最后一步）
+    processed_data = apply_minifilters("user_card", data)
+
+    # 2. 渲染 HTML 模板
+    html = render_skin_template(skin, "user_card", processed_data)
     logger.debug(f"[render_user_card_image] HTML 长度: {len(html)} chars")
 
-    # 转换为图片
+    # 3. 转换为图片
     image_bytes = await html_to_image(html, width=800, height=400)
-    logger.info(f"[render_user_card_image] 图片生成完成，大小: {len(image_bytes)} bytes")
+    logger.info(
+        f"[render_user_card_image] 图片生成完成，大小: {len(image_bytes)} bytes"
+    )
 
     return image_bytes
 

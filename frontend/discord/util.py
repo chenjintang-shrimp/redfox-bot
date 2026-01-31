@@ -5,6 +5,7 @@ import re
 
 from backend.database import get_osu_user_by_discord_id
 
+
 async def resolve_username(ctx: Context, user_arg: str | User | Member | None) -> str:
     target_discord_id: int = 0
     if user_arg is None:

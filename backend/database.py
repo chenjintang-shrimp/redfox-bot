@@ -52,10 +52,10 @@ async def delete_osu_user_by_discord_id(discord_id: int) -> bool:
         statement = select(OsuUser).where(OsuUser.discord_id == discord_id)
         results = await session.exec(statement)
         user = results.first()
-        
+
         if user is None:
             return False
-            
+
         await session.delete(user)
         await session.commit()
         return True

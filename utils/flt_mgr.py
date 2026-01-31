@@ -99,7 +99,9 @@ class FltMgr:
                 self._hooks[hook] = []
             self._hooks[hook].append(name)
 
-        logger.info(f"[FltMgr] 已加载: {name} (hooks: {info.hooks}, depends: {info.depends})")
+        logger.info(
+            f"[FltMgr] 已加载: {name} (hooks: {info.hooks}, depends: {info.depends})"
+        )
 
     def build_chains(self) -> None:
         """
@@ -112,10 +114,14 @@ class FltMgr:
             try:
                 sorted_names = self._topological_sort(minifilter_names)
                 self._sorted_chains[hook_name] = sorted_names
-                logger.info(f"[FltMgr] 执行链 [{hook_name}]: {' -> '.join(sorted_names)}")
+                logger.info(
+                    f"[FltMgr] 执行链 [{hook_name}]: {' -> '.join(sorted_names)}"
+                )
             except ValueError as e:
                 logger.error(f"[FltMgr] 循环依赖 detected [{hook_name}]: {e}")
-                logger.error(f"[FltMgr] 禁用该 hook 的所有 minifilter: {minifilter_names}")
+                logger.error(
+                    f"[FltMgr] 禁用该 hook 的所有 minifilter: {minifilter_names}"
+                )
                 self._sorted_chains[hook_name] = []  # 空链 = 禁用
 
     def _topological_sort(self, names: list[str]) -> list[str]:
@@ -140,11 +146,11 @@ class FltMgr:
             valid_deps = [d for d in info.depends if d in names]
             subgraph[name] = set(valid_deps)
 
-        # 计算入度
+        # 计算入度（节点有多少依赖未满足）
         in_degree = {name: 0 for name in names}
-        for deps in subgraph.values():
-            for dep in deps:
-                in_degree[dep] += 1
+        for name, deps in subgraph.items():
+            # name 的入度 = name 有多少个依赖
+            in_degree[name] = len(deps)
 
         # 找入度为0的节点
         queue = deque([name for name in names if in_degree[name] == 0])

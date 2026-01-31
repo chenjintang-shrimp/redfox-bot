@@ -4,10 +4,10 @@ HTML 转图片工具 - 全局共享 Browser 实例
 使用方式:
     # 应用启动时初始化
     await init_browser()
-    
+
     # 任意地方调用（自动使用全局 browser）
     image = await html_to_image(html)
-    
+
     # 应用关闭时清理
     await close_browser()
 """

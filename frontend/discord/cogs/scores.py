@@ -232,7 +232,8 @@ class Scores(Cog):
             await ctx.send(content=content)
 
     @commands.hybrid_command(
-        name="t", description="Query your best scores achieved in the last 24 hours (Today's BP)"
+        name="t",
+        description="Query your best scores achieved in the last 24 hours (Today's BP)",
     )
     @app_commands.describe(user="osu! username or mention")
     async def t(self, ctx: commands.Context, user: str | None = None):

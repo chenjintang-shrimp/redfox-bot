@@ -27,7 +27,9 @@ class User(commands.Cog):
         msg = await render_user_info(username)
         await ctx.send(msg)
 
-    @commands.hybrid_command(name="uinfo", description="Query User info with image card.")
+    @commands.hybrid_command(
+        name="uinfo", description="Query User info with image card."
+    )
     @app_commands.describe(user="osu!username or @mention")
     async def uinfo(self, ctx: commands.Context, user: str | None = None):
         """查询用户信息（图片卡片版）"""

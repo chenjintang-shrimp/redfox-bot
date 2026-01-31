@@ -11,6 +11,7 @@ logger = get_logger("scheduler_registry")
 @dataclass
 class TaskDef:
     """任务定义"""
+
     name: str
     func: Callable
     interval: int
@@ -31,16 +32,14 @@ def scheduled_task(name: str, interval: int, *args, **kwargs):
         async def my_task():
             pass
     """
+
     def decorator(func: Callable):
-        _scheduled_tasks.append(TaskDef(
-            name=name,
-            func=func,
-            interval=interval,
-            args=args,
-            kwargs=kwargs
-        ))
+        _scheduled_tasks.append(
+            TaskDef(name=name, func=func, interval=interval, args=args, kwargs=kwargs)
+        )
         logger.debug(f"已注册定时任务: {name}, 间隔: {interval}s")
         return func
+
     return decorator
 
 

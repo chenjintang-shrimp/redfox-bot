@@ -13,7 +13,7 @@ logger.add(
     colorize=True,
     format="<green>{time:YYYY-MM-DD HH:mm:ss}</green> "
     "<level>{level}</level> "
-    "<cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> "
+    "<cyan>{extra[module]}</cyan>.<cyan>{function}</cyan>:<cyan>{line}</cyan> "
     "- <level>{message}</level>",
 )
 
@@ -24,7 +24,7 @@ logger.add(
     retention="7 days",
     encoding="utf-8",
     enqueue=True,
-    format="{time:YYYY-MM-DD HH:mm:ss} | {level} | {name}:{function}:{line} - {message}",
+    format="{time:YYYY-MM-DD HH:mm:ss} | {level} | {extra[module]}.{function}.{line} - {message}",
 )
 
 
