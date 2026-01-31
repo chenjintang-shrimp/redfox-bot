@@ -3,7 +3,7 @@ import base64
 from typing import Optional, Dict, Any
 from httpx import AsyncClient, Response
 from utils.logger import get_logger
-from utils.scheduler_registry import register
+from utils.scheduler_registry import scheduled_task
 from utils.variable import API_URL, OAUTH_APP_ID, OAUTH_SECRET, OAUTH_TOKEN_TTL
 from utils.caches import get_cache, set_cache
 
@@ -91,7 +91,7 @@ def _get_global_oauth_handler() -> OAuth2Handler:
     return _oauth_handler
 
 
-@register(name="refresh_token", interval=OAUTH_TOKEN_TTL // 2)
+@scheduled_task(name="refresh_token", interval=OAUTH_TOKEN_TTL // 2)
 async def scheduled_refresh_token():
     """
     定时刷新 OAuth token

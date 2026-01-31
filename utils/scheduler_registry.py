@@ -22,12 +22,12 @@ class TaskDef:
 _scheduled_tasks: list[TaskDef] = []
 
 
-def register(name: str, interval: int, *args, **kwargs):
+def scheduled_task(name: str, interval: int, *args, **kwargs):
     """
     装饰器，用于注册定时任务
 
     用法:
-        @register("my_task", interval=300)
+        @scheduled_task("my_task", interval=300)
         async def my_task():
             pass
     """
