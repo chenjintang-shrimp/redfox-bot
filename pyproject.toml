@@ -27,7 +27,7 @@ qq-bot = "frontend.qq.main:main"
 package = true
 
 [tool.setuptools]
-packages = ["frontend", "backend", "utils", "renderer"]
+packages = ["frontend", "backend", "utils", "renderer", "minifilters"]
 
 [dependency-groups]
 dev = [
