@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            width: 800px;
+            height: 400px;
+            background: linear-gradient(135deg, #2a2a2a, #1a1a1a);
+            font-family: 'Segoe UI', sans-serif;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            padding: 30px;
+        }
+
+        .card {
+            display: flex;
+            gap: 20px;
+            width: 100%;
+        }
+
+        .beatmap-cover {
+            width: 300px;
+            height: 300px;
+            border-radius: 12px;
+            object-fit: cover;
+            border: 2px solid #ff66aa;
+        }
+
+        .info {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .header {
+            margin-bottom: 15px;
+        }
+
+        .title {
+            font-size: 28px;
+            font-weight: bold;
+            color: #ff66aa;
+            margin-bottom: 5px;
+        }
+
+        .artist {
+            font-size: 18px;
+            color: #888;
+            margin-bottom: 10px;
+        }
+
+        .creator {
+            font-size: 14px;
+            color: #aaa;
+        }
+
+        .difficulty {
+            font-size: 20px;
+            color: #66ccff;
+            margin-bottom: 15px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .stat {
+            text-align: center;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+        }
+
+        .stat-value {
+            font-size: 20px;
+            font-weight: bold;
+            color: #ff66aa;
+        }
+
+        .stat-label {
+            font-size: 11px;
+            color: #888;
+            text-transform: uppercase;
+            margin-top: 4px;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .status-ranked {
+            background: #66ff66;
+            color: #1a1a1a;
+        }
+
+        .status-loved {
+            background: #ff66aa;
+            color: #fff;
+        }
+
+        .status-qualified {
+            background: #66ccff;
+            color: #1a1a1a;
+        }
+
+        .status-pending {
+            background: #888;
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <img class="beatmap-cover" src="https://assets.ppy.sh/beatmaps/{{ beatmapset.id }}/covers/cover.jpg" alt="cover">
+        <div class="info">
+            <div class="header">
+                <div class="title">{{ beatmapset.title }}</div>
+                <div class="artist">{{ beatmapset.artist }}</div>
+                <div class="creator">Mapped by {{ beatmapset.creator }}</div>
+            </div>
+            <div class="difficulty">[{{ version }}] ★{{ difficulty_rating }}</div>
+            <div class="stats-grid">
+                <div class="stat">
+                    <div class="stat-value">{{ cs | round(1) }}</div>
+                    <div class="stat-label">CS</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value">{{ ar | round(1) }}</div>
+                    <div class="stat-label">AR</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value">{{ accuracy | round(1) }}</div>
+                    <div class="stat-label">OD</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value">{{ drain | round(1) }}</div>
+                    <div class="stat-label">HP</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value">{{ bpm | int }}</div>
+                    <div class="stat-label">BPM</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value">{{ total_length // 60 }}:{{ "%02d" | format(total_length % 60) }}</div>
+                    <div class="stat-label">Length</div>
+                </div>
+            </div>
+            <div>
+                <span class="status status-{{ status }}">{{ status }}</span>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

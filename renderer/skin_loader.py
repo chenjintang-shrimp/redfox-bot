@@ -1,6 +1,8 @@
 from pathlib import Path
 
+from backend.expections import NoSkinAvailableError
 from jinja2 import Environment, BaseLoader
+from utils.flt_mgr import apply_minifilters_async
 from utils.logger import get_logger
 from utils.variable import working_dir
 
@@ -50,7 +52,7 @@ def find_template(skin: str, template_name: str) -> Path | None:
     return None
 
 
-def render_template(skin: str, template_name: str, data: dict) -> str:
+async def render_template(skin: str, template_name: str, data: dict) -> str:
     """
     渲染模板
 
@@ -63,13 +65,16 @@ def render_template(skin: str, template_name: str, data: dict) -> str:
         渲染后的 HTML 字符串
 
     Raises:
-        FileNotFoundError: 模板不存在
+        NoSkinAvailableError: 模板不存在（包括 fallback 到 default 也不存在）
     """
     template_path = find_template(skin, template_name)
     if template_path is None:
-        raise FileNotFoundError(f"模板不存在: {template_name} (skin: {skin})")
+        raise NoSkinAvailableError(skin, template_name)
+
+    # 应用 minifilters 处理数据（异步版本）
+    processed_data = await apply_minifilters_async(template_name, data)
 
     template_str = template_path.read_text(encoding="utf-8")
     template = _jinja_env.from_string(template_str)
 
-    return template.render(**data)
+    return template.render(**processed_data)

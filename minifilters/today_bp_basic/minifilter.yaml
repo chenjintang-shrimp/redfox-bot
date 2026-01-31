@@ -1,0 +1,8 @@
+name: today_bp_basic
+version: 1.0.0
+description: 确保今日BP列表中的每个成绩都包含必要的 beatmap 和 beatmapset 嵌套对象
+
+hooks:
+  - today_bp
+
+depends: []

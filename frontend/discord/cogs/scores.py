@@ -3,6 +3,10 @@ from discord import app_commands
 from discord.ext import commands
 from discord.ext.commands import Cog
 
+import io
+
+from discord import File
+
 from frontend.discord.util import resolve_username
 from backend.user import get_user_info
 from renderer.scores import (
@@ -13,6 +17,10 @@ from renderer.scores import (
     get_user_scores_page_count,
     render_user_today_bp,
     get_today_bp_page_count,
+    render_user_beatmap_score_card,
+    render_user_recent_score_card,
+    render_user_score_list_image,
+    render_user_today_bp_image,
 )
 from utils.logger import get_logger
 
@@ -277,6 +285,103 @@ class Scores(Cog):
         # type=recent, include_fails=True, limit=1
         content = await render_user_recent_score(user_id, "recent", include_fails=True)
         await ctx.send(content=content)
+
+    # ============ 图片版本命令 ============
+
+    @commands.hybrid_command(
+        name="uss", description="Query your all scores on a beatmap (image card)"
+    )
+    @app_commands.describe(beatmap_id="beatmap id")
+    async def uss(self, ctx: commands.Context, beatmap_id: int):
+        """查询谱面成绩（图片卡片版）"""
+        await ctx.defer()
+        username = await resolve_username(ctx, None)
+        user_info = await get_user_info(username)
+        user_id = user_info["id"]
+
+        # 调用 renderer，由 renderer 负责获取数据和渲染
+        image = await render_user_beatmap_score_card(user_id, beatmap_id)
+        await ctx.send(file=File(io.BytesIO(image), f"score_{beatmap_id}.png"))
+
+    @commands.hybrid_command(
+        name="ups", description="Query your recent passed scores with image (24h)"
+    )
+    @app_commands.describe(user="osu! username or mention")
+    async def ups(self, ctx: commands.Context, user: str | None = None):
+        """查询最近通过成绩（图片版）"""
+        await ctx.defer()
+        username = await resolve_username(ctx, user)
+        user_info = await get_user_info(username)
+        user_id = user_info["id"]
+
+        # 调用 renderer，由 renderer 负责获取数据和渲染
+        image = await render_user_score_list_image(
+            user_id, username, score_type="recent", include_fails=False, limit=5
+        )
+        await ctx.send(file=File(io.BytesIO(image), f"{username}_ps.png"))
+
+    @commands.hybrid_command(
+        name="urs", description="Query your recent scores with image (24h, including fails)"
+    )
+    @app_commands.describe(user="osu! username or mention")
+    async def urs(self, ctx: commands.Context, user: str | None = None):
+        """查询最近成绩（图片版，包含失败）"""
+        await ctx.defer()
+        username = await resolve_username(ctx, user)
+        user_info = await get_user_info(username)
+        user_id = user_info["id"]
+
+        # 调用 renderer，由 renderer 负责获取数据和渲染
+        image = await render_user_score_list_image(
+            user_id, username, score_type="recent", include_fails=True, limit=5
+        )
+        await ctx.send(file=File(io.BytesIO(image), f"{username}_rs.png"))
+
+    @commands.hybrid_command(
+        name="ut",
+        description="Query your best scores in the last 24 hours with image (Today's BP)",
+    )
+    @app_commands.describe(user="osu! username or mention")
+    async def ut(self, ctx: commands.Context, user: str | None = None):
+        """查询今日BP（图片版）"""
+        await ctx.defer()
+        username = await resolve_username(ctx, user)
+        user_info = await get_user_info(username)
+        user_id = user_info["id"]
+
+        # 调用 renderer，由 renderer 负责获取数据和渲染
+        image = await render_user_today_bp_image(user_id, username)
+        await ctx.send(file=File(io.BytesIO(image), f"{username}_today_bp.png"))
+
+    @commands.hybrid_command(
+        name="up", description="Query your latest passed score with image"
+    )
+    @app_commands.describe(user="osu! username or mention")
+    async def up(self, ctx: commands.Context, user: str | None = None):
+        """查询最新通过成绩（图片版）"""
+        await ctx.defer()
+        username = await resolve_username(ctx, user)
+        user_info = await get_user_info(username)
+        user_id = user_info["id"]
+
+        # 调用 renderer，由 renderer 负责获取数据和渲染
+        image = await render_user_recent_score_card(user_id, include_fails=False)
+        await ctx.send(file=File(io.BytesIO(image), f"{username}_p.png"))
+
+    @commands.hybrid_command(
+        name="ur", description="Query your latest score with image (including fails)"
+    )
+    @app_commands.describe(user="osu! username or mention")
+    async def ur(self, ctx: commands.Context, user: str | None = None):
+        """查询最新成绩（图片版，包含失败）"""
+        await ctx.defer()
+        username = await resolve_username(ctx, user)
+        user_info = await get_user_info(username)
+        user_id = user_info["id"]
+
+        # 调用 renderer，由 renderer 负责获取数据和渲染
+        image = await render_user_recent_score_card(user_id, include_fails=True)
+        await ctx.send(file=File(io.BytesIO(image), f"{username}_r.png"))
 
 
 async def setup(bot: commands.Bot):

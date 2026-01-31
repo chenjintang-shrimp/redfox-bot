@@ -1,0 +1,8 @@
+name: score_card_basic
+version: 1.0.0
+description: 确保成绩卡片包含必要的 beatmap 和 beatmapset 嵌套对象
+
+hooks:
+  - score_card
+
+depends: []

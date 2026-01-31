@@ -6,10 +6,11 @@ minifilter 管理器，负责拓扑排序和依赖解析
 """
 
 import importlib
+import inspect
 from collections import deque
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Callable
+from typing import Any, Callable
 
 import yaml
 
@@ -29,7 +30,7 @@ class MinifilterInfo:
     hooks: list[str]  # 要 hook 的 renderer 名称
     depends: list[str]  # 依赖的其他 minifilter
     module_path: str  # 模块路径，如 "minifilters.user_card_basic"
-    process_func: Callable[[dict], dict] | None = None  # 加载后填充
+    process_func: Callable[[dict], Any] | None = None  # 加载后填充，支持同步或异步
 
 
 class FltMgr:
@@ -46,7 +47,7 @@ class FltMgr:
         self._hooks: dict[str, list[str]] = {}  # hook_name -> [minifilter_names]
         self._sorted_chains: dict[str, list[str]] = {}  # hook_name -> [sorted_names]
         # 预编译的执行链: hook_name -> 可直接调用的函数列表
-        self._compiled_chains: dict[str, list[Callable[[dict], dict]]] = {}
+        self._compiled_chains: dict[str, list[Callable[[dict], Any]]] = {}
 
     def scan(self, package_path: Path | None = None) -> None:
         """
@@ -209,7 +210,7 @@ class FltMgr:
 
     def apply(self, hook_name: str, data: dict) -> dict:
         """
-        应用指定 hook 的所有 minifilter（使用预编译链）
+        应用指定 hook 的所有 minifilter（使用预编译链）- 同步版本
 
         Args:
             hook_name: renderer 名称
@@ -234,11 +235,42 @@ class FltMgr:
 
         return result
 
+    async def apply_async(self, hook_name: str, data: dict) -> dict:
+        """
+        应用指定 hook 的所有 minifilter（使用预编译链）- 异步版本
+
+        Args:
+            hook_name: renderer 名称
+            data: 原始数据
+
+        Returns:
+            处理后的数据
+        """
+        chain = self._compiled_chains.get(hook_name, [])
+        if not chain:
+            return data
+
+        result = data.copy()
+        for process_func in chain:
+            try:
+                # 检查函数是否是异步的
+                if inspect.iscoroutinefunction(process_func):
+                    result = await process_func(result)
+                else:
+                    result = process_func(result)
+            except Exception as e:
+                # 获取函数名用于日志
+                func_name = getattr(process_func, "__name__", "unknown")
+                logger.error(f"[FltMgr] 执行失败 {func_name}: {e}")
+                # 继续执行下一个，不中断
+
+        return result
+
     def get_chain(self, hook_name: str) -> list[str]:
         """获取指定 hook 的执行链（名称列表）"""
         return self._sorted_chains.get(hook_name, [])
 
-    def get_compiled_chain(self, hook_name: str) -> list[Callable[[dict], dict]]:
+    def get_compiled_chain(self, hook_name: str) -> list[Callable[[dict], Any]]:
         """获取指定 hook 的预编译链（函数列表）"""
         return self._compiled_chains.get(hook_name, [])
 
@@ -261,7 +293,7 @@ def get_flt_mgr() -> FltMgr:
 
 def apply_minifilters(hook_name: str, data: dict) -> dict:
     """
-    便捷函数：应用指定 hook 的所有 minifilter
+    便捷函数：应用指定 hook 的所有 minifilter（同步版本）
 
     Args:
         hook_name: renderer 名称
@@ -271,6 +303,20 @@ def apply_minifilters(hook_name: str, data: dict) -> dict:
         处理后的数据
     """
     return get_flt_mgr().apply(hook_name, data)
+
+
+async def apply_minifilters_async(hook_name: str, data: dict) -> dict:
+    """
+    便捷函数：应用指定 hook 的所有 minifilter（异步版本）
+
+    Args:
+        hook_name: renderer 名称
+        data: 原始数据
+
+    Returns:
+        处理后的数据
+    """
+    return await get_flt_mgr().apply_async(hook_name, data)
 
 
 def init_flt_mgr() -> FltMgr:

@@ -101,3 +101,8 @@ TODAY_BP_HEADER_TEMPLATE: |
   ━━━━━━━━━━━━━━━━━━━━━━
 
 TODAY_BP_EMPTY_TEMPLATE: 📭 **{{ username }}** has no new best scores in the last 24 hours.
+
+# 皮肤不可用
+NO_SKIN_AVAILABLE_TEMPLATE: |
+  ❌ 没有可用皮肤: {{ skin_name }}/{{ template_name }}
+  请联系管理员添加皮肤，或使用其他功能。

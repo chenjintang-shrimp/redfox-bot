@@ -59,3 +59,7 @@ API_URL = _API_CONFIG.get("url", "https://lazer-api.g0v0.top")
 _CONFIG_FILES = _CONFIG.get("config_files", {})
 STRINGS_FILE = _CONFIG_FILES.get("strings", "config/strings.yaml")
 API_FILE = _CONFIG_FILES.get("api", "config/api.yaml")
+
+# 皮肤配置
+_SKIN_CONFIG = _CONFIG.get("skin", {})
+DEFAULT_SKIN = _SKIN_CONFIG.get("default", "default")

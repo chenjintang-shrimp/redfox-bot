@@ -77,33 +77,26 @@
 </head>
 <body>
     <div class="card">
-        <!-- 使用 API 原始字段 -->
         <img class="avatar" src="{{ avatar_url }}" alt="avatar">
         <div class="info">
-            <!-- 使用 API 原始字段 -->
             <div class="username">{{ username }}</div>
-            <!-- 使用 API 原始字段（带点号访问嵌套对象） -->
             <div class="country">{{ country.name }}</div>
             <div class="stats">
                 <div class="stat">
-                    <!-- 使用 minifilter 加工后的格式化字段 -->
-                    <div class="stat-value">{{ pp_formatted }}</div>
+                    <div class="stat-value">{{ statistics.pp | int }}</div>
                     <div class="stat-label">PP</div>
                 </div>
                 <div class="stat">
-                    <!-- 使用 minifilter 加工后的格式化字段 -->
-                    <div class="stat-value">{{ rank_formatted }}</div>
+                    <div class="stat-value">#{{ statistics.global_rank | default('-') }}</div>
                     <div class="stat-label">Global Rank</div>
                 </div>
                 <div class="stat">
-                    <!-- 使用 minifilter 加工后的格式化字段 -->
-                    <div class="stat-value">{{ country_rank_formatted }}</div>
+                    <div class="stat-value">#{{ statistics.country_rank | default('-') }}</div>
                     <div class="stat-label">Country Rank</div>
                 </div>
                 <div class="stat">
-                    <!-- 使用 minifilter 加工后的格式化字段 -->
-                    <div class="stat-value">{{ play_time_formatted }}</div>
-                    <div class="stat-label">Play Time</div>
+                    <div class="stat-value">{{ statistics.hit_accuracy | round(2) }}%</div>
+                    <div class="stat-label">Accuracy</div>
                 </div>
             </div>
         </div>

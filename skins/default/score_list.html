@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            width: 800px;
+            background: linear-gradient(135deg, #2a2a2a, #1a1a1a);
+            font-family: 'Segoe UI', sans-serif;
+            color: #ffffff;
+            padding: 30px;
+        }
+
+        .header {
+            font-size: 24px;
+            font-weight: bold;
+            color: #ff66aa;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .score-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+
+        .rank-num {
+            font-size: 20px;
+            font-weight: bold;
+            color: #888;
+            width: 30px;
+            text-align: center;
+        }
+
+        .beatmap-info {
+            flex: 1;
+        }
+
+        .title {
+            font-size: 16px;
+            font-weight: bold;
+            color: #fff;
+            margin-bottom: 3px;
+        }
+
+        .difficulty {
+            font-size: 12px;
+            color: #aaa;
+        }
+
+        .stats {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 16px;
+            font-weight: bold;
+            color: #ff66aa;
+        }
+
+        .stat-label {
+            font-size: 10px;
+            color: #666;
+        }
+
+        .grade {
+            font-size: 24px;
+            font-weight: bold;
+            color: #ffd700;
+            width: 40px;
+            text-align: center;
+        }
+
+        .mods {
+            font-size: 12px;
+            color: #66ccff;
+        }
+
+        .page-info {
+            text-align: center;
+            margin-top: 20px;
+            color: #666;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">{{ username }}'s {{ title }}</div>
+    {% for score in scores %}
+    <div class="score-item">
+        <div class="rank-num">#{{ loop.index + (page - 1) * 5 }}</div>
+        <div class="beatmap-info">
+            <div class="title">{{ score.beatmapset.title }}</div>
+            <div class="difficulty">[{{ score.beatmap.version }}] ★{{ score.beatmap.difficulty_rating }}</div>
+        </div>
+        <div class="stats">
+            <div class="stat">
+                <div class="stat-value">{{ score.pp | round(2) }}pp</div>
+                <div class="stat-label">PP</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value">{{ score.accuracy | round(2) }}%</div>
+                <div class="stat-label">Acc</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value">{{ score.max_combo }}x</div>
+                <div class="stat-label">Combo</div>
+            </div>
+        </div>
+        <div class="grade">{{ score.rank }}</div>
+        {% if score.mods %}
+        <div class="mods">{{ score.mods | join(',') }}</div>
+        {% endif %}
+    </div>
+    {% endfor %}
+    <div class="page-info">Page {{ page }} of {{ total_pages }}</div>
+</body>
+</html>

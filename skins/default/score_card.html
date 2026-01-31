@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            width: 800px;
+            height: 300px;
+            background: linear-gradient(135deg, #2a2a2a, #1a1a1a);
+            font-family: 'Segoe UI', sans-serif;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            padding: 30px;
+        }
+
+        .card {
+            display: flex;
+            gap: 20px;
+            width: 100%;
+        }
+
+        .beatmap-cover {
+            width: 200px;
+            height: 200px;
+            border-radius: 12px;
+            object-fit: cover;
+            border: 2px solid #ff66aa;
+        }
+
+        .info {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .header {
+            margin-bottom: 15px;
+        }
+
+        .title {
+            font-size: 24px;
+            font-weight: bold;
+            color: #ff66aa;
+            margin-bottom: 5px;
+        }
+
+        .artist {
+            font-size: 16px;
+            color: #888;
+        }
+
+        .difficulty {
+            font-size: 14px;
+            color: #aaa;
+            margin-top: 5px;
+        }
+
+        .stats {
+            display: flex;
+            gap: 30px;
+            margin-bottom: 15px;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #ff66aa;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #888;
+            text-transform: uppercase;
+            margin-top: 4px;
+        }
+
+        .rank {
+            font-size: 48px;
+            font-weight: bold;
+            color: #ffd700;
+        }
+
+        .mods {
+            font-size: 14px;
+            color: #66ccff;
+            margin-top: 10px;
+        }
+
+        .time {
+            font-size: 12px;
+            color: #666;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <img class="beatmap-cover" src="https://assets.ppy.sh/beatmaps/{{ beatmap.beatmapset_id }}/covers/cover.jpg" alt="cover">
+        <div class="info">
+            <div class="header">
+                <div class="title">{{ beatmapset.title }}</div>
+                <div class="artist">{{ beatmapset.artist }}</div>
+                <div class="difficulty">[{{ beatmap.version }}] ★{{ beatmap.difficulty_rating }}</div>
+            </div>
+            <div class="stats">
+                <div class="stat">
+                    <div class="stat-value">{{ score | default(0) }}</div>
+                    <div class="stat-label">Score</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value">{{ pp | round(2) }}pp</div>
+                    <div class="stat-label">PP</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value">{{ accuracy | round(2) }}%</div>
+                    <div class="stat-label">Accuracy</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value">{{ max_combo }}x</div>
+                    <div class="stat-label">Combo</div>
+                </div>
+                <div class="stat">
+                    <div class="rank">{{ rank }}</div>
+                </div>
+            </div>
+            {% if mods %}
+            <div class="mods">Mods: {{ mods | join(', ') }}</div>
+            {% endif %}
+            <div class="time">{{ created_at }}</div>
+        </div>
+    </div>
+</body>
+</html>

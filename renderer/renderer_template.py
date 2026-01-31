@@ -4,10 +4,11 @@ import traceback
 from typing import Callable, Any
 
 from backend.expections import (
-    UserQueryError,
-    UserNotBindError,
     BindExistError,
+    NoSkinAvailableError,
     ScoreQueryError,
+    UserNotBindError,
+    UserQueryError,
     # 未来加的异常也放这里
 )
 from utils.strings import format_template
@@ -58,6 +59,14 @@ class ExceptionHandler:
             case ScoreQueryError():
                 return format_template(
                     "SCORE_QUERY_ERROR_TEMPLATE", error_msg=e.error_msg
+                )
+
+            # 没有可用皮肤
+            case NoSkinAvailableError():
+                return format_template(
+                    "NO_SKIN_AVAILABLE_TEMPLATE",
+                    skin_name=e.skin_name,
+                    template_name=e.template_name,
                 )
 
             # 兜底：未知异常

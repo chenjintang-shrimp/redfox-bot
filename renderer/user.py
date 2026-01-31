@@ -1,10 +1,10 @@
 from backend.user import bind_user, get_user_info, unbind_user
 from renderer.renderer_template import renderer
 from renderer.skin_loader import render_template as render_skin_template
-from utils.flt_mgr import apply_minifilters
 from utils.html2image import html_to_image
 from utils.logger import get_logger
 from utils.strings import format_template
+from utils.variable import DEFAULT_SKIN
 
 logger = get_logger("renderer.user")
 
@@ -67,25 +67,23 @@ async def render_binding_user(discord_id: int, username: str) -> str:
 @renderer
 async def render_user_card_image(
     data: dict,
-    skin: str = "default",
+    skin: str | None = None,
 ) -> bytes:
     """
     渲染用户卡片为图片
 
     Args:
         data: API 返回的用户数据
-        skin: 皮肤名称，默认 "default"
+        skin: 皮肤名称，默认使用全局配置
 
     Returns:
         PNG 图片字节
     """
+    skin = skin or DEFAULT_SKIN
     logger.info(f"[render_user_card_image] 开始渲染，skin={skin}")
 
-    # 1. 应用 minifilter（数据交给 Jinja2 前最后一步）
-    processed_data = apply_minifilters("user_card", data)
-
-    # 2. 渲染 HTML 模板
-    html = render_skin_template(skin, "user_card", processed_data)
+    # 1. 渲染 HTML 模板（内部会应用 minifilters）
+    html = await render_skin_template(skin, "user_card", data)
     logger.debug(f"[render_user_card_image] HTML 长度: {len(html)} chars")
 
     # 3. 转换为图片
