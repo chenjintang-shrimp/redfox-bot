@@ -171,7 +171,7 @@ class Scores(Cog):
         name="ss", description="Query your all scores on a beatmap"
     )
     @app_commands.describe(beatmap_id="beatmap id")
-    async def scores(self, ctx: commands.Context, beatmap_id: int):
+    async def ss(self, ctx: commands.Context, beatmap_id: int):
         await ctx.defer()
         username = await resolve_username(ctx, None)
         user_info = await get_user_info(username)
@@ -303,6 +303,21 @@ class Scores(Cog):
         image = await render_user_beatmap_score_card(user_id, beatmap_id)
         await ctx.send(file=File(io.BytesIO(image), f"score_{beatmap_id}.png"))
 
+        @commands.hybrid_command(
+            name="uss", description="Query your best score on a beatmap (image card)"
+        )
+        @app_commands.describe(beatmap_id="beatmap id")
+        async def uss(self, ctx: commands.Context, beatmap_id: int):
+            """查询谱面成绩（图片卡片版）"""
+            await ctx.defer()
+            username = await resolve_username(ctx, None)
+            user_info = await get_user_info(username)
+            user_id = user_info["id"]
+
+            # 调用 renderer，由 renderer 负责获取数据和渲染
+            image = await render_user_beatmap_score_card(user_id, beatmap_id)
+            await ctx.send(file=File(io.BytesIO(image), f"score_{beatmap_id}.png"))
+
     @commands.hybrid_command(
         name="ups", description="Query your recent passed scores with image (24h)"
     )
@@ -319,6 +334,7 @@ class Scores(Cog):
             user_id, username, score_type="recent", include_fails=False
         )
         await ctx.send(file=File(io.BytesIO(image), f"{username}_ps.png"))
+    
 
     @commands.hybrid_command(
         name="urs",
@@ -384,20 +400,42 @@ class Scores(Cog):
         image = await render_user_recent_score_card(user_id, include_fails=True)
         await ctx.send(file=File(io.BytesIO(image), f"{username}_r.png"))
 
-    @commands.hybrid_command(name="ub", description="Query your best scores with image")
+    @commands.hybrid_command(
+        name="ub", description="Query your best score with image"
+    )
     @app_commands.describe(user="osu! username or mention")
     async def ub(self, ctx: commands.Context, user: str | None = None):
-        """查询最佳成绩（图片版）"""
+        """查询最佳成绩（图片版，单条）"""
         await ctx.defer()
         username = await resolve_username(ctx, user)
         user_info = await get_user_info(username)
         user_id = user_info["id"]
 
-        # 调用 renderer，由 renderer 负责获取数据和渲染
+        # 调用 renderer，由 renderer 负责获取数据和渲染（只获取1条）
         image = await render_user_score_list_image(
-            user_id, username, score_type="best", include_fails=False
+            user_id, username, score_type="best", include_fails=False, count=1
         )
         await ctx.send(file=File(io.BytesIO(image), f"{username}_best.png"))
+
+    @commands.hybrid_command(
+        name="ubs", description="Query your best scores with image (multiple)"
+    )
+    @app_commands.describe(count="Number of scores to show (default: 20)", user="osu! username or mention")
+    async def ubs(self, ctx: commands.Context, count: int = 20, user: str | None = None):
+        """查询最佳成绩列表（图片版，多条）"""
+        await ctx.defer()
+        username = await resolve_username(ctx, user)
+        user_info = await get_user_info(username)
+        user_id = user_info["id"]
+
+        # 限制最大数量
+        count = min(count, 100)
+
+        # 调用 renderer，由 renderer 负责获取数据和渲染
+        image = await render_user_score_list_image(
+            user_id, username, score_type="best", include_fails=False, count=count
+        )
+        await ctx.send(file=File(io.BytesIO(image), f"{username}_best_list.png"))
 
 
 async def setup(bot: commands.Bot):

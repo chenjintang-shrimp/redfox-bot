@@ -490,6 +490,7 @@ async def render_user_beatmap_score_card(
     user_id: int,
     beatmap_id: int,
     skin: str | None = None,
+    limit: int = 100,
 ) -> bytes:
     """
     渲染用户在指定谱面上的最佳成绩为图片
@@ -498,6 +499,7 @@ async def render_user_beatmap_score_card(
         user_id: 用户 ID
         beatmap_id: 谱面 ID
         skin: 皮肤名称，默认使用全局配置
+        limit: 查询数量
 
     Returns:
         PNG 图片字节
@@ -511,7 +513,7 @@ async def render_user_beatmap_score_card(
     )
 
     # 获取用户在该谱面上的所有成绩
-    scores = await get_user_beatmap_all_scores(user_id, beatmap_id)
+    scores = await get_user_beatmap_all_scores(user_id, beatmap_id, limit=limit)
     if not scores:
         # 没有成绩，抛出异常让 decorator 处理
         from backend.user import get_user_info
@@ -620,6 +622,7 @@ async def render_user_score_list_image(
     score_type: str = "recent",
     include_fails: bool = False,
     skin: str | None = None,
+    count: int = 100,
 ) -> bytes:
     """
     渲染用户成绩列表为图片（长图模式，不分页）
@@ -630,6 +633,7 @@ async def render_user_score_list_image(
         score_type: 成绩类型 ("recent" 或 "best")
         include_fails: 是否包含失败成绩
         skin: 皮肤名称，默认使用全局配置
+        count: 成绩数量，默认100条
 
     Returns:
         PNG 图片字节
@@ -642,9 +646,12 @@ async def render_user_score_list_image(
         f"[render_user_score_list_image] 开始渲染，user_id={user_id}, type={score_type}, skin={skin}"
     )
 
-    # 获取所有成绩（不限制数量，用于生成长图）
+    # 获取所有成绩（限制20个，与yumu保持一致）
     scores = await get_user_scores(
-        user_id, score_type, include_fails=include_fails, limit=100
+        user_id,
+        score_type,
+        include_fails=include_fails,
+        limit=count,
     )
     if not scores:
         raise ScoreQueryError(username, 0, f"No {score_type} scores found", 404)
