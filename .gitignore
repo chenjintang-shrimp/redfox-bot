@@ -1,5 +1,6 @@
 # Stuff when running
 .env
+.env.qq
 logs
 *.db
 

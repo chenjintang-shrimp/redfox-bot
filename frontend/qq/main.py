@@ -1,3 +1,5 @@
+import os
+
 import nonebot
 from nonebot.adapters.onebot.v11 import Adapter as OneBotV11Adapter
 
@@ -10,7 +12,14 @@ from backend.database import create_db_and_tables
 
 
 def main():
-    nonebot.init()
+    # 检查 .env.qq 配置文件
+    env_file = ".env.qq"
+    if os.path.exists(env_file):
+        nonebot.init(_env_file=env_file)
+    else:
+        print(f"警告: 配置文件 {env_file} 不存在，请复制 .env.qq.example 为 {env_file}")
+        print("使用默认配置启动...")
+        nonebot.init()
 
     driver = nonebot.get_driver()
     driver.register_adapter(OneBotV11Adapter)
