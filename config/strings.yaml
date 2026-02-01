@@ -106,3 +106,18 @@ TODAY_BP_EMPTY_TEMPLATE: 📭 **{{ username }}** has no new best scores in the l
 NO_SKIN_AVAILABLE_TEMPLATE: |
   ❌ 没有可用皮肤: {{ skin_name }}/{{ template_name }}
   请联系管理员添加皮肤，或使用其他功能。
+
+# QQ Bot 提示信息
+QQ_USER_NOT_BIND_TEMPLATE: 请先使用 !bind <osu用户名> 绑定账号，或指定用户名查询
+QQ_BIND_SUCCESS_TEMPLATE: 成功绑定 osu! 用户: {{ username }}
+QQ_BIND_EXIST_TEMPLATE: 你已经绑定过 osu! 账号了，请先解绑
+QQ_BIND_USER_NOT_FOUND_TEMPLATE: 找不到用户: {{ username }}
+QQ_BIND_FAILED_TEMPLATE: 绑定失败，请稍后重试
+QQ_UNBIND_SUCCESS_TEMPLATE: 解绑成功
+QQ_UNBIND_NOT_BOUND_TEMPLATE: 你还没有绑定 osu! 账号
+QQ_UNBIND_FAILED_TEMPLATE: 解绑失败，请稍后重试
+QQ_QUERY_FAILED_TEMPLATE: 查询失败，请稍后重试
+QQ_QUERY_ERROR_TEMPLATE: 查询失败: {{ error_msg }}
+QQ_RENDER_FAILED_TEMPLATE: 生成卡片失败，请稍后重试
+QQ_BEATMAP_ID_REQUIRED_TEMPLATE: 请提供谱面ID，格式: !ss <beatmap_id>
+QQ_BEATMAP_ID_INVALID_TEMPLATE: 谱面ID必须是数字

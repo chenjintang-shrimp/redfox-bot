@@ -13,6 +13,7 @@ from renderer.scores import (
     render_user_today_bp_image,
 )
 from utils.logger import get_logger
+from utils.strings import format_template
 
 logger = get_logger("qq.plugins.scores")
 
@@ -33,13 +34,13 @@ async def handle_ss(event: MessageEvent, args=CommandArg()):
     text = args.extract_plain_text().strip()
 
     if not text:
-        await ss_cmd.finish("请提供谱面ID，格式: !ss <beatmap_id>")
+        await ss_cmd.finish(format_template("QQ_BEATMAP_ID_REQUIRED_TEMPLATE"))
         return
 
     try:
         beatmap_id = int(text)
     except ValueError:
-        await ss_cmd.finish("谱面ID必须是数字")
+        await ss_cmd.finish(format_template("QQ_BEATMAP_ID_INVALID_TEMPLATE"))
         return
 
     try:
@@ -50,12 +51,12 @@ async def handle_ss(event: MessageEvent, args=CommandArg()):
         image = await render_user_beatmap_score_card(user_id, beatmap_id)
         await ss_cmd.finish(MessageSegment.image(image))
     except UserNotBindError:
-        await ss_cmd.finish("请先使用 !bind <osu用户名> 绑定账号")
+        await ss_cmd.finish(format_template("QQ_USER_NOT_BIND_TEMPLATE"))
     except ScoreQueryError as e:
-        await ss_cmd.finish(f"查询失败: {e.error_msg}")
+        await ss_cmd.finish(format_template("QQ_QUERY_ERROR_TEMPLATE", error_msg=e.error_msg))
     except Exception as e:
         logger.error(f"查询谱面成绩失败: {e}")
-        await ss_cmd.finish("查询失败，请稍后重试")
+        await ss_cmd.finish(format_template("QQ_QUERY_FAILED_TEMPLATE"))
 
 
 @ps_cmd.handle()
@@ -74,12 +75,12 @@ async def handle_ps(event: MessageEvent, args=CommandArg()):
         )
         await ps_cmd.finish(MessageSegment.image(image))
     except UserNotBindError:
-        await ps_cmd.finish("请先使用 !bind <osu用户名> 绑定账号，或指定用户名查询")
+        await ps_cmd.finish(format_template("QQ_USER_NOT_BIND_TEMPLATE"))
     except ScoreQueryError as e:
-        await ps_cmd.finish(f"查询失败: {e.error_msg}")
+        await ps_cmd.finish(format_template("QQ_QUERY_ERROR_TEMPLATE", error_msg=e.error_msg))
     except Exception as e:
         logger.error(f"查询最近通过成绩失败: {e}")
-        await ps_cmd.finish("查询失败，请稍后重试")
+        await ps_cmd.finish(format_template("QQ_QUERY_FAILED_TEMPLATE"))
 
 
 @rs_cmd.handle()
@@ -98,12 +99,12 @@ async def handle_rs(event: MessageEvent, args=CommandArg()):
         )
         await rs_cmd.finish(MessageSegment.image(image))
     except UserNotBindError:
-        await rs_cmd.finish("请先使用 !bind <osu用户名> 绑定账号，或指定用户名查询")
+        await rs_cmd.finish(format_template("QQ_USER_NOT_BIND_TEMPLATE"))
     except ScoreQueryError as e:
-        await ps_cmd.finish(f"查询失败: {e.error_msg}")
+        await rs_cmd.finish(format_template("QQ_QUERY_ERROR_TEMPLATE", error_msg=e.error_msg))
     except Exception as e:
         logger.error(f"查询最近成绩失败: {e}")
-        await rs_cmd.finish("查询失败，请稍后重试")
+        await rs_cmd.finish(format_template("QQ_QUERY_FAILED_TEMPLATE"))
 
 
 @t_cmd.handle()
@@ -120,12 +121,12 @@ async def handle_t(event: MessageEvent, args=CommandArg()):
         image = await render_user_today_bp_image(user_id, username)
         await t_cmd.finish(MessageSegment.image(image))
     except UserNotBindError:
-        await t_cmd.finish("请先使用 !bind <osu用户名> 绑定账号，或指定用户名查询")
+        await t_cmd.finish(format_template("QQ_USER_NOT_BIND_TEMPLATE"))
     except ScoreQueryError as e:
-        await t_cmd.finish(f"查询失败: {e.error_msg}")
+        await t_cmd.finish(format_template("QQ_QUERY_ERROR_TEMPLATE", error_msg=e.error_msg))
     except Exception as e:
         logger.error(f"查询今日BP失败: {e}")
-        await t_cmd.finish("查询失败，请稍后重试")
+        await t_cmd.finish(format_template("QQ_QUERY_FAILED_TEMPLATE"))
 
 
 @p_cmd.handle()
@@ -142,12 +143,12 @@ async def handle_p(event: MessageEvent, args=CommandArg()):
         image = await render_user_recent_score_card(user_id, include_fails=False)
         await p_cmd.finish(MessageSegment.image(image))
     except UserNotBindError:
-        await p_cmd.finish("请先使用 !bind <osu用户名> 绑定账号，或指定用户名查询")
+        await p_cmd.finish(format_template("QQ_USER_NOT_BIND_TEMPLATE"))
     except ScoreQueryError as e:
-        await p_cmd.finish(f"查询失败: {e.error_msg}")
+        await p_cmd.finish(format_template("QQ_QUERY_ERROR_TEMPLATE", error_msg=e.error_msg))
     except Exception as e:
         logger.error(f"查询最新通过成绩失败: {e}")
-        await p_cmd.finish("查询失败，请稍后重试")
+        await p_cmd.finish(format_template("QQ_QUERY_FAILED_TEMPLATE"))
 
 
 @r_cmd.handle()
@@ -164,12 +165,12 @@ async def handle_r(event: MessageEvent, args=CommandArg()):
         image = await render_user_recent_score_card(user_id, include_fails=True)
         await r_cmd.finish(MessageSegment.image(image))
     except UserNotBindError:
-        await r_cmd.finish("请先使用 !bind <osu用户名> 绑定账号，或指定用户名查询")
+        await r_cmd.finish(format_template("QQ_USER_NOT_BIND_TEMPLATE"))
     except ScoreQueryError as e:
-        await r_cmd.finish(f"查询失败: {e.error_msg}")
+        await r_cmd.finish(format_template("QQ_QUERY_ERROR_TEMPLATE", error_msg=e.error_msg))
     except Exception as e:
         logger.error(f"查询最新成绩失败: {e}")
-        await r_cmd.finish("查询失败，请稍后重试")
+        await r_cmd.finish(format_template("QQ_QUERY_FAILED_TEMPLATE"))
 
 
 @b_cmd.handle()
@@ -188,12 +189,12 @@ async def handle_b(event: MessageEvent, args=CommandArg()):
         )
         await b_cmd.finish(MessageSegment.image(image))
     except UserNotBindError:
-        await b_cmd.finish("请先使用 !bind <osu用户名> 绑定账号，或指定用户名查询")
+        await b_cmd.finish(format_template("QQ_USER_NOT_BIND_TEMPLATE"))
     except ScoreQueryError as e:
-        await b_cmd.finish(f"查询失败: {e.error_msg}")
+        await b_cmd.finish(format_template("QQ_QUERY_ERROR_TEMPLATE", error_msg=e.error_msg))
     except Exception as e:
         logger.error(f"查询最佳成绩失败: {e}")
-        await b_cmd.finish("查询失败，请稍后重试")
+        await b_cmd.finish(format_template("QQ_QUERY_FAILED_TEMPLATE"))
 
 
 @bs_cmd.handle()
@@ -228,9 +229,9 @@ async def handle_bs(event: MessageEvent, args=CommandArg()):
         )
         await bs_cmd.finish(MessageSegment.image(image))
     except UserNotBindError:
-        await bs_cmd.finish("请先使用 !bind <osu用户名> 绑定账号，或指定用户名查询")
+        await bs_cmd.finish(format_template("QQ_USER_NOT_BIND_TEMPLATE"))
     except ScoreQueryError as e:
-        await bs_cmd.finish(f"查询失败: {e.error_msg}")
+        await bs_cmd.finish(format_template("QQ_QUERY_ERROR_TEMPLATE", error_msg=e.error_msg))
     except Exception as e:
         logger.error(f"查询最佳成绩列表失败: {e}")
-        await bs_cmd.finish("查询失败，请稍后重试")
+        await bs_cmd.finish(format_template("QQ_QUERY_FAILED_TEMPLATE"))
