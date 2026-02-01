@@ -18,6 +18,17 @@ class OsuUser(SQLModel, table=True):
     updated_at: datetime = Field(default_factory=datetime.now)
 
 
+class OsuUserQQ(SQLModel, table=True):
+    qq_id: int = Field(primary_key=True)
+    osu_id: int
+    osu_username: str
+    access_token: str | None = None
+    refresh_token: str | None = None
+    expires_at: datetime | None = None
+    created_at: datetime = Field(default_factory=datetime.now)
+    updated_at: datetime = Field(default_factory=datetime.now)
+
+
 # 异步引擎：注意是 sqlite+aiosqlite
 sqlite_url = f"sqlite+aiosqlite:///{SQL_DB_FILE}"
 engine = create_async_engine(sqlite_url)
@@ -50,6 +61,35 @@ async def delete_osu_user_by_discord_id(discord_id: int) -> bool:
     """Delete osu user by Discord ID"""
     async with SQLModelAsyncSession(engine) as session:
         statement = select(OsuUser).where(OsuUser.discord_id == discord_id)
+        results = await session.exec(statement)
+        user = results.first()
+
+        if user is None:
+            return False
+
+        await session.delete(user)
+        await session.commit()
+        return True
+
+
+async def get_osu_user_by_qq_id(qq_id: int) -> Optional[OsuUserQQ]:
+    async with SQLModelAsyncSession(engine) as session:
+        statement = select(OsuUserQQ).where(OsuUserQQ.qq_id == qq_id)
+        results = await session.exec(statement)
+        return results.first()
+
+
+async def save_osu_user_qq(user: OsuUserQQ):
+    async with SQLModelAsyncSession(engine) as session:
+        user.updated_at = datetime.now()
+        await session.merge(user)
+        await session.commit()
+
+
+async def delete_osu_user_by_qq_id(qq_id: int) -> bool:
+    """Delete osu user by QQ ID"""
+    async with SQLModelAsyncSession(engine) as session:
+        statement = select(OsuUserQQ).where(OsuUserQQ.qq_id == qq_id)
         results = await session.exec(statement)
         user = results.first()
 
