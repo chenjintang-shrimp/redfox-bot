@@ -23,6 +23,7 @@ renderer/skin_loader.py
 renderer/user.py
 utils/__init__.py
 utils/caches.py
+utils/flt_mgr.py
 utils/html2image.py
 utils/logger.py
 utils/scheduler.py
