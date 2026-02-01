@@ -506,24 +506,40 @@ async def render_user_beatmap_score_card(
         ScoreQueryError: 查询成绩失败
     """
     skin = skin or DEFAULT_SKIN
-    logger.info(f"[render_user_beatmap_score_card] 开始渲染，user_id={user_id}, beatmap_id={beatmap_id}, skin={skin}")
+    logger.info(
+        f"[render_user_beatmap_score_card] 开始渲染，user_id={user_id}, beatmap_id={beatmap_id}, skin={skin}"
+    )
 
     # 获取用户在该谱面上的所有成绩
     scores = await get_user_beatmap_all_scores(user_id, beatmap_id)
     if not scores:
         # 没有成绩，抛出异常让 decorator 处理
         from backend.user import get_user_info
+
         user_info = await get_user_info(user_id)
         raise ScoreQueryError(
             user_info.get("username", str(user_id)),
             beatmap_id,
             "No scores found on this beatmap",
-            404
+            404,
         )
 
     # 获取第一条成绩
     # minifilter 会在 render_skin_template 中自动补充 beatmap 信息
     score = scores[0]
+
+    # API 返回的成绩数据中没有 beatmap_id，需要手动添加
+    # 因为我们已经知道 beatmap_id（用户传入的）
+    if "beatmap_id" not in score:
+        score["beatmap_id"] = beatmap_id
+        logger.debug(f"[render_user_beatmap_score_card] 添加 beatmap_id: {beatmap_id}")
+
+    logger.debug(
+        f"[render_user_beatmap_score_card] 原始成绩数据键: {list(score.keys())}"
+    )
+    logger.debug(
+        f"[render_user_beatmap_score_card] beatmap_id: {score.get('beatmap_id')}"
+    )
 
     # 渲染模板（minifilter 会自动处理 beatmap 信息补充）
     html = await render_skin_template(skin, "score_card", score)
@@ -558,24 +574,32 @@ async def render_user_recent_score_card(
         ScoreQueryError: 查询成绩失败
     """
     skin = skin or DEFAULT_SKIN
-    logger.info(f"[render_user_recent_score_card] 开始渲染，user_id={user_id}, include_fails={include_fails}, skin={skin}")
+    logger.info(
+        f"[render_user_recent_score_card] 开始渲染，user_id={user_id}, include_fails={include_fails}, skin={skin}"
+    )
 
     # 获取用户最近成绩
-    scores = await get_user_scores(user_id, "recent", include_fails=include_fails, limit=1)
+    scores = await get_user_scores(
+        user_id, "recent", include_fails=include_fails, limit=1
+    )
     if not scores:
         # 没有成绩，抛出异常让 decorator 处理
         from backend.user import get_user_info
+
         user_info = await get_user_info(user_id)
         raise ScoreQueryError(
-            user_info.get("username", str(user_id)),
-            0,
-            "No recent scores found",
-            404
+            user_info.get("username", str(user_id)), 0, "No recent scores found", 404
         )
 
     # 获取第一条成绩
     # minifilter 会在 render_skin_template 中自动补充 beatmap 信息
     score = scores[0]
+    logger.debug(
+        f"[render_user_recent_score_card] 原始成绩数据键: {list(score.keys())}"
+    )
+    logger.debug(
+        f"[render_user_recent_score_card] beatmap_id: {score.get('beatmap_id')}, id: {score.get('id')}"
+    )
 
     # 渲染模板（minifilter 会自动处理 beatmap 信息补充）
     html = await render_skin_template(skin, "score_card", score)
@@ -595,18 +619,16 @@ async def render_user_score_list_image(
     username: str,
     score_type: str = "recent",
     include_fails: bool = False,
-    limit: int = 5,
     skin: str | None = None,
 ) -> bytes:
     """
-    渲染用户成绩列表为图片
+    渲染用户成绩列表为图片（长图模式，不分页）
 
     Args:
         user_id: 用户 ID
         username: 用户名
         score_type: 成绩类型 ("recent" 或 "best")
         include_fails: 是否包含失败成绩
-        limit: 获取成绩数量
         skin: 皮肤名称，默认使用全局配置
 
     Returns:
@@ -616,17 +638,28 @@ async def render_user_score_list_image(
         ScoreQueryError: 查询成绩失败
     """
     skin = skin or DEFAULT_SKIN
-    logger.info(f"[render_user_score_list_image] 开始渲染，user_id={user_id}, type={score_type}, skin={skin}")
+    logger.info(
+        f"[render_user_score_list_image] 开始渲染，user_id={user_id}, type={score_type}, skin={skin}"
+    )
 
-    # 获取成绩列表
-    scores = await get_user_scores(user_id, score_type, include_fails=include_fails, limit=limit)
+    # 获取所有成绩（不限制数量，用于生成长图）
+    scores = await get_user_scores(
+        user_id, score_type, include_fails=include_fails, limit=100
+    )
     if not scores:
-        raise ScoreQueryError(
-            username,
-            0,
-            f"No {score_type} scores found",
-            404
-        )
+        raise ScoreQueryError(username, 0, f"No {score_type} scores found", 404)
+
+    # 检查第一条成绩的字段
+    logger.debug(
+        f"[render_user_score_list_image] 第一条成绩数据键: {list(scores[0].keys())}"
+    )
+    logger.debug(
+        f"[render_user_score_list_image] beatmap_id: {scores[0].get('beatmap_id')}, id: {scores[0].get('id')}"
+    )
+    logger.debug(f"[render_user_score_list_image] beatmap: {scores[0].get('beatmap')}")
+    logger.debug(
+        f"[render_user_score_list_image] beatmapset: {scores[0].get('beatmapset')}"
+    )
 
     # 确定标题
     title_map = {
@@ -636,28 +669,23 @@ async def render_user_score_list_image(
     }
     title = title_map.get((score_type, include_fails), "Scores")
 
-    # 获取总页数
-    total_pages = await get_user_scores_page_count(user_id, score_type, include_fails=include_fails)
-
     data = {
-        "scores": scores[:limit],
+        "scores": scores,
         "username": username,
         "title": title,
-        "page": 1,
-        "total_pages": total_pages,
     }
 
     # 渲染模板（minifilter 会自动处理 beatmap 信息补充）
     html = await render_skin_template(skin, "score_list", data)
     logger.debug(f"[render_user_score_list_image] HTML 长度: {len(html)} chars")
 
-    # 动态计算高度
-    height = 100 + len(scores[:limit]) * 80 + 50
-    height = max(400, min(height, 1200))
+    # 动态计算高度（根据成绩数量）
+    height = 100 + len(scores) * 80 + 50
+    height = max(400, min(height, 3000))  # 最大高度 3000，防止过长
 
     image_bytes = await html_to_image(html, width=800, height=height)
     logger.info(
-        f"[render_user_score_list_image] 图片生成完成，大小: {len(image_bytes)} bytes"
+        f"[render_user_score_list_image] 图片生成完成，大小: {len(image_bytes)} bytes, 包含 {len(scores)} 条成绩"
     )
 
     return image_bytes
@@ -732,10 +760,21 @@ async def render_user_today_bp_image(
         ScoreQueryError: 查询成绩失败
     """
     skin = skin or DEFAULT_SKIN
-    logger.info(f"[render_user_today_bp_image] 开始渲染，user_id={user_id}, skin={skin}")
+    logger.info(
+        f"[render_user_today_bp_image] 开始渲染，user_id={user_id}, skin={skin}"
+    )
 
     # 获取 best 成绩
     scores = await get_user_scores(user_id, "best", include_fails=False, limit=100)
+
+    # 检查第一条成绩的字段
+    if scores:
+        logger.debug(
+            f"[render_user_today_bp_image] 第一条成绩数据键: {list(scores[0].keys())}"
+        )
+        logger.debug(
+            f"[render_user_today_bp_image] beatmap_id: {scores[0].get('beatmap_id')}, id: {scores[0].get('id')}"
+        )
 
     # 过滤今日成绩（24小时内）
     def _is_today(score):
@@ -752,10 +791,7 @@ async def render_user_today_bp_image(
 
     if not today_scores:
         raise ScoreQueryError(
-            username,
-            0,
-            "No new best scores in the last 24 hours",
-            404
+            username, 0, "No new best scores in the last 24 hours", 404
         )
 
     # 获取总页数
@@ -822,8 +858,6 @@ async def render_today_bp_image(
     height = max(400, min(height, 1200))
 
     image_bytes = await html_to_image(html, width=800, height=height)
-    logger.info(
-        f"[render_today_bp_image] 图片生成完成，大小: {len(image_bytes)} bytes"
-    )
+    logger.info(f"[render_today_bp_image] 图片生成完成，大小: {len(image_bytes)} bytes")
 
     return image_bytes

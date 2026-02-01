@@ -93,7 +93,7 @@
             color: #66ccff;
         }
 
-        .page-info {
+        .footer {
             text-align: center;
             margin-top: 20px;
             color: #666;
@@ -105,7 +105,7 @@
     <div class="header">{{ username }}'s {{ title }}</div>
     {% for score in scores %}
     <div class="score-item">
-        <div class="rank-num">#{{ loop.index + (page - 1) * 5 }}</div>
+        <div class="rank-num">#{{ loop.index }}</div>
         <div class="beatmap-info">
             <div class="title">{{ score.beatmapset.title }}</div>
             <div class="difficulty">[{{ score.beatmap.version }}] ★{{ score.beatmap.difficulty_rating }}</div>
@@ -130,6 +130,6 @@
         {% endif %}
     </div>
     {% endfor %}
-    <div class="page-info">Page {{ page }} of {{ total_pages }}</div>
+    <div class="footer">Total: {{ scores | length }} scores</div>
 </body>
 </html>

@@ -316,12 +316,13 @@ class Scores(Cog):
 
         # 调用 renderer，由 renderer 负责获取数据和渲染
         image = await render_user_score_list_image(
-            user_id, username, score_type="recent", include_fails=False, limit=5
+            user_id, username, score_type="recent", include_fails=False
         )
         await ctx.send(file=File(io.BytesIO(image), f"{username}_ps.png"))
 
     @commands.hybrid_command(
-        name="urs", description="Query your recent scores with image (24h, including fails)"
+        name="urs",
+        description="Query your recent scores with image (24h, including fails)",
     )
     @app_commands.describe(user="osu! username or mention")
     async def urs(self, ctx: commands.Context, user: str | None = None):
@@ -333,7 +334,7 @@ class Scores(Cog):
 
         # 调用 renderer，由 renderer 负责获取数据和渲染
         image = await render_user_score_list_image(
-            user_id, username, score_type="recent", include_fails=True, limit=5
+            user_id, username, score_type="recent", include_fails=True
         )
         await ctx.send(file=File(io.BytesIO(image), f"{username}_rs.png"))
 
@@ -382,6 +383,21 @@ class Scores(Cog):
         # 调用 renderer，由 renderer 负责获取数据和渲染
         image = await render_user_recent_score_card(user_id, include_fails=True)
         await ctx.send(file=File(io.BytesIO(image), f"{username}_r.png"))
+
+    @commands.hybrid_command(name="ub", description="Query your best scores with image")
+    @app_commands.describe(user="osu! username or mention")
+    async def ub(self, ctx: commands.Context, user: str | None = None):
+        """查询最佳成绩（图片版）"""
+        await ctx.defer()
+        username = await resolve_username(ctx, user)
+        user_info = await get_user_info(username)
+        user_id = user_info["id"]
+
+        # 调用 renderer，由 renderer 负责获取数据和渲染
+        image = await render_user_score_list_image(
+            user_id, username, score_type="best", include_fails=False
+        )
+        await ctx.send(file=File(io.BytesIO(image), f"{username}_best.png"))
 
 
 async def setup(bot: commands.Bot):

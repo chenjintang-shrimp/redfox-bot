@@ -2,6 +2,7 @@ from typing import Optional
 from backend.api_client import get_osu_api_client
 from backend.user import get_user_info
 from backend.expections import ScoreQueryError
+from utils import logger
 from utils.logger import get_logger
 from utils.strings import get_api_url
 
@@ -188,6 +189,10 @@ async def get_user_scores(
     if mode:
         params["mode"] = mode
 
+    # 添加参数以包含 beatmap 和 beatmapset 信息
+    params["include_beatmap"] = "true"
+    params["include_beatmapset"] = "true"
+
     response = await client.get(url, params=params)
     get_logger("backend").info(
         f"Requesting endpoint {url} with user_id {user_id} and type {type} returned {response.status_code}"
@@ -204,3 +209,17 @@ async def get_user_scores(
         )
 
     return response.json()
+
+
+async def main():
+    var = await get_user_scores(7, "best")
+    import json
+
+    with open("1.json", "w", encoding="utf-8") as f:
+        json.dump(var, f, ensure_ascii=False, indent=2)
+
+
+if __name__ == "__main__":
+    import asyncio
+
+    asyncio.run(main())

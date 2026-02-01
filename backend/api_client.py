@@ -269,6 +269,7 @@ def get_osu_api_client() -> APIClient:
             "User-Agent": "g0v0bot-discord/1.0",
             "Accept": "application/json",
             "Content-Type": "application/json",
+            "x-api-version": "20220706",
         },
         timeout=30.0,
         oauth_handler=oauth_handler,
