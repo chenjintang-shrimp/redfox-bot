@@ -23,19 +23,29 @@ async def handle_info_text(event: MessageEvent, args):
     username_arg = args.extract_plain_text().strip()
 
     try:
-        username = await resolve_username_qq(qq_id, username_arg if username_arg else None)
+        username = await resolve_username_qq(
+            qq_id, username_arg if username_arg else None
+        )
     except UserNotBindError:
-        await info_short_cmd.send(format_template("QQ_USER_NOT_BIND_TEMPLATE"))
+        await info_short_cmd.send(
+            format_template("USER_NOT_BIND_TEMPLATE", locale="zh")
+        )
         return
 
     try:
         msg = await render_user_info(username, locale="zh")  # type: ignore[call-arg]
         await info_short_cmd.send(msg)
     except UserQueryError as e:
-        await info_short_cmd.send(format_template("QQ_QUERY_ERROR_TEMPLATE", error_msg=e.error_msg))
+        await info_short_cmd.send(
+            format_template(
+                "USER_QUERY_ERROR_TEMPLATE", error_msg=e.error_msg, locale="zh"
+            )
+        )
     except Exception as e:
         logger.error(f"查询用户信息失败: {e}")
-        await info_short_cmd.send(format_template("QQ_QUERY_FAILED_TEMPLATE"))
+        await info_short_cmd.send(
+            format_template("USER_QUERY_FAILED_TEMPLATE", locale="zh")
+        )
 
 
 @info_short_cmd.handle()
@@ -50,9 +60,11 @@ async def handle_info(event: MessageEvent, args=CommandArg()):
     username_arg = args.extract_plain_text().strip()
 
     try:
-        username = await resolve_username_qq(qq_id, username_arg if username_arg else None)
+        username = await resolve_username_qq(
+            qq_id, username_arg if username_arg else None
+        )
     except UserNotBindError:
-        await info_cmd.send(format_template("QQ_USER_NOT_BIND_TEMPLATE"))
+        await info_cmd.send(format_template("USER_NOT_BIND_TEMPLATE", locale="zh"))
         return
 
     try:
@@ -60,10 +72,14 @@ async def handle_info(event: MessageEvent, args=CommandArg()):
         image = await render_user_card_image(user_data)
         await info_cmd.send(MessageSegment.image(image))
     except UserQueryError as e:
-        await info_cmd.send(format_template("QQ_QUERY_ERROR_TEMPLATE", error_msg=e.error_msg))
+        await info_cmd.send(
+            format_template(
+                "USER_QUERY_ERROR_TEMPLATE", error_msg=e.error_msg, locale="zh"
+            )
+        )
     except Exception as e:
         logger.error(f"生成用户卡片失败: {e}")
-        await info_cmd.send(format_template("QQ_RENDER_FAILED_TEMPLATE"))
+        await info_cmd.send(format_template("RENDER_FAILED", locale="zh"))
 
 
 @bind_cmd.handle()
@@ -72,19 +88,23 @@ async def handle_bind(event: MessageEvent, args=CommandArg()):
     username = args.extract_plain_text().strip()
 
     if not username:
-        await bind_cmd.send(format_template("USER_NOT_FOUND_TEMPLATE"))
+        await bind_cmd.send(format_template("USER_NOT_FOUND_TEMPLATE", locale="zh"))
         return
 
     try:
         await bind_user_qq(qq_id, username)
-        await bind_cmd.send(format_template("QQ_BIND_SUCCESS_TEMPLATE", username=username))
+        await bind_cmd.send(
+            format_template("QQ_BIND_SUCCESS_TEMPLATE", username=username,locale="zh")
+        )
     except BindExistError:
-        await bind_cmd.send(format_template("QQ_BIND_EXIST_TEMPLATE"))
+        await bind_cmd.send(format_template("BIND_EXIST_TEMPLATE",locale="zh"))
     except UserQueryError:
-        await bind_cmd.send(format_template("QQ_BIND_USER_NOT_FOUND_TEMPLATE", username=username))
+        await bind_cmd.send(
+            format_template("BIND_USER_NOT_FOUND_TEMPLATE", username=username,locale="zh")
+        )
     except Exception as e:
         logger.error(f"绑定用户失败: {e}")
-        await bind_cmd.send(format_template("QQ_BIND_FAILED_TEMPLATE"))
+        await bind_cmd.send(format_template("BIND_FAILED_TEMPLATE",locale="zh"))
 
 
 @unbind_cmd.handle()
@@ -94,9 +114,9 @@ async def handle_unbind(event: MessageEvent):
     try:
         deleted = await unbind_user_qq(qq_id)
         if deleted:
-            await unbind_cmd.send(format_template("QQ_UNBIND_SUCCESS_TEMPLATE"))
+            await unbind_cmd.send(format_template("UNBIND_SUCCESS_TEMPLATE",locale="zh"))
         else:
-            await unbind_cmd.send(format_template("QQ_UNBIND_NOT_BOUND_TEMPLATE"))
+            await unbind_cmd.send(format_template("UNBIND_NOT_BOUND_TEMPLATE",locale="zh"))
     except Exception as e:
         logger.error(f"解绑用户失败: {e}")
-        await unbind_cmd.send(format_template("QQ_UNBIND_FAILED_TEMPLATE"))
+        await unbind_cmd.send(format_template("UNBIND_FAILED_TEMPLATE",locale="zh"))
