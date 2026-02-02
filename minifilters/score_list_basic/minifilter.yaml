@@ -3,6 +3,6 @@ version: 1.0.0
 description: 确保成绩列表中的每个成绩都包含必要的 beatmap 和 beatmapset 嵌套对象
 
 hooks:
-  - score_list
+  - user_score_list
 
 depends: []

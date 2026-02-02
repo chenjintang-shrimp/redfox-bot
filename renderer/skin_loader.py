@@ -2,7 +2,6 @@ from pathlib import Path
 
 from backend.expections import NoSkinAvailableError
 from jinja2 import Environment, BaseLoader
-from utils.flt_mgr import apply_minifilters_async
 from utils.logger import get_logger
 from utils.variable import working_dir
 
@@ -59,7 +58,7 @@ async def render_template(skin: str, template_name: str, data: dict) -> str:
     Args:
         skin: 皮肤名称
         template_name: 模板名称
-        data: 模板数据
+        data: 模板数据（已由调用方通过 minifilter 处理）
 
     Returns:
         渲染后的 HTML 字符串
@@ -71,10 +70,9 @@ async def render_template(skin: str, template_name: str, data: dict) -> str:
     if template_path is None:
         raise NoSkinAvailableError(skin, template_name)
 
-    # 应用 minifilters 处理数据（异步版本）
-    processed_data = await apply_minifilters_async(template_name, data)
-
+    # 注意：minifilter 处理已移到 renderer 层调用
+    # 这里直接渲染传入的数据
     template_str = template_path.read_text(encoding="utf-8")
     template = _jinja_env.from_string(template_str)
 
-    return template.render(**processed_data)
+    return template.render(**data)

@@ -11,6 +11,7 @@ from backend.beatmap import get_beatmap_info
 from backend.user import get_user_info
 from renderer.renderer_template import renderer
 from renderer.skin_loader import render_template as render_skin_template
+from utils.flt_mgr import apply_minifilters_async
 from utils.html2image import html_to_image
 from utils.logger import get_logger
 from utils.strings import format_template
@@ -485,7 +486,7 @@ async def get_today_bp_page_count(user_id: int, limit: int = 100) -> int:
 # ============ 图片渲染 API ============
 
 
-@renderer
+@renderer("user_beatmap_score_card")
 async def render_user_beatmap_score_card(
     user_id: int,
     beatmap_id: int,
@@ -527,7 +528,6 @@ async def render_user_beatmap_score_card(
         )
 
     # 获取第一条成绩
-    # minifilter 会在 render_skin_template 中自动补充 beatmap 信息
     score = scores[0]
 
     # API 返回的成绩数据中没有 beatmap_id，需要手动添加
@@ -543,8 +543,11 @@ async def render_user_beatmap_score_card(
         f"[render_user_beatmap_score_card] beatmap_id: {score.get('beatmap_id')}"
     )
 
-    # 渲染模板（minifilter 会自动处理 beatmap 信息补充）
-    html = await render_skin_template(skin, "score_card", score)
+    # 应用 minifilters 处理数据（按 renderer 视图名 hook）
+    processed_score = await apply_minifilters_async("user_beatmap_score_card", score)
+
+    # 渲染模板
+    html = await render_skin_template(skin, "score_card", processed_score)
     logger.debug(f"[render_user_beatmap_score_card] HTML 长度: {len(html)} chars")
 
     image_bytes = await html_to_image(html, width=800, height=300)
@@ -555,7 +558,7 @@ async def render_user_beatmap_score_card(
     return image_bytes
 
 
-@renderer
+@renderer("user_recent_score_card")
 async def render_user_recent_score_card(
     user_id: int,
     include_fails: bool = False,
@@ -594,7 +597,6 @@ async def render_user_recent_score_card(
         )
 
     # 获取第一条成绩
-    # minifilter 会在 render_skin_template 中自动补充 beatmap 信息
     score = scores[0]
     logger.debug(
         f"[render_user_recent_score_card] 原始成绩数据键: {list(score.keys())}"
@@ -603,8 +605,11 @@ async def render_user_recent_score_card(
         f"[render_user_recent_score_card] beatmap_id: {score.get('beatmap_id')}, id: {score.get('id')}"
     )
 
-    # 渲染模板（minifilter 会自动处理 beatmap 信息补充）
-    html = await render_skin_template(skin, "score_card", score)
+    # 应用 minifilters 处理数据（按 renderer 视图名 hook）
+    processed_score = await apply_minifilters_async("user_recent_score_card", score)
+
+    # 渲染模板
+    html = await render_skin_template(skin, "score_card", processed_score)
     logger.debug(f"[render_user_recent_score_card] HTML 长度: {len(html)} chars")
 
     image_bytes = await html_to_image(html, width=800, height=300)
@@ -615,7 +620,7 @@ async def render_user_recent_score_card(
     return image_bytes
 
 
-@renderer
+@renderer("user_score_list")
 async def render_user_score_list_image(
     user_id: int,
     username: str,
@@ -682,8 +687,11 @@ async def render_user_score_list_image(
         "title": title,
     }
 
-    # 渲染模板（minifilter 会自动处理 beatmap 信息补充）
-    html = await render_skin_template(skin, "score_list", data)
+    # 应用 minifilters 处理数据（按 renderer 视图名 hook）
+    processed_data = await apply_minifilters_async("user_score_list", data)
+
+    # 渲染模板
+    html = await render_skin_template(skin, "score_list", processed_data)
     logger.debug(f"[render_user_score_list_image] HTML 长度: {len(html)} chars")
 
     # 动态计算高度（根据成绩数量）
@@ -731,7 +739,10 @@ async def render_score_list_image(
         "total_pages": total_pages,
     }
 
-    html = await render_skin_template(skin, "score_list", data)
+    # 应用 minifilters 处理数据（复用 user_score_list 的 hook）
+    processed_data = await apply_minifilters_async("user_score_list", data)
+
+    html = await render_skin_template(skin, "score_list", processed_data)
     logger.debug(f"[render_score_list_image] HTML 长度: {len(html)} chars")
 
     # 动态计算高度
@@ -746,7 +757,7 @@ async def render_score_list_image(
     return image_bytes
 
 
-@renderer
+@renderer("user_today_bp")
 async def render_user_today_bp_image(
     user_id: int,
     username: str,
@@ -811,8 +822,11 @@ async def render_user_today_bp_image(
         "total_pages": total_pages,
     }
 
-    # 渲染模板（minifilter 会自动处理 beatmap 信息补充）
-    html = await render_skin_template(skin, "today_bp", data)
+    # 应用 minifilters 处理数据（按 renderer 视图名 hook）
+    processed_data = await apply_minifilters_async("user_today_bp", data)
+
+    # 渲染模板
+    html = await render_skin_template(skin, "today_bp", processed_data)
     logger.debug(f"[render_user_today_bp_image] HTML 长度: {len(html)} chars")
 
     # 动态计算高度
@@ -857,7 +871,10 @@ async def render_today_bp_image(
         "total_pages": total_pages,
     }
 
-    html = await render_skin_template(skin, "today_bp", data)
+    # 应用 minifilters 处理数据（复用 user_today_bp 的 hook）
+    processed_data = await apply_minifilters_async("user_today_bp", data)
+
+    html = await render_skin_template(skin, "today_bp", processed_data)
     logger.debug(f"[render_today_bp_image] HTML 长度: {len(html)} chars")
 
     # 动态计算高度

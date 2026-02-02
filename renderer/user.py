@@ -1,6 +1,7 @@
 from backend.user import bind_user, get_user_info, unbind_user
 from renderer.renderer_template import renderer
 from renderer.skin_loader import render_template as render_skin_template
+from utils.flt_mgr import apply_minifilters_async
 from utils.html2image import html_to_image
 from utils.logger import get_logger
 from utils.strings import format_template
@@ -64,7 +65,7 @@ async def render_binding_user(discord_id: int, username: str) -> str:
 # ============ 新的图片渲染 API ============
 
 
-@renderer
+@renderer("user_card")
 async def render_user_card_image(
     data: dict,
     skin: str | None = None,
@@ -82,11 +83,14 @@ async def render_user_card_image(
     skin = skin or DEFAULT_SKIN
     logger.info(f"[render_user_card_image] 开始渲染，skin={skin}")
 
-    # 1. 渲染 HTML 模板（内部会应用 minifilters）
-    html = await render_skin_template(skin, "user_card", data)
+    # 应用 minifilters 处理数据（按 renderer 视图名 hook）
+    processed_data = await apply_minifilters_async("user_card", data)
+
+    # 渲染 HTML 模板
+    html = await render_skin_template(skin, "user_card", processed_data)
     logger.debug(f"[render_user_card_image] HTML 长度: {len(html)} chars")
 
-    # 3. 转换为图片
+    # 转换为图片
     image_bytes = await html_to_image(html, width=800, height=400)
     logger.info(
         f"[render_user_card_image] 图片生成完成，大小: {len(image_bytes)} bytes"
