@@ -24,7 +24,7 @@ class User(commands.Cog):
         await ctx.defer()
 
         username = await resolve_username(ctx, user)
-        msg = await render_user_info(username)
+        msg = await render_user_info(username, locale="en")  # type: ignore[call-arg]
         await ctx.send(msg)
 
     @commands.hybrid_command(
@@ -46,7 +46,7 @@ class User(commands.Cog):
     async def bind(self, ctx: commands.Context, user: str):
         await ctx.defer()
 
-        msg = await render_binding_user(ctx.author.id, user)
+        msg = await render_binding_user(ctx.author.id, user, locale="en")  # type: ignore[call-arg]
         await ctx.send(msg)
 
     @commands.hybrid_command(
@@ -55,7 +55,7 @@ class User(commands.Cog):
     async def unbind(self, ctx: commands.Context):
         await ctx.defer()
 
-        msg = await render_unbinding_user(ctx.author.id)
+        msg = await render_unbinding_user(ctx.author.id, locale="en")  # type: ignore[call-arg]
         await ctx.send(msg)
 
 

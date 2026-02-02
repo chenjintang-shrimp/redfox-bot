@@ -14,52 +14,59 @@ logger = get_logger("renderer.user")
 
 
 @renderer
-async def render_user_info(username: str) -> str:
+async def render_user_info(username: str, locale: str = "en") -> str:
     """
     获取用户信息（文字版）
 
     Args:
         username: osu!用户名
+        locale: 语言代码，默认"en"
 
     Returns:
         用户信息字符串
     """
     user_info = await get_user_info(username)
-    return format_template("USER_INFO_TEMPLATE", user_info)
+    return format_template("USER_INFO_TEMPLATE", locale=locale, **user_info)
 
 
 @renderer
-async def render_unbinding_user(discord_id: int) -> str:
+async def render_unbinding_user(discord_id: int, locale: str = "en") -> str:
     """
     解绑用户
 
     Args:
         discord_id: Discord user ID
+        locale: 语言代码，默认"en"
 
     Returns:
         解绑结果字符串
     """
     deleted = await unbind_user(discord_id)
     if deleted:
-        return format_template("USER_UNBIND_SUCCESS_TEMPLATE", {})
+        return format_template("USER_UNBIND_SUCCESS_TEMPLATE", locale=locale)
     else:
-        return format_template("USER_NOT_BOUND_TEMPLATE", {"user": "You"})
+        return format_template("USER_NOT_BOUND_TEMPLATE", locale=locale, user="You")
 
 
 @renderer
-async def render_binding_user(discord_id: int, username: str) -> str:
+async def render_binding_user(
+    discord_id: int, username: str, locale: str = "en"
+) -> str:
     """
     绑定用户
 
     Args:
         discord_id: Discord用户ID
         username: osu!用户名
+        locale: 语言代码，默认"en"
 
     Returns:
         绑定结果字符串
     """
     await bind_user(discord_id, username)
-    return format_template("USER_BIND_SUCCESS_TEMPLATE", {"username": username})
+    return format_template(
+        "USER_BIND_SUCCESS_TEMPLATE", locale=locale, username=username
+    )
 
 
 # ============ 新的图片渲染 API ============
@@ -99,7 +106,7 @@ async def render_user_card_image(
     return image_bytes
 
 
-def render_user_card_text(data: dict) -> str:
+def render_user_card_text(data: dict, locale: str = "en") -> str:
     """
     渲染用户卡片为文字（使用原有模板）
 
@@ -107,8 +114,9 @@ def render_user_card_text(data: dict) -> str:
 
     Args:
         data: API 返回的用户数据
+        locale: 语言代码，默认"en"
 
     Returns:
         格式化的文本字符串
     """
-    return format_template("USER_INFO_TEMPLATE", data)
+    return format_template("USER_INFO_TEMPLATE", locale=locale, **data)

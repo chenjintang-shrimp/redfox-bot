@@ -27,7 +27,7 @@ async def handle_m(event: MessageEvent, args=CommandArg()):
         return
 
     try:
-        msg = await render_beatmap_info(beatmap_id)
+        msg = await render_beatmap_info(beatmap_id, locale="zh")  # type: ignore[call-arg]
         await m_cmd.send(msg)
     except BeatmapNotFoundError:
         await m_cmd.send(format_template("BEATMAP_NOT_FOUND_TEMPLATE"))

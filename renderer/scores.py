@@ -65,7 +65,7 @@ def _format_accuracy(accuracy: float) -> str:
     return f"{accuracy * 100:.2f}%"
 
 
-def _format_score_item(score: Dict[str, Any], index: int) -> str:
+def _format_score_item(score: Dict[str, Any], index: int, locale: str = "en") -> str:
     """格式化单条成绩"""
     rank = _format_rank(score.get("rank", "?"))
     total_score = score.get("total_score", score.get("score", 0))
@@ -87,10 +87,10 @@ def _format_score_item(score: Dict[str, Any], index: int) -> str:
         "created_at": created_at,
     }
 
-    return format_template("SCORES_LIST_ITEM_TEMPLATE", **context)
+    return format_template("SCORES_LIST_ITEM_TEMPLATE", locale=locale, **context)
 
 
-def _format_user_score_item(score: Dict[str, Any], index: int) -> str:
+def _format_user_score_item(score: Dict[str, Any], index: int, locale: str = "en") -> str:
     """格式化用户成绩列表中的单条成绩"""
     beatmap = score.get("beatmap", {})
     beatmapset = score.get("beatmapset", {})
@@ -116,7 +116,7 @@ def _format_user_score_item(score: Dict[str, Any], index: int) -> str:
         "created_at": created_at,
     }
 
-    return format_template("USER_SCORES_LIST_ITEM_TEMPLATE", **context)
+    return format_template("USER_SCORES_LIST_ITEM_TEMPLATE", locale=locale, **context)
 
 
 def _calculate_pagination(
@@ -139,7 +139,11 @@ def _calculate_pagination(
 
 @renderer
 async def render_user_beatmap_scores(
-    user_id: int, beatmap_id: int, page: int = 1, ruleset: Optional[str] = None
+    user_id: int,
+    beatmap_id: int,
+    page: int = 1,
+    ruleset: Optional[str] = None,
+    locale: str = "en",
 ) -> str:
     """
     渲染用户在某个谱面上的全部成绩（支持分页）
@@ -149,6 +153,7 @@ async def render_user_beatmap_scores(
         beatmap_id: 谱面 ID
         page: 页码（从 1 开始）
         ruleset: 游戏模式（可选）
+        locale: 语言代码，默认"en"
 
     Returns:
         格式化后的成绩列表字符串
@@ -162,7 +167,7 @@ async def render_user_beatmap_scores(
 
     # 处理空成绩
     if not scores:
-        return format_template("SCORES_LIST_EMPTY_TEMPLATE", username=username)
+        return format_template("SCORES_LIST_EMPTY_TEMPLATE", locale=locale, username=username)
 
     # 按 score_id 去重（防止 API 返回重复数据）
     seen_ids = set()
@@ -196,6 +201,7 @@ async def render_user_beatmap_scores(
     # 头部
     header = format_template(
         "SCORES_LIST_HEADER_TEMPLATE",
+        locale=locale,
         username=username,
         beatmap_title=beatmap_title,
         beatmap_version=beatmap_version,
@@ -207,11 +213,12 @@ async def render_user_beatmap_scores(
 
     # 成绩列表
     for i, score in enumerate(scores[start_idx:end_idx], start=start_idx + 1):
-        lines.append(_format_score_item(score, i))
+        lines.append(_format_score_item(score, i, locale=locale))
 
     # 尾部
     footer = format_template(
         "SCORES_LIST_FOOTER_TEMPLATE",
+        locale=locale,
         current_page=current_page,
         total_pages=total_pages,
         total_scores=total_scores,
@@ -251,6 +258,7 @@ async def render_user_score_list(
     include_fails: bool = False,
     page: int = 1,
     limit: int = 100,
+    locale: str = "en",
 ) -> str:
     """
     渲染用户特定类型的成绩列表 (best/recent/etc)
@@ -261,6 +269,7 @@ async def render_user_score_list(
         include_fails: 是否包含失败成绩
         page: 页码
         limit: API请求限制数量
+        locale: 语言代码，默认"en"
 
     Returns:
         格式化后的成绩列表
@@ -273,7 +282,7 @@ async def render_user_score_list(
 
     if not scores:
         return format_template(
-            "USER_SCORES_EMPTY_TEMPLATE", username=username, type=type
+            "USER_SCORES_EMPTY_TEMPLATE", locale=locale, username=username, type=type
         )
 
     # 如果是 best 类型 (bp)，需要过滤 24 小时内刷新的
@@ -293,15 +302,16 @@ async def render_user_score_list(
     lines = []
 
     header = format_template(
-        "USER_SCORES_LIST_HEADER_TEMPLATE", username=username, type=type
+        "USER_SCORES_LIST_HEADER_TEMPLATE", locale=locale, username=username, type=type
     )
     lines.append(header)
 
     for i, score in enumerate(scores[start_idx:end_idx], start=start_idx + 1):
-        lines.append(_format_user_score_item(score, i))
+        lines.append(_format_user_score_item(score, i, locale=locale))
 
     footer = format_template(
         "SCORES_LIST_FOOTER_TEMPLATE",
+        locale=locale,
         current_page=current_page,
         total_pages=total_pages,
         total_scores=total_scores,
@@ -313,7 +323,7 @@ async def render_user_score_list(
 
 @renderer
 async def render_user_recent_score(
-    user_id: int, type: str, include_fails: bool = False
+    user_id: int, type: str, include_fails: bool = False, locale: str = "en"
 ) -> str:
     """
     渲染用户最新的单条成绩 (p/r)
@@ -322,6 +332,7 @@ async def render_user_recent_score(
         user_id: 用户 ID
         type: 成绩类型
         include_fails: 是否包含失败成绩
+        locale: 语言代码，默认"en"
 
     Returns:
         格式化后的单条成绩详情
@@ -333,7 +344,7 @@ async def render_user_recent_score(
 
     if not scores:
         return format_template(
-            "USER_SCORES_EMPTY_TEMPLATE", username=username, type=type
+            "USER_SCORES_EMPTY_TEMPLATE", locale=locale, username=username, type=type
         )
 
     score = scores[0]
@@ -364,7 +375,7 @@ async def render_user_recent_score(
         "beatmap_url": f"https://osu.ppy.sh/b/{beatmap.get('id', 0)}",  # 假设这是官网链接
     }
 
-    return format_template("USER_SCORE_SINGLE_TEMPLATE", **context)
+    return format_template("USER_SCORE_SINGLE_TEMPLATE", locale=locale, **context)
 
 
 async def get_user_scores_page_count(
@@ -405,7 +416,9 @@ def _is_today_score(score: Dict[str, Any]) -> bool:
 
 
 @renderer
-async def render_user_today_bp(user_id: int, page: int = 1, limit: int = 100) -> str:
+async def render_user_today_bp(
+    user_id: int, page: int = 1, limit: int = 100, locale: str = "en"
+) -> str:
     """
     渲染用户今日（24小时内）刷新的BP
 
@@ -413,6 +426,7 @@ async def render_user_today_bp(user_id: int, page: int = 1, limit: int = 100) ->
         user_id: 用户 ID
         page: 页码（从 1 开始）
         limit: API请求限制数量
+        locale: 语言代码，默认"en"
 
     Returns:
         格式化后的今日BP列表字符串
@@ -423,13 +437,13 @@ async def render_user_today_bp(user_id: int, page: int = 1, limit: int = 100) ->
     username = user_info.get("username", "Unknown")
 
     if not scores:
-        return format_template("TODAY_BP_EMPTY_TEMPLATE", username=username)
+        return format_template("TODAY_BP_EMPTY_TEMPLATE", locale=locale, username=username)
 
     # 过滤24小时内的成绩
     today_scores = [score for score in scores if _is_today_score(score)]
 
     if not today_scores:
-        return format_template("TODAY_BP_EMPTY_TEMPLATE", username=username)
+        return format_template("TODAY_BP_EMPTY_TEMPLATE", locale=locale, username=username)
 
     total_scores = len(today_scores)
     start_idx, end_idx, total_pages = _calculate_pagination(total_scores, page)
@@ -437,14 +451,15 @@ async def render_user_today_bp(user_id: int, page: int = 1, limit: int = 100) ->
 
     lines = []
 
-    header = format_template("TODAY_BP_HEADER_TEMPLATE", username=username)
+    header = format_template("TODAY_BP_HEADER_TEMPLATE", locale=locale, username=username)
     lines.append(header)
 
     for i, score in enumerate(today_scores[start_idx:end_idx], start=start_idx + 1):
-        lines.append(_format_user_score_item(score, i))
+        lines.append(_format_user_score_item(score, i, locale=locale))
 
     footer = format_template(
         "SCORES_LIST_FOOTER_TEMPLATE",
+        locale=locale,
         current_page=current_page,
         total_pages=total_pages,
         total_scores=total_scores,

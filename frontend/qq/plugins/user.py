@@ -29,7 +29,7 @@ async def handle_info_text(event: MessageEvent, args):
         return
 
     try:
-        msg = await render_user_info(username)
+        msg = await render_user_info(username, locale="zh")  # type: ignore[call-arg]
         await info_short_cmd.send(msg)
     except UserQueryError as e:
         await info_short_cmd.send(format_template("QQ_QUERY_ERROR_TEMPLATE", error_msg=e.error_msg))

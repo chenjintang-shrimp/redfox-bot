@@ -12,9 +12,13 @@ logger = get_logger("renderer.beatmap")
 
 
 @renderer
-async def render_beatmap_info(beatmap_id: int):
+async def render_beatmap_info(beatmap_id: int, locale: str = "en"):
     """
     获取谱面信息并渲染
+
+    Args:
+        beatmap_id: 谱面ID
+        locale: 语言代码，默认"en"
     """
     try:
         beatmap_info = await get_beatmap_info(beatmap_id)
@@ -46,10 +50,10 @@ async def render_beatmap_info(beatmap_id: int):
             "url": beatmap_info.get("url", ""),
         }
 
-        return format_template("BEATMAP_INFO_TEMPLATE", **context)
+        return format_template("BEATMAP_INFO_TEMPLATE", locale=locale, **context)
 
     except BeatmapNotFoundError:
-        return format_template("BEATMAP_NOT_FOUND_TEMPLATE")
+        return format_template("BEATMAP_NOT_FOUND_TEMPLATE", locale=locale)
     except Exception as e:
         return ExceptionHandler.handle(e)
 
