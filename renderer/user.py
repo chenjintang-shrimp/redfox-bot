@@ -2,12 +2,14 @@ from backend.user import bind_user, get_user_info, unbind_user
 from renderer.renderer_template import renderer
 from renderer.skin_loader import render_template as render_skin_template
 from utils.html2image import html_to_image
+from utils.i18n import get_i18n
 from utils.logger import get_logger
 from utils.strings import format_template
 from utils.variable import DEFAULT_SKIN
 
 logger = get_logger("renderer.user")
 
+i18n = get_i18n("discord")
 
 # ============ 原有的文字渲染 API ============
 
@@ -24,7 +26,7 @@ async def render_user_info(username: str) -> str:
         用户信息字符串
     """
     user_info = await get_user_info(username)
-    return format_template("USER_INFO_TEMPLATE", user_info)
+    return format_template(i18n.get("user_info"), user_info)
 
 
 @renderer
@@ -40,9 +42,9 @@ async def render_unbinding_user(discord_id: int) -> str:
     """
     deleted = await unbind_user(discord_id)
     if deleted:
-        return format_template("USER_UNBIND_SUCCESS_TEMPLATE", {})
+        return format_template(i18n.get("unbind_success"), {})
     else:
-        return format_template("USER_NOT_BOUND_TEMPLATE", {"user": "You"})
+        return format_template(i18n.get("not_bound"), {"user": "You"})
 
 
 @renderer
@@ -58,7 +60,7 @@ async def render_binding_user(discord_id: int, username: str) -> str:
         绑定结果字符串
     """
     await bind_user(discord_id, username)
-    return format_template("USER_BIND_SUCCESS_TEMPLATE", {"username": username})
+    return format_template(i18n.get("bind_success"), {"username": username})
 
 
 # ============ 新的图片渲染 API ============

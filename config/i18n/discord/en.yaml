@@ -1,94 +1,60 @@
 # Discord Platform - English i18n
 
-# Common errors
-errors:
-  user_not_found: "User not found: {username}"
-  beatmap_not_found: "Beatmap not found: {beatmap_id}"
-  query_failed: "Query failed: {error}"
-  render_failed: "Failed to generate image. Please try again later."
-  unknown_error: "An unknown error occurred"
-  invalid_beatmap_id: "Invalid beatmap ID. Please provide a number."
-
 # User module
 user:
-  info_title: "User Information: {username}"
-  info_id: "ID"
-  info_playmode: "Play Mode"
-  info_pp: "Performance Points"
-  info_global_rank: "Global Rank"
-  info_country_rank: "Country Rank"
-  info_accuracy: "Accuracy"
-  info_play_count: "Play Count"
-  info_join_date: "Join Date"
+  # Info command - text output
+  info_text: |
+    User info for {username}:
+    id: {id}
+    playmode: {playmode}
+    pp: {pp}
+    global rank: #{global_rank}
+
+  # Bind command responses
   bind_success: "Successfully bound to osu! user: {username}"
   bind_exists: "You have already bound an osu! account. Please unbind first to change."
-  bind_failed: "Binding failed: {error}"
   bind_user_not_found: "User not found: {username}"
+  bind_failed: "Binding failed: {error}"
+
+  # Unbind command responses
   unbind_success: "Successfully unbound your osu! account"
   unbind_not_bound: "You have not bound an osu! account yet"
   unbind_failed: "Unbinding failed: {error}"
+
+  # General user errors
   not_bound: "Please bind your osu! account first using `/bind <username>`, or specify a username"
-  not_bound_other: "{user} has not bound an osu! account"
+  not_found: "User not found: {username}"
+  query_failed: "Failed to query user: {error}"
 
 # Scores module
 scores:
+  # Score on beatmap
   beatmap_id_required: "Please provide a beatmap ID. Usage: `/ss <beatmap_id>`"
   beatmap_id_invalid: "Beatmap ID must be a number"
-  no_scores: "This user has no scores on this beatmap"
-  no_recent: "No recent plays found"
-  no_best: "No best scores found"
-  score_list_title: "{username}'s {type} Scores"
-  score_list_empty: "{username} has no {type} scores"
-  score_single_title: "{username}'s Score"
-  score_details: "Score Details"
-  score_rank: "Rank"
-  score_pp: "PP"
-  score_accuracy: "Accuracy"
-  score_combo: "Combo"
-  score_mods: "Mods"
-  score_date: "Date"
+  no_scores_on_beatmap: "{username} has no scores on this beatmap"
+
+  # Best scores
+  no_best_scores: "{username} has no best scores"
+  best_scores_title: "{username}'s Best Scores"
+
+  # Recent scores
+  no_recent_scores: "{username} has no recent plays"
+  recent_scores_title: "{username}'s Recent Plays"
+
+  # Score query errors
+  query_failed: "Failed to query scores: {error}"
 
 # Beatmap module
 beatmap:
-  info_title: "Beatmap Information"
-  info_artist: "Artist"
-  info_creator: "Creator"
-  info_difficulty: "Difficulty"
-  info_stars: "Stars"
-  info_length: "Length"
-  info_status: "Status"
-  info_bpm: "BPM"
-  info_cs: "CS"
-  info_ar: "AR"
-  info_od: "OD"
-  info_hp: "HP"
+  not_found: "Beatmap not found: {beatmap_id}"
+  info_failed: "Failed to get beatmap info: {error}"
 
 # Today BP module
 today_bp:
   title: "{username}'s Today's Best Scores (24h)"
   empty: "{username} has no new best scores in the last 24 hours"
-  new_record: "New Record!"
 
-# Rank emojis
-rank_emojis:
-  XH: "🏆 XH"
-  X: "🥇 X"
-  SH: "✨ SH"
-  S: "⭐ S"
-  A: "🟢 A"
-  B: "🔵 B"
-  C: "🟡 C"
-  D: "🔴 D"
-  F: "💀 F"
-
-# Pagination
-pagination:
-  page: "Page {current}/{total}"
-  total: "Total: {count} items"
-  previous: "◀ Previous"
-  next: "Next ▶"
-
-# Footer
-footer:
-  powered_by: "Powered by g0v0bot"
-  data_from: "Data from osu! API"
+# Common errors
+errors:
+  render_failed: "Failed to generate image. Please try again later."
+  unknown_error: "An unknown error occurred"

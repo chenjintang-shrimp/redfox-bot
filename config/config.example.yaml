@@ -38,3 +38,24 @@ config_files:
   # 其他配置文件路径
   strings: "config/strings.yaml"
   api: "config/api.yaml"
+
+# 平台配置
+platforms:
+  # Discord 平台配置
+  discord:
+    # 语言设置 (对应 config/i18n/discord/ 下的文件名)
+    language: "en"
+    # 命令前缀
+    command_prefix: "/"
+
+  # QQ 平台配置
+  qq:
+    # 语言设置 (对应 config/i18n/qq/ 下的文件名)
+    language: "zh"
+    # 命令前缀
+    command_prefix: "!"
+
+  # 未来可扩展其他平台:
+  # telegram:
+  #   language: "en"
+  #   command_prefix: "/"

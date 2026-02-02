@@ -15,6 +15,19 @@ logger = get_logger("utils.i18n")
 # 默认配置
 DEFAULT_LANGUAGE = "zh"
 I18N_DIR = Path(__file__).parent.parent / "config" / "i18n"
+CONFIG_FILE = Path(__file__).parent.parent / "config" / "config.yaml"
+
+
+def _load_platform_config() -> dict[str, Any]:
+    """从 config.yaml 加载平台配置"""
+    try:
+        if CONFIG_FILE.exists():
+            with open(CONFIG_FILE, "r", encoding="utf-8") as f:
+                config = yaml.safe_load(f) or {}
+                return config.get("platforms", {})
+    except Exception as e:
+        logger.error(f"Failed to load platform config: {e}")
+    return {}
 
 
 class I18nManager:
@@ -38,7 +51,14 @@ class I18nManager:
             return
 
         self.platform = platform
-        self.language = language or DEFAULT_LANGUAGE
+
+        # 如果没有指定语言，从 config.yaml 读取
+        if language is None:
+            platform_config = _load_platform_config()
+            platform_settings = platform_config.get(platform, {})
+            language = platform_settings.get("language", DEFAULT_LANGUAGE)
+
+        self.language = language
         self._strings: dict[str, Any] = {}
 
         self._load_strings()

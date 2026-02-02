@@ -1,32 +1,60 @@
 # QQ 平台 - 中文 i18n
 
-# 通用错误
-errors:
-  user_not_found: "找不到用户: {username}"
-  beatmap_not_found: "找不到谱面: {beatmap_id}"
-  query_failed: "查询失败: {error}"
-  render_failed: "生成图片失败，请稍后重试"
-  unknown_error: "发生未知错误"
-
 # 用户模块
 user:
-  info_title: "{username} 的用户信息"
+  # 信息命令 - 文本输出（QQ 主要用图片，但保留文本备用）
+  info_text: |
+    用户信息: {username}
+    ID: {id}
+    游戏模式: {playmode}
+    PP: {pp}
+    全球排名: #{global_rank}
+
+  # 绑定命令响应
   bind_success: "成功绑定 osu! 用户: {username}"
   bind_exists: "你已经绑定过 osu! 账号了，请先解绑"
+  bind_user_not_found: "找不到用户: {username}"
   bind_failed: "绑定失败: {error}"
+
+  # 解绑命令响应
   unbind_success: "解绑成功"
   unbind_not_bound: "你还没有绑定 osu! 账号"
   unbind_failed: "解绑失败: {error}"
+
+  # 通用用户错误
   not_bound: "请先使用 !bind <osu用户名> 绑定账号，或指定用户名查询"
+  not_found: "找不到用户: {username}"
+  query_failed: "查询用户失败: {error}"
 
 # 成绩模块
 scores:
+  # 谱面成绩
   beatmap_id_required: "请提供谱面ID，格式: !ss <beatmap_id>"
   beatmap_id_invalid: "谱面ID必须是数字"
-  no_scores: "该用户在此谱面上没有成绩"
-  no_recent: "没有找到最近游玩的成绩"
-  no_best: "没有找到最佳成绩"
+  no_scores_on_beatmap: "该用户在此谱面上没有成绩"
+
+  # 最佳成绩
+  no_best_scores: "该用户没有最佳成绩"
+  best_scores_title: "{username} 的最佳成绩"
+
+  # 最近成绩
+  no_recent_scores: "该用户没有最近游玩记录"
+  recent_scores_title: "{username} 的最近游玩"
+
+  # 成绩查询错误
+  query_failed: "查询成绩失败: {error}"
 
 # 谱面模块
 beatmap:
-  info_title: "谱面信息"
+  not_found: "找不到谱面: {beatmap_id}"
+  info_failed: "获取谱面信息失败: {error}"
+
+# 今日BP模块
+today_bp:
+  title: "{username} 的今日最佳成绩 (24小时)"
+  empty: "{username} 在过去24小时内没有新的最佳成绩"
+
+# 通用错误
+errors:
+  render_failed: "生成图片失败，请稍后重试"
+  unknown_error: "发生未知错误"
