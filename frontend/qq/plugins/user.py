@@ -28,7 +28,7 @@ async def handle_info_text(event: MessageEvent, args):
         )
     except UserNotBindError:
         await info_short_cmd.send(
-            format_template("USER_NOT_BIND_TEMPLATE", locale="zh")
+            format_template("USER_NOT_BIND_HINT", locale="zh")
         )
         return
 
@@ -38,13 +38,13 @@ async def handle_info_text(event: MessageEvent, args):
     except UserQueryError as e:
         await info_short_cmd.send(
             format_template(
-                "USER_QUERY_ERROR_TEMPLATE", error_msg=e.error_msg, locale="zh"
+                "USER_QUERY_ERROR", error_msg=e.error_msg, locale="zh"
             )
         )
     except Exception as e:
         logger.error(f"查询用户信息失败: {e}")
         await info_short_cmd.send(
-            format_template("USER_QUERY_FAILED_TEMPLATE", locale="zh")
+            format_template("QUERY_FAILED", locale="zh")
         )
 
 
@@ -64,7 +64,7 @@ async def handle_info(event: MessageEvent, args=CommandArg()):
             qq_id, username_arg if username_arg else None
         )
     except UserNotBindError:
-        await info_cmd.send(format_template("USER_NOT_BIND_TEMPLATE", locale="zh"))
+        await info_cmd.send(format_template("USER_NOT_BIND_HINT", locale="zh"))
         return
 
     try:
@@ -74,8 +74,8 @@ async def handle_info(event: MessageEvent, args=CommandArg()):
     except UserQueryError as e:
         await info_cmd.send(
             format_template(
-                "USER_QUERY_ERROR_TEMPLATE", error_msg=e.error_msg, locale="zh"
-            )
+                    "USER_QUERY_ERROR", error_msg=e.error_msg, locale="zh"
+                )
         )
     except Exception as e:
         logger.error(f"生成用户卡片失败: {e}")
@@ -94,17 +94,17 @@ async def handle_bind(event: MessageEvent, args=CommandArg()):
     try:
         await bind_user_qq(qq_id, username)
         await bind_cmd.send(
-            format_template("QQ_BIND_SUCCESS_TEMPLATE", username=username,locale="zh")
+            format_template("BIND_SUCCESS", username=username,locale="zh")
         )
     except BindExistError:
-        await bind_cmd.send(format_template("BIND_EXIST_TEMPLATE",locale="zh"))
+        await bind_cmd.send(format_template("BIND_EXIST",locale="zh"))
     except UserQueryError:
         await bind_cmd.send(
-            format_template("BIND_USER_NOT_FOUND_TEMPLATE", username=username,locale="zh")
+            format_template("BIND_USER_NOT_FOUND", username=username,locale="zh")
         )
     except Exception as e:
         logger.error(f"绑定用户失败: {e}")
-        await bind_cmd.send(format_template("BIND_FAILED_TEMPLATE",locale="zh"))
+        await bind_cmd.send(format_template("BIND_FAILED",locale="zh"))
 
 
 @unbind_cmd.handle()
@@ -114,9 +114,9 @@ async def handle_unbind(event: MessageEvent):
     try:
         deleted = await unbind_user_qq(qq_id)
         if deleted:
-            await unbind_cmd.send(format_template("UNBIND_SUCCESS_TEMPLATE",locale="zh"))
+            await unbind_cmd.send(format_template("UNBIND_SUCCESS",locale="zh"))
         else:
-            await unbind_cmd.send(format_template("UNBIND_NOT_BOUND_TEMPLATE",locale="zh"))
+            await unbind_cmd.send(format_template("UNBIND_NOT_BOUND",locale="zh"))
     except Exception as e:
         logger.error(f"解绑用户失败: {e}")
-        await unbind_cmd.send(format_template("UNBIND_FAILED_TEMPLATE",locale="zh"))
+        await unbind_cmd.send(format_template("UNBIND_FAILED",locale="zh"))

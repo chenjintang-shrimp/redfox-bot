@@ -17,13 +17,13 @@ async def handle_m(event: MessageEvent, args=CommandArg()):
     text = args.extract_plain_text().strip()
 
     if not text:
-        await m_cmd.send(format_template("QQ_BEATMAP_ID_REQUIRED_TEMPLATE", locale="zh"))
+        await m_cmd.send(format_template("BEATMAP_ID_REQUIRED", locale="zh"))
         return
 
     try:
         beatmap_id = int(text)
     except ValueError:
-        await m_cmd.send(format_template("QQ_BEATMAP_ID_INVALID_TEMPLATE", locale="zh"))
+        await m_cmd.send(format_template("BEATMAP_ID_INVALID", locale="zh"))
         return
 
     try:
@@ -33,4 +33,4 @@ async def handle_m(event: MessageEvent, args=CommandArg()):
         await m_cmd.send(format_template("BEATMAP_NOT_FOUND_TEMPLATE", locale="zh"))
     except Exception as e:
         logger.error(f"查询谱面失败: {e}")
-        await m_cmd.send(format_template("QQ_QUERY_FAILED_TEMPLATE", locale="zh"))
+        await m_cmd.send(format_template("QUERY_FAILED", locale="zh"))

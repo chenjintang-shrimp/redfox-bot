@@ -36,13 +36,13 @@ async def handle_ss(event: MessageEvent, args=CommandArg()):
     text = args.extract_plain_text().strip()
 
     if not text:
-        await ss_cmd.send(format_template("QQ_BEATMAP_ID_REQUIRED_TEMPLATE", locale="zh"))
+        await ss_cmd.send(format_template("BEATMAP_ID_REQUIRED", locale="zh"))
         return
 
     try:
         beatmap_id = int(text)
     except ValueError:
-        await ss_cmd.send(format_template("QQ_BEATMAP_ID_INVALID_TEMPLATE", locale="zh"))
+        await ss_cmd.send(format_template("BEATMAP_ID_INVALID", locale="zh"))
         return
 
     try:
@@ -53,14 +53,14 @@ async def handle_ss(event: MessageEvent, args=CommandArg()):
         image = await render_user_beatmap_score_card(user_id, beatmap_id)
         await ss_cmd.send(MessageSegment.image(image))
     except UserNotBindError:
-        await ss_cmd.send(format_template("QQ_USER_NOT_BIND_TEMPLATE", locale="zh"))
+        await ss_cmd.send(format_template("USER_NOT_BIND_HINT", locale="zh"))
     except ScoreQueryError as e:
         await ss_cmd.send(
-            format_template("QQ_QUERY_ERROR_TEMPLATE", error_msg=e.error_msg, locale="zh")
+            format_template("QUERY_ERROR", error_msg=e.error_msg, locale="zh")
         )
     except Exception as e:
         logger.error(f"查询谱面成绩失败: {e}")
-        await ss_cmd.send(format_template("QQ_QUERY_FAILED_TEMPLATE", locale="zh"))
+        await ss_cmd.send(format_template("QUERY_FAILED", locale="zh"))
 
 
 @ps_cmd.handle()
@@ -81,14 +81,14 @@ async def handle_ps(event: MessageEvent, args=CommandArg()):
         )
         await ps_cmd.send(MessageSegment.image(image))
     except UserNotBindError:
-        await ps_cmd.send(format_template("QQ_USER_NOT_BIND_TEMPLATE", locale="zh"))
+        await ps_cmd.send(format_template("USER_NOT_BIND_HINT", locale="zh"))
     except ScoreQueryError as e:
         await ps_cmd.send(
-            format_template("QQ_QUERY_ERROR_TEMPLATE", error_msg=e.error_msg, locale="zh")
+            format_template("QUERY_ERROR", error_msg=e.error_msg, locale="zh")
         )
     except Exception as e:
         logger.error(f"查询最近通过成绩失败: {e}")
-        await ps_cmd.send(format_template("QQ_QUERY_FAILED_TEMPLATE", locale="zh"))
+        await ps_cmd.send(format_template("QUERY_FAILED", locale="zh"))
 
 
 @rs_cmd.handle()
@@ -109,14 +109,14 @@ async def handle_rs(event: MessageEvent, args=CommandArg()):
         )
         await rs_cmd.send(MessageSegment.image(image))
     except UserNotBindError:
-        await rs_cmd.send(format_template("QQ_USER_NOT_BIND_TEMPLATE", locale="zh"))
+        await rs_cmd.send(format_template("USER_NOT_BIND_HINT", locale="zh"))
     except ScoreQueryError as e:
         await rs_cmd.send(
-            format_template("QQ_QUERY_ERROR_TEMPLATE", error_msg=e.error_msg, locale="zh")
+            format_template("QUERY_ERROR", error_msg=e.error_msg, locale="zh")
         )
     except Exception as e:
         logger.error(f"查询最近成绩失败: {e}")
-        await rs_cmd.send(format_template("QQ_QUERY_FAILED_TEMPLATE", locale="zh"))
+        await rs_cmd.send(format_template("QUERY_FAILED", locale="zh"))
 
 
 @t_cmd.handle()
@@ -135,14 +135,14 @@ async def handle_t(event: MessageEvent, args=CommandArg()):
         image = await render_user_today_bp_image(user_id, username)
         await t_cmd.send(MessageSegment.image(image))
     except UserNotBindError:
-        await t_cmd.send(format_template("QQ_USER_NOT_BIND_TEMPLATE", locale="zh"))
+        await t_cmd.send(format_template("USER_NOT_BIND_HINT", locale="zh"))
     except ScoreQueryError as e:
         await t_cmd.send(
-            format_template("QQ_QUERY_ERROR_TEMPLATE", error_msg=e.error_msg, locale="zh")
+            format_template("QUERY_ERROR", error_msg=e.error_msg, locale="zh")
         )
     except Exception as e:
         logger.error(f"查询今日BP失败: {e}")
-        await t_cmd.send(format_template("QQ_QUERY_FAILED_TEMPLATE", locale="zh"))
+        await t_cmd.send(format_template("QUERY_FAILED", locale="zh"))
 
 
 @p_cmd.handle()
@@ -161,14 +161,14 @@ async def handle_p(event: MessageEvent, args=CommandArg()):
         image = await render_user_recent_score_card(user_id, include_fails=False)
         await p_cmd.send(MessageSegment.image(image))
     except UserNotBindError:
-        await p_cmd.send(format_template("QQ_USER_NOT_BIND_TEMPLATE", locale="zh"))
+        await p_cmd.send(format_template("USER_NOT_BIND_HINT", locale="zh"))
     except ScoreQueryError as e:
         await p_cmd.send(
-            format_template("QQ_QUERY_ERROR_TEMPLATE", error_msg=e.error_msg, locale="zh")
+            format_template("QUERY_ERROR", error_msg=e.error_msg, locale="zh")
         )
     except Exception as e:
         logger.error(f"查询最新通过成绩失败: {e}")
-        await p_cmd.send(format_template("QQ_QUERY_FAILED_TEMPLATE", locale="zh"))
+        await p_cmd.send(format_template("QUERY_FAILED", locale="zh"))
 
 
 @r_cmd.handle()
@@ -187,14 +187,14 @@ async def handle_r(event: MessageEvent, args=CommandArg()):
         image = await render_user_recent_score_card(user_id, include_fails=True)
         await r_cmd.send(MessageSegment.image(image))
     except UserNotBindError:
-        await r_cmd.send(format_template("QQ_USER_NOT_BIND_TEMPLATE", locale="zh"))
+        await r_cmd.send(format_template("USER_NOT_BIND_HINT", locale="zh"))
     except ScoreQueryError as e:
         await r_cmd.send(
-            format_template("QQ_QUERY_ERROR_TEMPLATE", error_msg=e.error_msg, locale="zh")
+            format_template("QUERY_ERROR", error_msg=e.error_msg, locale="zh")
         )
     except Exception as e:
         logger.error(f"查询最新成绩失败: {e}")
-        await r_cmd.send(format_template("QQ_QUERY_FAILED_TEMPLATE", locale="zh"))
+        await r_cmd.send(format_template("QUERY_FAILED", locale="zh"))
 
 
 @b_cmd.handle()
@@ -218,13 +218,13 @@ async def handle_b(event: MessageEvent, args=CommandArg()):
         await b_cmd.send(format_template("USER_NOT_BIND_TEMPLATE", locale="zh"))
     except ScoreQueryError as e:
         await b_cmd.send(
-            format_template("QQ_QUERY_ERROR_TEMPLATE", error_msg=e.error_msg, locale="zh")
+            format_template("QUERY_ERROR", error_msg=e.error_msg, locale="zh")
         )
     except Exception as e:
         error_msg = f"查询最佳成绩失败: {e}"
         logger.error(error_msg)
         logger.error(traceback.format_exc())
-        await b_cmd.send(format_template("QQ_QUERY_ERROR_TEMPLATE", error_msg=str(e), locale="zh"))
+        await b_cmd.send(format_template("QUERY_ERROR", error_msg=str(e), locale="zh"))
 
 
 @bs_cmd.handle()
@@ -261,13 +261,13 @@ async def handle_bs(event: MessageEvent, args=CommandArg()):
         )
         await bs_cmd.send(MessageSegment.image(image))
     except UserNotBindError:
-        await bs_cmd.send(format_template("QQ_USER_NOT_BIND_TEMPLATE", locale="zh"))
+        await bs_cmd.send(format_template("USER_NOT_BIND_HINT", locale="zh"))
     except ScoreQueryError as e:
         await bs_cmd.send(
-            format_template("QQ_QUERY_ERROR_TEMPLATE", error_msg=e.error_msg, locale="zh")
+            format_template("QUERY_ERROR", error_msg=e.error_msg, locale="zh")
         )
     except Exception as e:
         error_msg = f"查询最佳成绩列表失败: {e}"
         logger.error(error_msg)
         logger.error(traceback.format_exc())
-        await bs_cmd.send(format_template("QQ_QUERY_ERROR_TEMPLATE", error_msg=str(e), locale="zh"))
+        await bs_cmd.send(format_template("QUERY_ERROR", error_msg=str(e), locale="zh"))
