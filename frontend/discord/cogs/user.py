@@ -7,7 +7,7 @@ from renderer.user import (
     render_user_info,
     render_unbinding_user,
 )
-from backend.user import get_user_info
+from backend.user import get_user_info, set_user_gamemode, get_user_gamemode
 from utils.logger import get_logger
 from discord.ext import commands
 from discord import app_commands, File
@@ -57,6 +57,32 @@ class User(commands.Cog):
 
         msg = await render_unbinding_user(ctx.author.id, locale="en")  # type: ignore[call-arg]
         await ctx.send(msg)
+
+    @commands.hybrid_command(
+        name="set_gamemode", description="Set your default game mode for score queries"
+    )
+    @app_commands.describe(gamemode="Game mode (e.g., osu, taiko, fruits, mania, or custom)")
+    async def set_gamemode_cmd(self, ctx: commands.Context, gamemode: str | None = None):
+        """设置默认游戏模式"""
+        await ctx.defer()
+
+        discord_id = ctx.author.id
+
+        if gamemode is None:
+            # 显示当前设置
+            current_mode = await get_user_gamemode(discord_id)
+            if current_mode:
+                await ctx.send(f"Current default game mode: {current_mode}")
+            else:
+                await ctx.send("No default game mode set")
+            return
+
+        # 设置游戏模式（不限制输入，支持任意私服模式）
+        success = await set_user_gamemode(discord_id, gamemode)
+        if success:
+            await ctx.send(f"Successfully set default game mode to: {gamemode}")
+        else:
+            await ctx.send("Please bind your osu! account first using `/bind <username>`")
 
 
 async def setup(bot: commands.Bot):

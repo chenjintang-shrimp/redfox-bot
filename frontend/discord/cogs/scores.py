@@ -8,7 +8,7 @@ import io
 from discord import File
 
 from frontend.discord.util import resolve_username
-from backend.user import get_user_info
+from backend.user import get_user_info, get_user_gamemode
 from renderer.scores import (
     render_user_beatmap_scores,
     get_scores_page_count,
@@ -312,9 +312,10 @@ class Scores(Cog):
         username = await resolve_username(ctx, user)
         user_info = await get_user_info(username)
         user_id = user_info["id"]
+        gamemode = await get_user_gamemode(ctx.author.id)
 
         image = await render_user_score_list_image(
-            user_id, username, score_type="recent", include_fails=False
+            user_id, username, score_type="recent", include_fails=False, mode=gamemode
         )
         await ctx.send(file=File(io.BytesIO(image), f"{username}_recent.png"))
 
@@ -328,9 +329,10 @@ class Scores(Cog):
         username = await resolve_username(ctx, user)
         user_info = await get_user_info(username)
         user_id = user_info["id"]
+        gamemode = await get_user_gamemode(ctx.author.id)
 
         image = await render_user_score_list_image(
-            user_id, username, score_type="recent", include_fails=True
+            user_id, username, score_type="recent", include_fails=True, mode=gamemode
         )
         await ctx.send(file=File(io.BytesIO(image), f"{username}_recent_all.png"))
 
@@ -344,8 +346,9 @@ class Scores(Cog):
         username = await resolve_username(ctx, user)
         user_info = await get_user_info(username)
         user_id = user_info["id"]
+        gamemode = await get_user_gamemode(ctx.author.id)
 
-        image = await render_user_today_bp_image(user_id, username)
+        image = await render_user_today_bp_image(user_id, username, mode=gamemode)
         await ctx.send(file=File(io.BytesIO(image), f"{username}_today_bp.png"))
 
     @commands.hybrid_command(
@@ -358,8 +361,9 @@ class Scores(Cog):
         username = await resolve_username(ctx, user)
         user_info = await get_user_info(username)
         user_id = user_info["id"]
+        gamemode = await get_user_gamemode(ctx.author.id)
 
-        image = await render_user_recent_score_card(user_id, include_fails=False)
+        image = await render_user_recent_score_card(user_id, include_fails=False, mode=gamemode)
         await ctx.send(file=File(io.BytesIO(image), f"{username}_latest.png"))
 
     @commands.hybrid_command(
@@ -372,8 +376,9 @@ class Scores(Cog):
         username = await resolve_username(ctx, user)
         user_info = await get_user_info(username)
         user_id = user_info["id"]
+        gamemode = await get_user_gamemode(ctx.author.id)
 
-        image = await render_user_recent_score_card(user_id, include_fails=True)
+        image = await render_user_recent_score_card(user_id, include_fails=True, mode=gamemode)
         await ctx.send(file=File(io.BytesIO(image), f"{username}_latest_all.png"))
 
 
