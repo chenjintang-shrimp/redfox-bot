@@ -259,6 +259,7 @@ async def render_user_score_list(
     page: int = 1,
     limit: int = 100,
     locale: str = "en",
+    mode: str | None = None,
 ) -> str:
     """
     渲染用户特定类型的成绩列表 (best/recent/etc)
@@ -270,12 +271,13 @@ async def render_user_score_list(
         page: 页码
         limit: API请求限制数量
         locale: 语言代码，默认"en"
+        mode: 游戏模式 (osu/taiko/fruits/mania)
 
     Returns:
         格式化后的成绩列表
     """
     scores = await get_user_scores(
-        user_id, type, include_fails=include_fails, limit=limit
+        user_id, type, include_fails=include_fails, limit=limit, mode=mode
     )
     user_info = await get_user_info(user_id)
     username = user_info.get("username", "Unknown")
@@ -379,11 +381,11 @@ async def render_user_recent_score(
 
 
 async def get_user_scores_page_count(
-    user_id: int, type: str, include_fails: bool = False, limit: int = 100
+    user_id: int, type: str, include_fails: bool = False, limit: int = 100, mode: str | None = None
 ) -> int:
     try:
         scores = await get_user_scores(
-            user_id, type, include_fails=include_fails, limit=limit
+            user_id, type, include_fails=include_fails, limit=limit, mode=mode
         )
         if not scores:
             return 0
