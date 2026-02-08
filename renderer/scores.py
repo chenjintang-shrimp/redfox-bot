@@ -259,6 +259,7 @@ async def render_user_score_list(
     page: int = 1,
     limit: int = 100,
     locale: str = "en",
+    mode: str | None = None,
 ) -> str:
     """
     渲染用户特定类型的成绩列表 (best/recent/etc)
@@ -270,12 +271,13 @@ async def render_user_score_list(
         page: 页码
         limit: API请求限制数量
         locale: 语言代码，默认"en"
+        mode: 游戏模式 (osu/taiko/fruits/mania)
 
     Returns:
         格式化后的成绩列表
     """
     scores = await get_user_scores(
-        user_id, type, include_fails=include_fails, limit=limit
+        user_id, type, include_fails=include_fails, limit=limit, mode=mode
     )
     user_info = await get_user_info(user_id)
     username = user_info.get("username", "Unknown")
@@ -379,11 +381,11 @@ async def render_user_recent_score(
 
 
 async def get_user_scores_page_count(
-    user_id: int, type: str, include_fails: bool = False, limit: int = 100
+    user_id: int, type: str, include_fails: bool = False, limit: int = 100, mode: str | None = None
 ) -> int:
     try:
         scores = await get_user_scores(
-            user_id, type, include_fails=include_fails, limit=limit
+            user_id, type, include_fails=include_fails, limit=limit, mode=mode
         )
         if not scores:
             return 0
@@ -578,6 +580,7 @@ async def render_user_recent_score_card(
     user_id: int,
     include_fails: bool = False,
     skin: str | None = None,
+    mode: str | None = None,
 ) -> bytes:
     """
     渲染用户最近的一条成绩为图片
@@ -586,6 +589,7 @@ async def render_user_recent_score_card(
         user_id: 用户 ID
         include_fails: 是否包含失败成绩
         skin: 皮肤名称，默认使用全局配置
+        mode: 游戏模式 (osu/taiko/fruits/mania)
 
     Returns:
         PNG 图片字节
@@ -595,12 +599,12 @@ async def render_user_recent_score_card(
     """
     skin = skin or DEFAULT_SKIN
     logger.info(
-        f"[render_user_recent_score_card] 开始渲染，user_id={user_id}, include_fails={include_fails}, skin={skin}"
+        f"[render_user_recent_score_card] 开始渲染，user_id={user_id}, include_fails={include_fails}, mode={mode}, skin={skin}"
     )
 
     # 获取用户最近成绩
     scores = await get_user_scores(
-        user_id, "recent", include_fails=include_fails, limit=1
+        user_id, "recent", include_fails=include_fails, limit=1, mode=mode
     )
     if not scores:
         # 没有成绩，抛出异常让 decorator 处理
@@ -643,6 +647,7 @@ async def render_user_score_list_image(
     include_fails: bool = False,
     skin: str | None = None,
     count: int = 100,
+    mode: str | None = None,
 ) -> bytes:
     """
     渲染用户成绩列表为图片（长图模式，不分页）
@@ -654,6 +659,7 @@ async def render_user_score_list_image(
         include_fails: 是否包含失败成绩
         skin: 皮肤名称，默认使用全局配置
         count: 成绩数量，默认100条
+        mode: 游戏模式 (osu/taiko/fruits/mania)
 
     Returns:
         PNG 图片字节
@@ -663,7 +669,7 @@ async def render_user_score_list_image(
     """
     skin = skin or DEFAULT_SKIN
     logger.info(
-        f"[render_user_score_list_image] 开始渲染，user_id={user_id}, type={score_type}, skin={skin}"
+        f"[render_user_score_list_image] 开始渲染，user_id={user_id}, type={score_type}, mode={mode}, skin={skin}"
     )
 
     # 获取所有成绩（限制20个，与yumu保持一致）
@@ -672,6 +678,7 @@ async def render_user_score_list_image(
         score_type,
         include_fails=include_fails,
         limit=count,
+        mode=mode,
     )
     if not scores:
         raise ScoreQueryError(username, 0, f"No {score_type} scores found", 404)
@@ -777,6 +784,7 @@ async def render_user_today_bp_image(
     user_id: int,
     username: str,
     skin: str | None = None,
+    mode: str | None = None,
 ) -> bytes:
     """
     渲染用户今日BP为图片
@@ -785,6 +793,7 @@ async def render_user_today_bp_image(
         user_id: 用户 ID
         username: 用户名
         skin: 皮肤名称，默认使用全局配置
+        mode: 游戏模式 (osu/taiko/fruits/mania)
 
     Returns:
         PNG 图片字节
@@ -794,11 +803,11 @@ async def render_user_today_bp_image(
     """
     skin = skin or DEFAULT_SKIN
     logger.info(
-        f"[render_user_today_bp_image] 开始渲染，user_id={user_id}, skin={skin}"
+        f"[render_user_today_bp_image] 开始渲染，user_id={user_id}, mode={mode}, skin={skin}"
     )
 
     # 获取 best 成绩
-    scores = await get_user_scores(user_id, "best", include_fails=False, limit=100)
+    scores = await get_user_scores(user_id, "best", include_fails=False, limit=100, mode=mode)
 
     # 检查第一条成绩的字段
     if scores:
@@ -822,13 +831,8 @@ async def render_user_today_bp_image(
 
     today_scores = [s for s in scores if _is_today(s)]
 
-    if not today_scores:
-        raise ScoreQueryError(
-            username, 0, "No new best scores in the last 24 hours", 404
-        )
-
-    # 获取总页数
-    total_pages = await get_today_bp_page_count(user_id)
+    # 获取总页数（如果有成绩）
+    total_pages = await get_today_bp_page_count(user_id) if today_scores else 1
 
     data = {
         "scores": today_scores[:5],

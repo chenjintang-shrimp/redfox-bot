@@ -1,7 +1,7 @@
 [project]
-name = "g0v0bot-discord"
+name = "redfox-bot"
 version = "0.1.0"
-description = "Add your description here"
+description = "A highly-customized bot for osu! private servers"
 readme = "README.md"
 requires-python = ">=3.14"
 dependencies = [
@@ -12,6 +12,9 @@ dependencies = [
     "httpx>=0.28.1",
     "jinja2>=3.1.6",
     "loguru>=0.7.3",
+    "nonebot-adapter-onebot>=2.4.6",
+    "nonebot-plugin-alconna>=0.60.4",
+    "nonebot2[fastapi]>=2.4.4",
     "playwright>=1.58.0",
     "python-dotenv>=1.0.0",
     "pyyaml>=6.0.3",

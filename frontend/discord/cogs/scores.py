@@ -8,7 +8,7 @@ import io
 from discord import File
 
 from frontend.discord.util import resolve_username
-from backend.user import get_user_info
+from backend.user import get_user_info, get_user_gamemode
 from renderer.scores import (
     render_user_beatmap_scores,
     get_scores_page_count,
@@ -312,9 +312,10 @@ class Scores(Cog):
         username = await resolve_username(ctx, user)
         user_info = await get_user_info(username)
         user_id = user_info["id"]
+        gamemode = await get_user_gamemode(ctx.author.id)
 
         image = await render_user_score_list_image(
-            user_id, username, score_type="recent", include_fails=False
+            user_id, username, score_type="recent", include_fails=False, mode=gamemode
         )
         await ctx.send(file=File(io.BytesIO(image), f"{username}_recent.png"))
 
@@ -328,9 +329,10 @@ class Scores(Cog):
         username = await resolve_username(ctx, user)
         user_info = await get_user_info(username)
         user_id = user_info["id"]
+        gamemode = await get_user_gamemode(ctx.author.id)
 
         image = await render_user_score_list_image(
-            user_id, username, score_type="recent", include_fails=True
+            user_id, username, score_type="recent", include_fails=True, mode=gamemode
         )
         await ctx.send(file=File(io.BytesIO(image), f"{username}_recent_all.png"))
 
@@ -344,8 +346,9 @@ class Scores(Cog):
         username = await resolve_username(ctx, user)
         user_info = await get_user_info(username)
         user_id = user_info["id"]
+        gamemode = await get_user_gamemode(ctx.author.id)
 
-        image = await render_user_today_bp_image(user_id, username)
+        image = await render_user_today_bp_image(user_id, username, mode=gamemode)
         await ctx.send(file=File(io.BytesIO(image), f"{username}_today_bp.png"))
 
     @commands.hybrid_command(
@@ -358,8 +361,9 @@ class Scores(Cog):
         username = await resolve_username(ctx, user)
         user_info = await get_user_info(username)
         user_id = user_info["id"]
+        gamemode = await get_user_gamemode(ctx.author.id)
 
-        image = await render_user_recent_score_card(user_id, include_fails=False)
+        image = await render_user_recent_score_card(user_id, include_fails=False, mode=gamemode)
         await ctx.send(file=File(io.BytesIO(image), f"{username}_latest.png"))
 
     @commands.hybrid_command(
@@ -372,9 +376,92 @@ class Scores(Cog):
         username = await resolve_username(ctx, user)
         user_info = await get_user_info(username)
         user_id = user_info["id"]
+        gamemode = await get_user_gamemode(ctx.author.id)
 
-        image = await render_user_recent_score_card(user_id, include_fails=True)
+        image = await render_user_recent_score_card(user_id, include_fails=True, mode=gamemode)
         await ctx.send(file=File(io.BytesIO(image), f"{username}_latest_all.png"))
+
+    # ============ Best 成绩命令 ============
+
+    @commands.hybrid_command(
+        name="b", description="Query your best score (single)"
+    )
+    @app_commands.describe(user="osu! username or mention")
+    async def b(self, ctx: commands.Context, user: str | None = None):
+        """查询最佳成绩（文字版，单条）"""
+        await ctx.defer()
+        username = await resolve_username(ctx, user)
+        user_info = await get_user_info(username)
+        user_id = user_info["id"]
+        gamemode = await get_user_gamemode(ctx.author.id)
+
+        content = await render_user_score_list(  # type: ignore
+            user_id, "best", include_fails=False, page=1, limit=1, locale="en", mode=gamemode
+        )
+        await ctx.send(content=content)
+
+    @commands.hybrid_command(
+        name="bs", description="Query your best scores list"
+    )
+    @app_commands.describe(count="Number of scores (1-100, default 20)", user="osu! username or mention")
+    async def bs(self, ctx: commands.Context, count: int = 20, user: str | None = None):
+        """查询最佳成绩列表（文字版，多条）
+        
+        使用方式:
+        /bs 3 - 查询自己的前3个best成绩
+        /bs 5 someone - 查询某人的前5个best成绩
+        """
+        await ctx.defer()
+        count = min(max(count, 1), 100)  # 限制 1-100
+        username = await resolve_username(ctx, user)
+        user_info = await get_user_info(username)
+        user_id = user_info["id"]
+        gamemode = await get_user_gamemode(ctx.author.id)
+
+        content = await render_user_score_list(  # type: ignore
+            user_id, "best", include_fails=False, page=1, limit=count, locale="en", mode=gamemode
+        )
+        await ctx.send(content=content)
+
+    @commands.hybrid_command(
+        name="ub", description="Query your best score (image card, single)"
+    )
+    @app_commands.describe(user="osu! username or mention")
+    async def ub(self, ctx: commands.Context, user: str | None = None):
+        """查询最佳成绩（图片卡片版，单条）"""
+        await ctx.defer()
+        username = await resolve_username(ctx, user)
+        user_info = await get_user_info(username)
+        user_id = user_info["id"]
+        gamemode = await get_user_gamemode(ctx.author.id)
+
+        image = await render_user_score_list_image(
+            user_id, username, score_type="best", include_fails=False, count=1, mode=gamemode
+        )
+        await ctx.send(file=File(io.BytesIO(image), f"{username}_best.png"))
+
+    @commands.hybrid_command(
+        name="ubs", description="Query your best scores (image card, multiple)"
+    )
+    @app_commands.describe(count="Number of scores (1-100, default 20)", user="osu! username or mention")
+    async def ubs(self, ctx: commands.Context, count: int = 20, user: str | None = None):
+        """查询最佳成绩列表（图片卡片版，多条）
+        
+        使用方式:
+        /ubs 3 - 查询自己的前3个best成绩
+        /ubs 5 someone - 查询某人的前5个best成绩
+        """
+        await ctx.defer()
+        count = min(max(count, 1), 100)  # 限制 1-100
+        username = await resolve_username(ctx, user)
+        user_info = await get_user_info(username)
+        user_id = user_info["id"]
+        gamemode = await get_user_gamemode(ctx.author.id)
+
+        image = await render_user_score_list_image(
+            user_id, username, score_type="best", include_fails=False, count=count, mode=gamemode
+        )
+        await ctx.send(file=File(io.BytesIO(image), f"{username}_best_list.png"))
 
 
 async def setup(bot: commands.Bot):

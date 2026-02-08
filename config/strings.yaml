@@ -273,3 +273,22 @@ BEATMAP_ID_REQUIRED:
 BEATMAP_ID_INVALID:
   en: Beatmap ID must be a number.
   zh: 谱面ID必须是数字
+
+# --------------------------------------------
+# 游戏模式设置
+# --------------------------------------------
+GAMEMODE_CURRENT:
+  en: "Current default game mode: {{ gamemode }}"
+  zh: "当前默认游戏模式: {{ gamemode }}"
+
+GAMEMODE_NOT_SET:
+  en: No default game mode set.
+  zh: 未设置默认游戏模式
+
+GAMEMODE_SET_SUCCESS:
+  en: "Successfully set default game mode to: {{ gamemode }}"
+  zh: "成功设置默认游戏模式为: {{ gamemode }}"
+
+GAMEMODE_SET_FAILED_NOT_BOUND:
+  en: "Please bind your osu! account first using `/bind <username>` or `!bind <username>`."
+  zh: "请先使用 `/bind <用户名>` 或 `!bind <用户名>` 绑定 osu! 账号。"
