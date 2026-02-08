@@ -11,6 +11,7 @@ from backend.beatmap import get_beatmap_info
 from backend.user import get_user_info
 from renderer.renderer_template import renderer
 from renderer.skin_loader import render_template as render_skin_template
+from utils.flt_mgr import apply_minifilters_async
 from utils.html2image import html_to_image
 from utils.logger import get_logger
 from utils.strings import format_template
@@ -64,7 +65,7 @@ def _format_accuracy(accuracy: float) -> str:
     return f"{accuracy * 100:.2f}%"
 
 
-def _format_score_item(score: Dict[str, Any], index: int) -> str:
+def _format_score_item(score: Dict[str, Any], index: int, locale: str = "en") -> str:
     """格式化单条成绩"""
     rank = _format_rank(score.get("rank", "?"))
     total_score = score.get("total_score", score.get("score", 0))
@@ -86,10 +87,10 @@ def _format_score_item(score: Dict[str, Any], index: int) -> str:
         "created_at": created_at,
     }
 
-    return format_template("SCORES_LIST_ITEM_TEMPLATE", **context)
+    return format_template("SCORES_LIST_ITEM_TEMPLATE", locale=locale, **context)
 
 
-def _format_user_score_item(score: Dict[str, Any], index: int) -> str:
+def _format_user_score_item(score: Dict[str, Any], index: int, locale: str = "en") -> str:
     """格式化用户成绩列表中的单条成绩"""
     beatmap = score.get("beatmap", {})
     beatmapset = score.get("beatmapset", {})
@@ -115,7 +116,7 @@ def _format_user_score_item(score: Dict[str, Any], index: int) -> str:
         "created_at": created_at,
     }
 
-    return format_template("USER_SCORES_LIST_ITEM_TEMPLATE", **context)
+    return format_template("USER_SCORES_LIST_ITEM_TEMPLATE", locale=locale, **context)
 
 
 def _calculate_pagination(
@@ -138,7 +139,11 @@ def _calculate_pagination(
 
 @renderer
 async def render_user_beatmap_scores(
-    user_id: int, beatmap_id: int, page: int = 1, ruleset: Optional[str] = None
+    user_id: int,
+    beatmap_id: int,
+    page: int = 1,
+    ruleset: Optional[str] = None,
+    locale: str = "en",
 ) -> str:
     """
     渲染用户在某个谱面上的全部成绩（支持分页）
@@ -148,6 +153,7 @@ async def render_user_beatmap_scores(
         beatmap_id: 谱面 ID
         page: 页码（从 1 开始）
         ruleset: 游戏模式（可选）
+        locale: 语言代码，默认"en"
 
     Returns:
         格式化后的成绩列表字符串
@@ -161,7 +167,7 @@ async def render_user_beatmap_scores(
 
     # 处理空成绩
     if not scores:
-        return format_template("SCORES_LIST_EMPTY_TEMPLATE", username=username)
+        return format_template("SCORES_LIST_EMPTY_TEMPLATE", locale=locale, username=username)
 
     # 按 score_id 去重（防止 API 返回重复数据）
     seen_ids = set()
@@ -195,6 +201,7 @@ async def render_user_beatmap_scores(
     # 头部
     header = format_template(
         "SCORES_LIST_HEADER_TEMPLATE",
+        locale=locale,
         username=username,
         beatmap_title=beatmap_title,
         beatmap_version=beatmap_version,
@@ -206,11 +213,12 @@ async def render_user_beatmap_scores(
 
     # 成绩列表
     for i, score in enumerate(scores[start_idx:end_idx], start=start_idx + 1):
-        lines.append(_format_score_item(score, i))
+        lines.append(_format_score_item(score, i, locale=locale))
 
     # 尾部
     footer = format_template(
         "SCORES_LIST_FOOTER_TEMPLATE",
+        locale=locale,
         current_page=current_page,
         total_pages=total_pages,
         total_scores=total_scores,
@@ -250,6 +258,8 @@ async def render_user_score_list(
     include_fails: bool = False,
     page: int = 1,
     limit: int = 100,
+    locale: str = "en",
+    mode: str | None = None,
 ) -> str:
     """
     渲染用户特定类型的成绩列表 (best/recent/etc)
@@ -260,19 +270,21 @@ async def render_user_score_list(
         include_fails: 是否包含失败成绩
         page: 页码
         limit: API请求限制数量
+        locale: 语言代码，默认"en"
+        mode: 游戏模式 (osu/taiko/fruits/mania)
 
     Returns:
         格式化后的成绩列表
     """
     scores = await get_user_scores(
-        user_id, type, include_fails=include_fails, limit=limit
+        user_id, type, include_fails=include_fails, limit=limit, mode=mode
     )
     user_info = await get_user_info(user_id)
     username = user_info.get("username", "Unknown")
 
     if not scores:
         return format_template(
-            "USER_SCORES_EMPTY_TEMPLATE", username=username, type=type
+            "USER_SCORES_EMPTY_TEMPLATE", locale=locale, username=username, type=type
         )
 
     # 如果是 best 类型 (bp)，需要过滤 24 小时内刷新的
@@ -292,15 +304,16 @@ async def render_user_score_list(
     lines = []
 
     header = format_template(
-        "USER_SCORES_LIST_HEADER_TEMPLATE", username=username, type=type
+        "USER_SCORES_LIST_HEADER_TEMPLATE", locale=locale, username=username, type=type
     )
     lines.append(header)
 
     for i, score in enumerate(scores[start_idx:end_idx], start=start_idx + 1):
-        lines.append(_format_user_score_item(score, i))
+        lines.append(_format_user_score_item(score, i, locale=locale))
 
     footer = format_template(
         "SCORES_LIST_FOOTER_TEMPLATE",
+        locale=locale,
         current_page=current_page,
         total_pages=total_pages,
         total_scores=total_scores,
@@ -312,7 +325,7 @@ async def render_user_score_list(
 
 @renderer
 async def render_user_recent_score(
-    user_id: int, type: str, include_fails: bool = False
+    user_id: int, type: str, include_fails: bool = False, locale: str = "en"
 ) -> str:
     """
     渲染用户最新的单条成绩 (p/r)
@@ -321,6 +334,7 @@ async def render_user_recent_score(
         user_id: 用户 ID
         type: 成绩类型
         include_fails: 是否包含失败成绩
+        locale: 语言代码，默认"en"
 
     Returns:
         格式化后的单条成绩详情
@@ -332,7 +346,7 @@ async def render_user_recent_score(
 
     if not scores:
         return format_template(
-            "USER_SCORES_EMPTY_TEMPLATE", username=username, type=type
+            "USER_SCORES_EMPTY_TEMPLATE", locale=locale, username=username, type=type
         )
 
     score = scores[0]
@@ -363,15 +377,15 @@ async def render_user_recent_score(
         "beatmap_url": f"https://osu.ppy.sh/b/{beatmap.get('id', 0)}",  # 假设这是官网链接
     }
 
-    return format_template("USER_SCORE_SINGLE_TEMPLATE", **context)
+    return format_template("USER_SCORE_SINGLE_TEMPLATE", locale=locale, **context)
 
 
 async def get_user_scores_page_count(
-    user_id: int, type: str, include_fails: bool = False, limit: int = 100
+    user_id: int, type: str, include_fails: bool = False, limit: int = 100, mode: str | None = None
 ) -> int:
     try:
         scores = await get_user_scores(
-            user_id, type, include_fails=include_fails, limit=limit
+            user_id, type, include_fails=include_fails, limit=limit, mode=mode
         )
         if not scores:
             return 0
@@ -404,7 +418,9 @@ def _is_today_score(score: Dict[str, Any]) -> bool:
 
 
 @renderer
-async def render_user_today_bp(user_id: int, page: int = 1, limit: int = 100) -> str:
+async def render_user_today_bp(
+    user_id: int, page: int = 1, limit: int = 100, locale: str = "en"
+) -> str:
     """
     渲染用户今日（24小时内）刷新的BP
 
@@ -412,6 +428,7 @@ async def render_user_today_bp(user_id: int, page: int = 1, limit: int = 100) ->
         user_id: 用户 ID
         page: 页码（从 1 开始）
         limit: API请求限制数量
+        locale: 语言代码，默认"en"
 
     Returns:
         格式化后的今日BP列表字符串
@@ -422,13 +439,13 @@ async def render_user_today_bp(user_id: int, page: int = 1, limit: int = 100) ->
     username = user_info.get("username", "Unknown")
 
     if not scores:
-        return format_template("TODAY_BP_EMPTY_TEMPLATE", username=username)
+        return format_template("TODAY_BP_EMPTY_TEMPLATE", locale=locale, username=username)
 
     # 过滤24小时内的成绩
     today_scores = [score for score in scores if _is_today_score(score)]
 
     if not today_scores:
-        return format_template("TODAY_BP_EMPTY_TEMPLATE", username=username)
+        return format_template("TODAY_BP_EMPTY_TEMPLATE", locale=locale, username=username)
 
     total_scores = len(today_scores)
     start_idx, end_idx, total_pages = _calculate_pagination(total_scores, page)
@@ -436,14 +453,15 @@ async def render_user_today_bp(user_id: int, page: int = 1, limit: int = 100) ->
 
     lines = []
 
-    header = format_template("TODAY_BP_HEADER_TEMPLATE", username=username)
+    header = format_template("TODAY_BP_HEADER_TEMPLATE", locale=locale, username=username)
     lines.append(header)
 
     for i, score in enumerate(today_scores[start_idx:end_idx], start=start_idx + 1):
-        lines.append(_format_user_score_item(score, i))
+        lines.append(_format_user_score_item(score, i, locale=locale))
 
     footer = format_template(
         "SCORES_LIST_FOOTER_TEMPLATE",
+        locale=locale,
         current_page=current_page,
         total_pages=total_pages,
         total_scores=total_scores,
@@ -485,7 +503,7 @@ async def get_today_bp_page_count(user_id: int, limit: int = 100) -> int:
 # ============ 图片渲染 API ============
 
 
-@renderer
+@renderer("user_beatmap_score_card")
 async def render_user_beatmap_score_card(
     user_id: int,
     beatmap_id: int,
@@ -527,7 +545,6 @@ async def render_user_beatmap_score_card(
         )
 
     # 获取第一条成绩
-    # minifilter 会在 render_skin_template 中自动补充 beatmap 信息
     score = scores[0]
 
     # API 返回的成绩数据中没有 beatmap_id，需要手动添加
@@ -543,8 +560,11 @@ async def render_user_beatmap_score_card(
         f"[render_user_beatmap_score_card] beatmap_id: {score.get('beatmap_id')}"
     )
 
-    # 渲染模板（minifilter 会自动处理 beatmap 信息补充）
-    html = await render_skin_template(skin, "score_card", score)
+    # 应用 minifilters 处理数据（按 renderer 视图名 hook）
+    processed_score = await apply_minifilters_async("user_beatmap_score_card", score)
+
+    # 渲染模板
+    html = await render_skin_template(skin, "score_card", processed_score)
     logger.debug(f"[render_user_beatmap_score_card] HTML 长度: {len(html)} chars")
 
     image_bytes = await html_to_image(html, width=800, height=300)
@@ -555,11 +575,12 @@ async def render_user_beatmap_score_card(
     return image_bytes
 
 
-@renderer
+@renderer("user_recent_score_card")
 async def render_user_recent_score_card(
     user_id: int,
     include_fails: bool = False,
     skin: str | None = None,
+    mode: str | None = None,
 ) -> bytes:
     """
     渲染用户最近的一条成绩为图片
@@ -568,6 +589,7 @@ async def render_user_recent_score_card(
         user_id: 用户 ID
         include_fails: 是否包含失败成绩
         skin: 皮肤名称，默认使用全局配置
+        mode: 游戏模式 (osu/taiko/fruits/mania)
 
     Returns:
         PNG 图片字节
@@ -577,12 +599,12 @@ async def render_user_recent_score_card(
     """
     skin = skin or DEFAULT_SKIN
     logger.info(
-        f"[render_user_recent_score_card] 开始渲染，user_id={user_id}, include_fails={include_fails}, skin={skin}"
+        f"[render_user_recent_score_card] 开始渲染，user_id={user_id}, include_fails={include_fails}, mode={mode}, skin={skin}"
     )
 
     # 获取用户最近成绩
     scores = await get_user_scores(
-        user_id, "recent", include_fails=include_fails, limit=1
+        user_id, "recent", include_fails=include_fails, limit=1, mode=mode
     )
     if not scores:
         # 没有成绩，抛出异常让 decorator 处理
@@ -594,7 +616,6 @@ async def render_user_recent_score_card(
         )
 
     # 获取第一条成绩
-    # minifilter 会在 render_skin_template 中自动补充 beatmap 信息
     score = scores[0]
     logger.debug(
         f"[render_user_recent_score_card] 原始成绩数据键: {list(score.keys())}"
@@ -603,8 +624,11 @@ async def render_user_recent_score_card(
         f"[render_user_recent_score_card] beatmap_id: {score.get('beatmap_id')}, id: {score.get('id')}"
     )
 
-    # 渲染模板（minifilter 会自动处理 beatmap 信息补充）
-    html = await render_skin_template(skin, "score_card", score)
+    # 应用 minifilters 处理数据（按 renderer 视图名 hook）
+    processed_score = await apply_minifilters_async("user_recent_score_card", score)
+
+    # 渲染模板
+    html = await render_skin_template(skin, "score_card", processed_score)
     logger.debug(f"[render_user_recent_score_card] HTML 长度: {len(html)} chars")
 
     image_bytes = await html_to_image(html, width=800, height=300)
@@ -615,7 +639,7 @@ async def render_user_recent_score_card(
     return image_bytes
 
 
-@renderer
+@renderer("user_score_list")
 async def render_user_score_list_image(
     user_id: int,
     username: str,
@@ -623,6 +647,7 @@ async def render_user_score_list_image(
     include_fails: bool = False,
     skin: str | None = None,
     count: int = 100,
+    mode: str | None = None,
 ) -> bytes:
     """
     渲染用户成绩列表为图片（长图模式，不分页）
@@ -634,6 +659,7 @@ async def render_user_score_list_image(
         include_fails: 是否包含失败成绩
         skin: 皮肤名称，默认使用全局配置
         count: 成绩数量，默认100条
+        mode: 游戏模式 (osu/taiko/fruits/mania)
 
     Returns:
         PNG 图片字节
@@ -643,7 +669,7 @@ async def render_user_score_list_image(
     """
     skin = skin or DEFAULT_SKIN
     logger.info(
-        f"[render_user_score_list_image] 开始渲染，user_id={user_id}, type={score_type}, skin={skin}"
+        f"[render_user_score_list_image] 开始渲染，user_id={user_id}, type={score_type}, mode={mode}, skin={skin}"
     )
 
     # 获取所有成绩（限制20个，与yumu保持一致）
@@ -652,6 +678,7 @@ async def render_user_score_list_image(
         score_type,
         include_fails=include_fails,
         limit=count,
+        mode=mode,
     )
     if not scores:
         raise ScoreQueryError(username, 0, f"No {score_type} scores found", 404)
@@ -682,8 +709,11 @@ async def render_user_score_list_image(
         "title": title,
     }
 
-    # 渲染模板（minifilter 会自动处理 beatmap 信息补充）
-    html = await render_skin_template(skin, "score_list", data)
+    # 应用 minifilters 处理数据（按 renderer 视图名 hook）
+    processed_data = await apply_minifilters_async("user_score_list", data)
+
+    # 渲染模板
+    html = await render_skin_template(skin, "score_list", processed_data)
     logger.debug(f"[render_user_score_list_image] HTML 长度: {len(html)} chars")
 
     # 动态计算高度（根据成绩数量）
@@ -731,7 +761,10 @@ async def render_score_list_image(
         "total_pages": total_pages,
     }
 
-    html = await render_skin_template(skin, "score_list", data)
+    # 应用 minifilters 处理数据（复用 user_score_list 的 hook）
+    processed_data = await apply_minifilters_async("user_score_list", data)
+
+    html = await render_skin_template(skin, "score_list", processed_data)
     logger.debug(f"[render_score_list_image] HTML 长度: {len(html)} chars")
 
     # 动态计算高度
@@ -746,11 +779,12 @@ async def render_score_list_image(
     return image_bytes
 
 
-@renderer
+@renderer("user_today_bp")
 async def render_user_today_bp_image(
     user_id: int,
     username: str,
     skin: str | None = None,
+    mode: str | None = None,
 ) -> bytes:
     """
     渲染用户今日BP为图片
@@ -759,6 +793,7 @@ async def render_user_today_bp_image(
         user_id: 用户 ID
         username: 用户名
         skin: 皮肤名称，默认使用全局配置
+        mode: 游戏模式 (osu/taiko/fruits/mania)
 
     Returns:
         PNG 图片字节
@@ -768,11 +803,11 @@ async def render_user_today_bp_image(
     """
     skin = skin or DEFAULT_SKIN
     logger.info(
-        f"[render_user_today_bp_image] 开始渲染，user_id={user_id}, skin={skin}"
+        f"[render_user_today_bp_image] 开始渲染，user_id={user_id}, mode={mode}, skin={skin}"
     )
 
     # 获取 best 成绩
-    scores = await get_user_scores(user_id, "best", include_fails=False, limit=100)
+    scores = await get_user_scores(user_id, "best", include_fails=False, limit=100, mode=mode)
 
     # 检查第一条成绩的字段
     if scores:
@@ -796,13 +831,8 @@ async def render_user_today_bp_image(
 
     today_scores = [s for s in scores if _is_today(s)]
 
-    if not today_scores:
-        raise ScoreQueryError(
-            username, 0, "No new best scores in the last 24 hours", 404
-        )
-
-    # 获取总页数
-    total_pages = await get_today_bp_page_count(user_id)
+    # 获取总页数（如果有成绩）
+    total_pages = await get_today_bp_page_count(user_id) if today_scores else 1
 
     data = {
         "scores": today_scores[:5],
@@ -811,8 +841,11 @@ async def render_user_today_bp_image(
         "total_pages": total_pages,
     }
 
-    # 渲染模板（minifilter 会自动处理 beatmap 信息补充）
-    html = await render_skin_template(skin, "today_bp", data)
+    # 应用 minifilters 处理数据（按 renderer 视图名 hook）
+    processed_data = await apply_minifilters_async("user_today_bp", data)
+
+    # 渲染模板
+    html = await render_skin_template(skin, "today_bp", processed_data)
     logger.debug(f"[render_user_today_bp_image] HTML 长度: {len(html)} chars")
 
     # 动态计算高度
@@ -857,7 +890,10 @@ async def render_today_bp_image(
         "total_pages": total_pages,
     }
 
-    html = await render_skin_template(skin, "today_bp", data)
+    # 应用 minifilters 处理数据（复用 user_today_bp 的 hook）
+    processed_data = await apply_minifilters_async("user_today_bp", data)
+
+    html = await render_skin_template(skin, "today_bp", processed_data)
     logger.debug(f"[render_today_bp_image] HTML 长度: {len(html)} chars")
 
     # 动态计算高度

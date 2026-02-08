@@ -21,7 +21,7 @@ class BeatmapCog(commands.Cog):
         get_logger("Discord").info(
             f"User {ctx.author}({ctx.author.id}) queried beatmap {beatmap_id}"
         )
-        msg = await render_beatmap_info(beatmap_id)
+        msg = await render_beatmap_info(beatmap_id, locale="en")  # type: ignore[call-arg]
         await ctx.send(msg)
 
     @commands.hybrid_command("um", description="Query Beatmap Info with image card")

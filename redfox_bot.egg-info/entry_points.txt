@@ -1,0 +1,3 @@
+[console_scripts]
+discord-bot = frontend.discord.main:main
+qq-bot = frontend.qq.main:main

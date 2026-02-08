@@ -7,7 +7,8 @@ from renderer.user import (
     render_user_info,
     render_unbinding_user,
 )
-from backend.user import get_user_info
+from backend.user import get_user_info, set_user_gamemode, get_user_gamemode
+from utils.strings import format_template
 from utils.logger import get_logger
 from discord.ext import commands
 from discord import app_commands, File
@@ -24,7 +25,7 @@ class User(commands.Cog):
         await ctx.defer()
 
         username = await resolve_username(ctx, user)
-        msg = await render_user_info(username)
+        msg = await render_user_info(username, locale="en")  # type: ignore[call-arg]
         await ctx.send(msg)
 
     @commands.hybrid_command(
@@ -46,7 +47,7 @@ class User(commands.Cog):
     async def bind(self, ctx: commands.Context, user: str):
         await ctx.defer()
 
-        msg = await render_binding_user(ctx.author.id, user)
+        msg = await render_binding_user(ctx.author.id, user, locale="en")  # type: ignore[call-arg]
         await ctx.send(msg)
 
     @commands.hybrid_command(
@@ -55,8 +56,42 @@ class User(commands.Cog):
     async def unbind(self, ctx: commands.Context):
         await ctx.defer()
 
-        msg = await render_unbinding_user(ctx.author.id)
+        msg = await render_unbinding_user(ctx.author.id, locale="en")  # type: ignore[call-arg]
         await ctx.send(msg)
+
+    @commands.hybrid_command(
+        name="set_gamemode", description="Set your default game mode for score queries"
+    )
+    @app_commands.describe(gamemode="Game mode (e.g., osu, taiko, fruits, mania, or custom)")
+    async def set_gamemode_cmd(self, ctx: commands.Context, gamemode: str | None = None):
+        """设置默认游戏模式"""
+        await ctx.defer()
+
+        discord_id = ctx.author.id
+
+        if gamemode is None:
+            # 显示当前设置
+            current_mode = await get_user_gamemode(discord_id)
+            if current_mode:
+                await ctx.send(
+                    format_template("GAMEMODE_CURRENT", gamemode=current_mode, locale="en")
+                )
+            else:
+                await ctx.send(
+                    format_template("GAMEMODE_NOT_SET", locale="en")
+                )
+            return
+
+        # 设置游戏模式（不限制输入，支持任意私服模式）
+        success = await set_user_gamemode(discord_id, gamemode)
+        if success:
+            await ctx.send(
+                format_template("GAMEMODE_SET_SUCCESS", gamemode=gamemode, locale="en")
+            )
+        else:
+            await ctx.send(
+                format_template("GAMEMODE_SET_FAILED_NOT_BOUND", locale="en")
+            )
 
 
 async def setup(bot: commands.Bot):

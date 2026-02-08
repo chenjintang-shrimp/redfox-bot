@@ -30,7 +30,7 @@ def get_api_url(endpoint: str, **kwargs) -> str:
     return f"{base_url}{api_config[endpoint]}".format(**kwargs)
 
 
-def format_template(name: str, context: dict | None = None, **kwargs) -> str:
+def format_template(name: str, context: dict | None = None, locale = "zh",**kwargs) -> str:
     """
     使用 Jinja2 渲染模板
 
@@ -42,7 +42,7 @@ def format_template(name: str, context: dict | None = None, **kwargs) -> str:
     Returns:
         渲染后的字符串
     """
-    template_str = load_strings()[name]
+    template_str = load_strings()[name][locale]
 
     # 合并字典参数和关键字参数
     merged_context = {}
