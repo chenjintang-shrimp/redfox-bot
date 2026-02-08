@@ -403,9 +403,14 @@ class Scores(Cog):
     @commands.hybrid_command(
         name="bs", description="Query your best scores list"
     )
-    @app_commands.describe(user="osu! username or mention", count="Number of scores (1-100, default 20)")
-    async def bs(self, ctx: commands.Context, user: str | None = None, count: int = 20):
-        """查询最佳成绩列表（文字版，多条）"""
+    @app_commands.describe(count="Number of scores (1-100, default 20)", user="osu! username or mention")
+    async def bs(self, ctx: commands.Context, count: int = 20, user: str | None = None):
+        """查询最佳成绩列表（文字版，多条）
+        
+        使用方式:
+        /bs 3 - 查询自己的前3个best成绩
+        /bs 5 someone - 查询某人的前5个best成绩
+        """
         await ctx.defer()
         count = min(max(count, 1), 100)  # 限制 1-100
         username = await resolve_username(ctx, user)
@@ -438,9 +443,14 @@ class Scores(Cog):
     @commands.hybrid_command(
         name="ubs", description="Query your best scores (image card, multiple)"
     )
-    @app_commands.describe(user="osu! username or mention", count="Number of scores (1-100, default 20)")
-    async def ubs(self, ctx: commands.Context, user: str | None = None, count: int = 20):
-        """查询最佳成绩列表（图片卡片版，多条）"""
+    @app_commands.describe(count="Number of scores (1-100, default 20)", user="osu! username or mention")
+    async def ubs(self, ctx: commands.Context, count: int = 20, user: str | None = None):
+        """查询最佳成绩列表（图片卡片版，多条）
+        
+        使用方式:
+        /ubs 3 - 查询自己的前3个best成绩
+        /ubs 5 someone - 查询某人的前5个best成绩
+        """
         await ctx.defer()
         count = min(max(count, 1), 100)  # 限制 1-100
         username = await resolve_username(ctx, user)
