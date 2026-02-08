@@ -4,7 +4,7 @@ from nonebot import on_command
 from nonebot.adapters.onebot.v11 import MessageEvent, MessageSegment
 from nonebot.params import CommandArg
 
-from backend.user_qq import get_user_info
+from backend.user_qq import get_user_info, get_user_gamemode_qq
 from backend.expections.user import UserNotBindError
 from backend.expections.scores import ScoreQueryError
 from frontend.qq.util import resolve_username_qq
@@ -75,9 +75,10 @@ async def handle_ps(event: MessageEvent, args=CommandArg()):
         )
         user_info = await get_user_info(username)
         user_id = user_info["id"]
+        gamemode = await get_user_gamemode_qq(qq_id)
 
         image = await render_user_score_list_image(
-            user_id, username, score_type="recent", include_fails=False
+            user_id, username, score_type="recent", include_fails=False, mode=gamemode
         )
         await ps_cmd.send(MessageSegment.image(image))
     except UserNotBindError:
@@ -103,9 +104,10 @@ async def handle_rs(event: MessageEvent, args=CommandArg()):
         )
         user_info = await get_user_info(username)
         user_id = user_info["id"]
+        gamemode = await get_user_gamemode_qq(qq_id)
 
         image = await render_user_score_list_image(
-            user_id, username, score_type="recent", include_fails=True
+            user_id, username, score_type="recent", include_fails=True, mode=gamemode
         )
         await rs_cmd.send(MessageSegment.image(image))
     except UserNotBindError:
@@ -131,8 +133,9 @@ async def handle_t(event: MessageEvent, args=CommandArg()):
         )
         user_info = await get_user_info(username)
         user_id = user_info["id"]
+        gamemode = await get_user_gamemode_qq(qq_id)
 
-        image = await render_user_today_bp_image(user_id, username)
+        image = await render_user_today_bp_image(user_id, username, mode=gamemode)
         await t_cmd.send(MessageSegment.image(image))
     except UserNotBindError:
         await t_cmd.send(format_template("USER_NOT_BIND_HINT", locale="zh"))
@@ -157,8 +160,9 @@ async def handle_p(event: MessageEvent, args=CommandArg()):
         )
         user_info = await get_user_info(username)
         user_id = user_info["id"]
+        gamemode = await get_user_gamemode_qq(qq_id)
 
-        image = await render_user_recent_score_card(user_id, include_fails=False)
+        image = await render_user_recent_score_card(user_id, include_fails=False, mode=gamemode)
         await p_cmd.send(MessageSegment.image(image))
     except UserNotBindError:
         await p_cmd.send(format_template("USER_NOT_BIND_HINT", locale="zh"))
@@ -183,8 +187,9 @@ async def handle_r(event: MessageEvent, args=CommandArg()):
         )
         user_info = await get_user_info(username)
         user_id = user_info["id"]
+        gamemode = await get_user_gamemode_qq(qq_id)
 
-        image = await render_user_recent_score_card(user_id, include_fails=True)
+        image = await render_user_recent_score_card(user_id, include_fails=True, mode=gamemode)
         await r_cmd.send(MessageSegment.image(image))
     except UserNotBindError:
         await r_cmd.send(format_template("USER_NOT_BIND_HINT", locale="zh"))
@@ -209,9 +214,10 @@ async def handle_b(event: MessageEvent, args=CommandArg()):
         )
         user_info = await get_user_info(username)
         user_id = user_info["id"]
+        gamemode = await get_user_gamemode_qq(qq_id)
 
         image = await render_user_score_list_image(
-            user_id, username, score_type="best", include_fails=False, count=1
+            user_id, username, score_type="best", include_fails=False, count=1, mode=gamemode
         )
         await b_cmd.send(MessageSegment.image(image))
     except UserNotBindError:
@@ -255,9 +261,10 @@ async def handle_bs(event: MessageEvent, args=CommandArg()):
         )
         user_info = await get_user_info(username)
         user_id = user_info["id"]
+        gamemode = await get_user_gamemode_qq(qq_id)
 
         image = await render_user_score_list_image(
-            user_id, username, score_type="best", include_fails=False, count=count
+            user_id, username, score_type="best", include_fails=False, count=count, mode=gamemode
         )
         await bs_cmd.send(MessageSegment.image(image))
     except UserNotBindError:

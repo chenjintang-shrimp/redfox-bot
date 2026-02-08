@@ -1,7 +1,8 @@
 from backend.database import (
-    OsuUser,
+    UserBinding,
+    Platform,
+    save_user_binding,
     get_osu_user_by_discord_id,
-    save_osu_user,
     delete_osu_user_by_discord_id,
 )
 from backend.expections.user import BindExistError, UserQueryError
@@ -58,12 +59,13 @@ async def bind_user(user_id: int, username: str):
     if current_user is not None:
         raise BindExistError(current_user.osu_username)
     else:
-        new_user = OsuUser(
-            discord_id=user_id,
+        new_user = UserBinding(
+            id=user_id,
+            platform=Platform.DISCORD,
             osu_id=user_data["id"],
             osu_username=username,
         )
-        await save_osu_user(new_user)
+        await save_user_binding(new_user)
         get_logger("backend").info(f"Successfully retrieved user data for {username}")
         return None
 
@@ -82,3 +84,36 @@ async def unbind_user(discord_id: int) -> bool:
     else:
         get_logger("backend").info(f"No binding found for Discord user {discord_id}")
     return deleted
+
+
+async def set_user_gamemode(discord_id: int, gamemode: str | None) -> bool:
+    """
+    设置用户的默认游戏模式
+    Args:
+        discord_id: Discord user ID
+        gamemode: 游戏模式 (osu/taiko/fruits/mania) 或 None 清除设置
+    Returns:
+        True if successful, False if user not found
+    """
+    user = await get_osu_user_by_discord_id(discord_id)
+    if user is None:
+        return False
+
+    user.current_gamemode = gamemode
+    await save_user_binding(user)
+    get_logger("backend").info(f"Set gamemode for Discord user {discord_id} to {gamemode}")
+    return True
+
+
+async def get_user_gamemode(discord_id: int) -> str | None:
+    """
+    获取用户的默认游戏模式
+    Args:
+        discord_id: Discord user ID
+    Returns:
+        游戏模式 (osu/taiko/fruits/mania) 或 None
+    """
+    user = await get_osu_user_by_discord_id(discord_id)
+    if user is None:
+        return None
+    return user.current_gamemode
