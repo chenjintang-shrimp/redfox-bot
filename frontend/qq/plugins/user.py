@@ -125,14 +125,22 @@ async def handle_switch_gamemode(event: MessageEvent, args=CommandArg()):
         # 显示当前设置
         current_mode = await get_user_gamemode_qq(qq_id)
         if current_mode:
-            await switch_gamemode_cmd.send(f"当前默认游戏模式: {current_mode}")
+            await switch_gamemode_cmd.send(
+                format_template("GAMEMODE_CURRENT", gamemode=current_mode, locale="zh")
+            )
         else:
-            await switch_gamemode_cmd.send("未设置默认游戏模式")
+            await switch_gamemode_cmd.send(
+                format_template("GAMEMODE_NOT_SET", locale="zh")
+            )
         return
 
     # 设置游戏模式（不限制输入，支持任意私服模式）
     success = await set_user_gamemode_qq(qq_id, gamemode)
     if success:
-        await switch_gamemode_cmd.send(f"成功设置默认游戏模式为: {gamemode}")
+        await switch_gamemode_cmd.send(
+            format_template("GAMEMODE_SET_SUCCESS", gamemode=gamemode, locale="zh")
+        )
     else:
-        await switch_gamemode_cmd.send("请先绑定 osu! 账号后再设置游戏模式")
+        await switch_gamemode_cmd.send(
+            format_template("GAMEMODE_SET_FAILED_NOT_BOUND", locale="zh")
+        )

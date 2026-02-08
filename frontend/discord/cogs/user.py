@@ -8,6 +8,7 @@ from renderer.user import (
     render_unbinding_user,
 )
 from backend.user import get_user_info, set_user_gamemode, get_user_gamemode
+from utils.strings import format_template
 from utils.logger import get_logger
 from discord.ext import commands
 from discord import app_commands, File
@@ -72,17 +73,25 @@ class User(commands.Cog):
             # 显示当前设置
             current_mode = await get_user_gamemode(discord_id)
             if current_mode:
-                await ctx.send(f"Current default game mode: {current_mode}")
+                await ctx.send(
+                    format_template("GAMEMODE_CURRENT", gamemode=current_mode, locale="en")
+                )
             else:
-                await ctx.send("No default game mode set")
+                await ctx.send(
+                    format_template("GAMEMODE_NOT_SET", locale="en")
+                )
             return
 
         # 设置游戏模式（不限制输入，支持任意私服模式）
         success = await set_user_gamemode(discord_id, gamemode)
         if success:
-            await ctx.send(f"Successfully set default game mode to: {gamemode}")
+            await ctx.send(
+                format_template("GAMEMODE_SET_SUCCESS", gamemode=gamemode, locale="en")
+            )
         else:
-            await ctx.send("Please bind your osu! account first using `/bind <username>`")
+            await ctx.send(
+                format_template("GAMEMODE_SET_FAILED_NOT_BOUND", locale="en")
+            )
 
 
 async def setup(bot: commands.Bot):
