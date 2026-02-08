@@ -831,13 +831,8 @@ async def render_user_today_bp_image(
 
     today_scores = [s for s in scores if _is_today(s)]
 
-    if not today_scores:
-        raise ScoreQueryError(
-            username, 0, "No new best scores in the last 24 hours", 404
-        )
-
-    # 获取总页数
-    total_pages = await get_today_bp_page_count(user_id)
+    # 获取总页数（如果有成绩）
+    total_pages = await get_today_bp_page_count(user_id) if today_scores else 1
 
     data = {
         "scores": today_scores[:5],

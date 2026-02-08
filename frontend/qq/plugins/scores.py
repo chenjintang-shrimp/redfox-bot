@@ -55,9 +55,8 @@ async def handle_ss(event: MessageEvent, args=CommandArg()):
     except UserNotBindError:
         await ss_cmd.send(format_template("USER_NOT_BIND_HINT", locale="zh"))
     except ScoreQueryError as e:
-        await ss_cmd.send(
-            format_template("QUERY_ERROR", error_msg=e.error_msg, locale="zh")
-        )
+        logger.error(f"查询谱面成绩失败: {e.error_msg}")
+        await ss_cmd.send(format_template("QUERY_ERROR", error_msg=e.error_msg, locale="zh"))
     except Exception as e:
         logger.error(f"查询谱面成绩失败: {e}")
         await ss_cmd.send(format_template("QUERY_FAILED", locale="zh"))
@@ -84,9 +83,8 @@ async def handle_ps(event: MessageEvent, args=CommandArg()):
     except UserNotBindError:
         await ps_cmd.send(format_template("USER_NOT_BIND_HINT", locale="zh"))
     except ScoreQueryError as e:
-        await ps_cmd.send(
-            format_template("QUERY_ERROR", error_msg=e.error_msg, locale="zh")
-        )
+        logger.error(f"查询最近通过成绩失败: {e.error_msg}")
+        await ps_cmd.send(format_template("QUERY_ERROR", error_msg=e.error_msg, locale="zh"))
     except Exception as e:
         logger.error(f"查询最近通过成绩失败: {e}")
         await ps_cmd.send(format_template("QUERY_FAILED", locale="zh"))
@@ -113,9 +111,8 @@ async def handle_rs(event: MessageEvent, args=CommandArg()):
     except UserNotBindError:
         await rs_cmd.send(format_template("USER_NOT_BIND_HINT", locale="zh"))
     except ScoreQueryError as e:
-        await rs_cmd.send(
-            format_template("QUERY_ERROR", error_msg=e.error_msg, locale="zh")
-        )
+        logger.error(f"查询最近成绩失败: {e.error_msg}")
+        await rs_cmd.send(format_template("QUERY_ERROR", error_msg=e.error_msg, locale="zh"))
     except Exception as e:
         logger.error(f"查询最近成绩失败: {e}")
         await rs_cmd.send(format_template("QUERY_FAILED", locale="zh"))
@@ -140,9 +137,8 @@ async def handle_t(event: MessageEvent, args=CommandArg()):
     except UserNotBindError:
         await t_cmd.send(format_template("USER_NOT_BIND_HINT", locale="zh"))
     except ScoreQueryError as e:
-        await t_cmd.send(
-            format_template("QUERY_ERROR", error_msg=e.error_msg, locale="zh")
-        )
+        logger.error(f"查询今日BP失败: {e.error_msg}")
+        await t_cmd.send(format_template("QUERY_ERROR", error_msg=e.error_msg, locale="zh"))
     except Exception as e:
         logger.error(f"查询今日BP失败: {e}")
         await t_cmd.send(format_template("QUERY_FAILED", locale="zh"))
@@ -167,9 +163,8 @@ async def handle_p(event: MessageEvent, args=CommandArg()):
     except UserNotBindError:
         await p_cmd.send(format_template("USER_NOT_BIND_HINT", locale="zh"))
     except ScoreQueryError as e:
-        await p_cmd.send(
-            format_template("QUERY_ERROR", error_msg=e.error_msg, locale="zh")
-        )
+        logger.error(f"查询最新通过成绩失败: {e.error_msg}")
+        await p_cmd.send(format_template("QUERY_ERROR", error_msg=e.error_msg, locale="zh"))
     except Exception as e:
         logger.error(f"查询最新通过成绩失败: {e}")
         await p_cmd.send(format_template("QUERY_FAILED", locale="zh"))
@@ -194,9 +189,8 @@ async def handle_r(event: MessageEvent, args=CommandArg()):
     except UserNotBindError:
         await r_cmd.send(format_template("USER_NOT_BIND_HINT", locale="zh"))
     except ScoreQueryError as e:
-        await r_cmd.send(
-            format_template("QUERY_ERROR", error_msg=e.error_msg, locale="zh")
-        )
+        logger.error(f"查询最新成绩失败: {e.error_msg}")
+        await r_cmd.send(format_template("QUERY_ERROR", error_msg=e.error_msg, locale="zh"))
     except Exception as e:
         logger.error(f"查询最新成绩失败: {e}")
         await r_cmd.send(format_template("QUERY_FAILED", locale="zh"))
@@ -221,16 +215,14 @@ async def handle_b(event: MessageEvent, args=CommandArg()):
         )
         await b_cmd.send(MessageSegment.image(image))
     except UserNotBindError:
-        await b_cmd.send(format_template("USER_NOT_BIND_TEMPLATE", locale="zh"))
+        await b_cmd.send(format_template("USER_NOT_BIND_HINT", locale="zh"))
     except ScoreQueryError as e:
-        await b_cmd.send(
-            format_template("QUERY_ERROR", error_msg=e.error_msg, locale="zh")
-        )
+        logger.error(f"查询最佳成绩失败: {e.error_msg}")
+        await b_cmd.send(format_template("QUERY_ERROR", error_msg=e.error_msg, locale="zh"))
     except Exception as e:
-        error_msg = f"查询最佳成绩失败: {e}"
-        logger.error(error_msg)
+        logger.error(f"查询最佳成绩失败: {e}")
         logger.error(traceback.format_exc())
-        await b_cmd.send(format_template("QUERY_ERROR", error_msg=str(e), locale="zh"))
+        await b_cmd.send(format_template("QUERY_FAILED", locale="zh"))
 
 
 @bs_cmd.handle()
@@ -270,11 +262,9 @@ async def handle_bs(event: MessageEvent, args=CommandArg()):
     except UserNotBindError:
         await bs_cmd.send(format_template("USER_NOT_BIND_HINT", locale="zh"))
     except ScoreQueryError as e:
-        await bs_cmd.send(
-            format_template("QUERY_ERROR", error_msg=e.error_msg, locale="zh")
-        )
+        logger.error(f"查询最佳成绩列表失败: {e.error_msg}")
+        await bs_cmd.send(format_template("QUERY_ERROR", error_msg=e.error_msg, locale="zh"))
     except Exception as e:
-        error_msg = f"查询最佳成绩列表失败: {e}"
-        logger.error(error_msg)
+        logger.error(f"查询最佳成绩列表失败: {e}")
         logger.error(traceback.format_exc())
-        await bs_cmd.send(format_template("QUERY_ERROR", error_msg=str(e), locale="zh"))
+        await bs_cmd.send(format_template("QUERY_FAILED", locale="zh"))
