@@ -1,0 +1,12 @@
+name: "Default Skin"
+version: "1.0.0"
+author: "g0v0bot"
+description: "默认皮肤，提供简洁美观的卡片样式"
+
+templates:
+  user_card: "user_card.html"
+  user_beatmap_score_card: "score_card.html"
+  user_recent_score_card: "score_card.html"
+  user_score_list: "score_list.html"
+  user_today_bp: "today_bp.html"
+  beatmap_card: "beatmap_card.html"

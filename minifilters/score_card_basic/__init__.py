@@ -3,8 +3,10 @@ score_card_basic minifilter
 
 处理成绩卡片的数据格式化，包括：
 - Mods 格式化（如 DT settings 1.3 -> DT 1.3x）
+- 获取 beatmap 信息（如果数据中只有 beatmap_id）
 """
 
+from backend.beatmap import get_beatmap_info
 from utils.logger import get_logger
 
 logger = get_logger("minifilters.score_card_basic")
@@ -55,6 +57,19 @@ async def process(data: dict) -> dict:
         return data
 
     result = dict(data)  # 复制原始数据
+
+    # 如果只有 beatmap_id 而没有 beatmap 对象，获取谱面信息
+    if "beatmap" not in result and "beatmap_id" in result:
+        beatmap_id = result["beatmap_id"]
+        try:
+            beatmap_info = await get_beatmap_info(beatmap_id)
+            result["beatmap"] = beatmap_info
+            # 将 beatmapset 从 beatmap 中提取到根级别（模板需要）
+            if "beatmapset" in beatmap_info:
+                result["beatmapset"] = beatmap_info["beatmapset"]
+            logger.debug(f"[score_card_basic] 已获取 beatmap 信息: {beatmap_id}")
+        except Exception as e:
+            logger.warning(f"[score_card_basic] 获取 beatmap 信息失败: {beatmap_id}, {e}")
 
     # 格式化 mods
     if "mods" in result and isinstance(result["mods"], list):

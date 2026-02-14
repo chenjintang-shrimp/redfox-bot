@@ -6,19 +6,65 @@ Skin 是基于 HTML/CSS 的模板系统，使用 Jinja2 作为模板引擎。本
 
 ## 目录结构
 
-```
+```text
 skins/
 └── your_skin/                # 皮肤目录名
+    ├── skin.yaml             # 皮肤配置文件（可选，推荐）
     ├── user_card.html        # 用户卡片模板
     ├── score_card.html       # 成绩卡片模板
     └── style.css             # (可选) 样式文件
 ```
+
+## 皮肤配置文件 (skin.yaml)
+
+每个皮肤可以包含一个 `skin.yaml` 配置文件，用于定义皮肤元数据和模板映射。
+
+### 配置文件格式
+
+```yaml
+name: "皮肤名称"
+version: "1.0.0"
+author: "作者"
+description: "皮肤描述"
+
+templates:
+  user_card: "user_card.html"
+  user_beatmap_score_card: "score_card.html"
+  user_recent_score_card: "score_card.html"
+  user_score_list: "score_list.html"
+  user_today_bp: "today_bp.html"
+  beatmap_card: "beatmap_card.html"
+```
+
+### 可用的 Renderer 名称
+
+| Renderer 名称 | 说明 |
+|--------------|------|
+| `user_card` | 用户卡片 |
+| `user_beatmap_score_card` | 用户在指定谱面的成绩卡片 |
+| `user_recent_score_card` | 用户最近成绩卡片 |
+| `user_score_list` | 用户成绩列表 |
+| `user_today_bp` | 今日 BP |
+| `beatmap_card` | 谱面卡片 |
+
+### 模板查找优先级
+
+当渲染器请求模板时，系统按以下优先级查找：
+
+1. **配置映射**：读取 `skin.yaml` 中的 `templates` 映射
+2. **默认命名**：查找 `{renderer_name}.html` 文件
+3. **Fallback**：使用 default skin 的配置或默认模板
+
+### 向后兼容
+
+如果皮肤目录下没有 `skin.yaml` 文件，系统会使用默认命名约定（`{renderer_name}.html`），因此现有皮肤无需修改即可继续工作。
 
 ## 基本原则
 
 ### 1. 优先使用官方 API 字段
 
 **推荐做法：**
+
 ```html
 <!-- 直接使用 API 原始字段 -->
 <div class="username">{{ username }}</div>
@@ -27,6 +73,7 @@ skins/
 ```
 
 **不推荐做法：**
+
 ```html
 <!-- 不要为了自定义字段名而创建 minifilter -->
 <div class="pp">{{ pp_formatted }}</div>  <!-- 需要 minifilter 转换 -->
@@ -106,6 +153,7 @@ skins/
 ### 3. 内联样式 vs 外部样式
 
 **推荐：内联样式**
+
 ```html
 <style>
     .card {
@@ -120,6 +168,7 @@ skins/
 ```
 
 **原因：**
+
 - 单个文件即可完成皮肤
 - 便于分享和安装
 - 渲染时不需要额外请求 CSS 文件

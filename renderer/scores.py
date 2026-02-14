@@ -564,7 +564,7 @@ async def render_user_beatmap_score_card(
     processed_score = await apply_minifilters_async("user_beatmap_score_card", score)
 
     # 渲染模板
-    html = await render_skin_template(skin, "score_card", processed_score)
+    html = await render_skin_template(skin, "user_beatmap_score_card", processed_score)
     logger.debug(f"[render_user_beatmap_score_card] HTML 长度: {len(html)} chars")
 
     image_bytes = await html_to_image(html, width=800, height=300)
@@ -628,7 +628,7 @@ async def render_user_recent_score_card(
     processed_score = await apply_minifilters_async("user_recent_score_card", score)
 
     # 渲染模板
-    html = await render_skin_template(skin, "score_card", processed_score)
+    html = await render_skin_template(skin, "user_recent_score_card", processed_score)
     logger.debug(f"[render_user_recent_score_card] HTML 长度: {len(html)} chars")
 
     image_bytes = await html_to_image(html, width=800, height=300)
@@ -713,7 +713,7 @@ async def render_user_score_list_image(
     processed_data = await apply_minifilters_async("user_score_list", data)
 
     # 渲染模板
-    html = await render_skin_template(skin, "score_list", processed_data)
+    html = await render_skin_template(skin, "user_score_list", processed_data)
     logger.debug(f"[render_user_score_list_image] HTML 长度: {len(html)} chars")
 
     # 动态计算高度（根据成绩数量）
@@ -764,7 +764,7 @@ async def render_score_list_image(
     # 应用 minifilters 处理数据（复用 user_score_list 的 hook）
     processed_data = await apply_minifilters_async("user_score_list", data)
 
-    html = await render_skin_template(skin, "score_list", processed_data)
+    html = await render_skin_template(skin, "user_score_list", processed_data)
     logger.debug(f"[render_score_list_image] HTML 长度: {len(html)} chars")
 
     # 动态计算高度
@@ -845,7 +845,7 @@ async def render_user_today_bp_image(
     processed_data = await apply_minifilters_async("user_today_bp", data)
 
     # 渲染模板
-    html = await render_skin_template(skin, "today_bp", processed_data)
+    html = await render_skin_template(skin, "user_today_bp", processed_data)
     logger.debug(f"[render_user_today_bp_image] HTML 长度: {len(html)} chars")
 
     # 动态计算高度
@@ -893,7 +893,7 @@ async def render_today_bp_image(
     # 应用 minifilters 处理数据（复用 user_today_bp 的 hook）
     processed_data = await apply_minifilters_async("user_today_bp", data)
 
-    html = await render_skin_template(skin, "today_bp", processed_data)
+    html = await render_skin_template(skin, "user_today_bp", processed_data)
     logger.debug(f"[render_today_bp_image] HTML 长度: {len(html)} chars")
 
     # 动态计算高度

@@ -2,6 +2,7 @@
 <html>
 <head>
     <meta charset="UTF-8">
+    <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@400;600;700;800;900&display=swap" rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -12,133 +13,424 @@
         body {
             width: 800px;
             height: 300px;
-            background: linear-gradient(135deg, #2a2a2a, #1a1a1a);
-            font-family: 'Segoe UI', sans-serif;
+            font-family: 'Exo 2', 'Segoe UI', sans-serif;
             color: #ffffff;
-            display: flex;
-            align-items: center;
-            padding: 30px;
+            overflow: hidden;
+            position: relative;
         }
 
+        /* ── 背景层 ── */
+        .bg-layer {
+            position: absolute;
+            inset: 0;
+            background:
+                url("https://assets.ppy.sh/beatmaps/{{ beatmap.beatmapset_id }}/covers/cover.jpg")
+                center / cover no-repeat;
+            filter: blur(28px) brightness(0.3) saturate(1.4);
+            transform: scale(1.2);
+            z-index: 0;
+        }
+
+        .bg-overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(
+                135deg,
+                rgba(12, 4, 22, 0.9) 0%,
+                rgba(25, 8, 36, 0.75) 50%,
+                rgba(8, 4, 28, 0.88) 100%
+            );
+            z-index: 1;
+        }
+
+        /* 装饰光晕 */
+        .glow-orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(70px);
+            z-index: 1;
+            pointer-events: none;
+        }
+        .glow-orb.pink {
+            width: 200px;
+            height: 200px;
+            background: rgba(255, 102, 170, 0.12);
+            top: -50px;
+            right: 60px;
+        }
+        .glow-orb.gold {
+            width: 160px;
+            height: 160px;
+            background: rgba(255, 215, 0, 0.08);
+            bottom: -40px;
+            left: 250px;
+        }
+
+        /* ── 主卡片 ── */
         .card {
+            position: relative;
+            z-index: 2;
             display: flex;
-            gap: 20px;
+            gap: 24px;
             width: 100%;
+            height: 100%;
+            padding: 28px;
+            align-items: center;
+        }
+
+        /* ── 封面区域 ── */
+        .cover-wrapper {
+            position: relative;
+            flex-shrink: 0;
         }
 
         .beatmap-cover {
             width: 200px;
             height: 200px;
-            border-radius: 12px;
+            border-radius: 14px;
             object-fit: cover;
-            border: 2px solid #ff66aa;
+            display: block;
+            border: none;
+            box-shadow:
+                0 6px 28px rgba(0, 0, 0, 0.5),
+                0 0 0 1px rgba(255, 255, 255, 0.06),
+                0 0 50px rgba(255, 102, 170, 0.08);
         }
 
+        /* 评级徽章 - 覆盖在封面上 */
+        .rank-badge {
+            position: absolute;
+            bottom: -10px;
+            right: -10px;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: 900;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            border: 3px solid rgba(255, 255, 255, 0.15);
+        }
+        .rank-ss, .rank-x {
+            background: linear-gradient(135deg, #ffd700, #ffaa00);
+            color: #1a1000;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+        }
+        .rank-s {
+            background: linear-gradient(135deg, #ffcc33, #ff9900);
+            color: #1a1000;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+        }
+        .rank-a {
+            background: linear-gradient(135deg, #66dd66, #33bb55);
+            color: #0a2a10;
+        }
+        .rank-b {
+            background: linear-gradient(135deg, #66aaff, #3377dd);
+            color: #0a1530;
+        }
+        .rank-c {
+            background: linear-gradient(135deg, #cc77ff, #9933ee);
+            color: #1a0a2e;
+        }
+        .rank-d {
+            background: linear-gradient(135deg, #ff6666, #dd3333);
+            color: #2a0a0a;
+        }
+        .rank-f {
+            background: linear-gradient(135deg, #888, #555);
+            color: #fff;
+        }
+
+        /* ── 右侧信息 ── */
         .info {
             flex: 1;
             display: flex;
             flex-direction: column;
-            justify-content: space-between;
+            justify-content: center;
+            gap: 12px;
+            min-width: 0;
         }
 
+        /* 头部：标题 + meta */
         .header {
-            margin-bottom: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
         }
 
         .title {
-            font-size: 24px;
-            font-weight: bold;
-            color: #ff66aa;
-            margin-bottom: 5px;
+            font-size: 22px;
+            font-weight: 800;
+            line-height: 1.2;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            background: linear-gradient(90deg, #ffffff, #e0d0ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
-        .artist {
-            font-size: 16px;
-            color: #888;
-        }
-
-        .difficulty {
-            font-size: 14px;
-            color: #aaa;
-            margin-top: 5px;
-        }
-
-        .stats {
+        .subtitle-row {
             display: flex;
-            gap: 30px;
-            margin-bottom: 15px;
+            align-items: center;
+            gap: 10px;
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.4);
+            font-weight: 600;
+        }
+        .subtitle-row .artist {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .subtitle-row .separator {
+            color: rgba(255, 255, 255, 0.12);
+        }
+        .subtitle-row .diff-name {
+            color: #88ccff;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .subtitle-row .star {
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+            color: #ff99cc;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+        .subtitle-row .star svg {
+            width: 11px;
+            height: 11px;
+            fill: #ff99cc;
         }
 
-        .stat {
-            text-align: center;
+        /* ── 核心数据行 ── */
+        .stats-row {
+            display: flex;
+            gap: 6px;
         }
+
+        .stat-card {
+            flex: 1;
+            padding: 10px 8px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 10px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* 顶部彩色装饰线 */
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 20%;
+            right: 20%;
+            height: 2px;
+            border-radius: 0 0 2px 2px;
+        }
+        .stat-card.pp::before    { background: linear-gradient(90deg, #ff66aa, #ff3388); }
+        .stat-card.acc::before   { background: linear-gradient(90deg, #66ccff, #3399ff); }
+        .stat-card.combo::before { background: linear-gradient(90deg, #66ff99, #33cc66); }
+        .stat-card.score::before { background: linear-gradient(90deg, #ffcc66, #ffaa00); }
 
         .stat-value {
-            font-size: 24px;
-            font-weight: bold;
-            color: #ff66aa;
+            font-size: 18px;
+            font-weight: 800;
+            line-height: 1;
+            color: #fff;
+        }
+        .stat-card.pp .stat-value    { color: #ff99cc; }
+        .stat-card.acc .stat-value   { color: #88ddff; }
+        .stat-card.combo .stat-value { color: #88ffbb; }
+        .stat-card.score .stat-value { color: #ffdd88; }
+
+        .stat-value .unit {
+            font-size: 12px;
+            font-weight: 700;
+            opacity: 0.6;
+            margin-left: 1px;
         }
 
         .stat-label {
-            font-size: 12px;
-            color: #888;
+            font-size: 9px;
+            color: rgba(255, 255, 255, 0.3);
             text-transform: uppercase;
-            margin-top: 4px;
+            margin-top: 5px;
+            font-weight: 700;
+            letter-spacing: 1px;
         }
 
-        .rank {
-            font-size: 48px;
-            font-weight: bold;
-            color: #ffd700;
+        /* ── 底部：Mods + 时间 ── */
+        .footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
         }
 
-        .mods {
-            font-size: 14px;
-            color: #66ccff;
-            margin-top: 10px;
+        .mods-row {
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
         }
 
-        .time {
-            font-size: 12px;
-            color: #666;
-            margin-top: 10px;
+        .mod-tag {
+            padding: 3px 10px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            background: linear-gradient(135deg, rgba(102, 180, 255, 0.15), rgba(102, 180, 255, 0.08));
+            border: 1px solid rgba(102, 180, 255, 0.2);
+            color: #88ccff;
         }
+
+        /* 特殊 mod 颜色 */
+        .mod-hr, .mod-dt, .mod-fl, .mod-hd {
+            background: linear-gradient(135deg, rgba(255, 102, 170, 0.15), rgba(255, 102, 170, 0.08));
+            border: 1px solid rgba(255, 102, 170, 0.2);
+            color: #ff99cc;
+        }
+        .mod-ez, .mod-nf, .mod-ht {
+            background: linear-gradient(135deg, rgba(102, 255, 153, 0.12), rgba(102, 255, 153, 0.06));
+            border: 1px solid rgba(102, 255, 153, 0.15);
+            color: #88ffaa;
+        }
+
+        .time-stamp {
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.2);
+            font-weight: 600;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .time-stamp svg {
+            width: 12px;
+            height: 12px;
+            fill: rgba(255, 255, 255, 0.2);
+        }
+
+        /* ── 判定计数行 ── */
+        .judgements {
+            display: flex;
+            gap: 12px;
+            font-size: 11px;
+            font-weight: 700;
+        }
+        .judgement {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .judgement .dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+        }
+        .j-300 .dot  { background: #66ccff; }
+        .j-100 .dot  { background: #66ff99; }
+        .j-50 .dot   { background: #ffcc66; }
+        .j-miss .dot { background: #ff6666; }
+        .j-300  { color: rgba(102, 204, 255, 0.7); }
+        .j-100  { color: rgba(102, 255, 153, 0.7); }
+        .j-50   { color: rgba(255, 204, 102, 0.7); }
+        .j-miss { color: rgba(255, 102, 102, 0.7); }
     </style>
 </head>
 <body>
+    <!-- 模糊背景 -->
+    <div class="bg-layer"></div>
+    <div class="bg-overlay"></div>
+    <div class="glow-orb pink"></div>
+    <div class="glow-orb gold"></div>
+
+    <!-- 主卡片 -->
     <div class="card">
-        <img class="beatmap-cover" src="https://assets.ppy.sh/beatmaps/{{ beatmap.beatmapset_id }}/covers/cover.jpg" alt="cover">
+        <!-- 封面 + 评级 -->
+        <div class="cover-wrapper">
+            <img class="beatmap-cover"
+                 src="https://assets.ppy.sh/beatmaps/{{ beatmap.beatmapset_id }}/covers/cover.jpg"
+                 alt="cover">
+            <div class="rank-badge rank-{{ rank | lower }}">{{ rank }}</div>
+        </div>
+
+        <!-- 信息 -->
         <div class="info">
+            <!-- 标题区 -->
             <div class="header">
                 <div class="title">{{ beatmapset.title }}</div>
-                <div class="artist">{{ beatmapset.artist }}</div>
-                <div class="difficulty">[{{ beatmap.version }}] ★{{ beatmap.difficulty_rating }}</div>
+                <div class="subtitle-row">
+                    <span class="artist">{{ beatmapset.artist }}</span>
+                    <span class="separator">•</span>
+                    <span class="diff-name">[{{ beatmap.version }}]</span>
+                    <span class="separator">•</span>
+                    <span class="star">
+                        <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 22 12 18.56 5.82 22 7 14.14l-5-4.87 6.91-1.01z"/></svg>
+                        {{ beatmap.difficulty_rating }}
+                    </span>
+                </div>
             </div>
-            <div class="stats">
-                <div class="stat">
-                    <div class="stat-value">{{ score | default(0) }}</div>
-                    <div class="stat-label">Score</div>
+
+            <!-- 核心数据 -->
+            <div class="stats-row">
+                <div class="stat-card pp">
+                    <div class="stat-value">{{ pp | round(0) | int }}<span class="unit">pp</span></div>
+                    <div class="stat-label">Performance</div>
                 </div>
-                <div class="stat">
-                    <div class="stat-value">{{ pp | round(2) }}pp</div>
-                    <div class="stat-label">PP</div>
-                </div>
-                <div class="stat">
-                    <div class="stat-value">{{ accuracy | round(2) }}%</div>
+                <div class="stat-card acc">
+                    <div class="stat-value">{{ accuracy | round(2) }}<span class="unit">%</span></div>
                     <div class="stat-label">Accuracy</div>
                 </div>
-                <div class="stat">
-                    <div class="stat-value">{{ max_combo }}x</div>
-                    <div class="stat-label">Combo</div>
+                <div class="stat-card combo">
+                    <div class="stat-value">{{ max_combo }}<span class="unit">x</span></div>
+                    <div class="stat-label">Max Combo</div>
                 </div>
-                <div class="stat">
-                    <div class="rank">{{ rank }}</div>
+                <div class="stat-card score">
+                    <div class="stat-value">{{ "{:,}".format(score | default(0)) }}</div>
+                    <div class="stat-label">Score</div>
                 </div>
             </div>
-            {% if mods %}
-            <div class="mods">Mods: {{ mods | join(', ') }}</div>
-            {% endif %}
-            <div class="time">{{ created_at }}</div>
+
+            <!-- 判定（可选，如有数据可取消注释） -->
+            
+            <div class="judgements">
+                <span class="judgement j-300"><span class="dot"></span>{{ statistics.count_300 }}</span>
+                <span class="judgement j-100"><span class="dot"></span>{{ statistics.count_100 }}</span>
+                <span class="judgement j-50"><span class="dot"></span>{{ statistics.count_50 }}</span>
+                <span class="judgement j-miss"><span class="dot"></span>{{ statistics.count_miss }}</span>
+            </div>
+            
+
+            <!-- 底栏 -->
+            <div class="footer">
+                {% if mods %}
+                <div class="mods-row">
+                    {% for mod in mods %}
+                    <span class="mod-tag mod-{{ mod | lower }}">{{ mod }}</span>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="mods-row">
+                    <span class="mod-tag" style="opacity: 0.3;">No Mod</span>
+                </div>
+                {% endif %}
+
+                <div class="time-stamp">
+                    <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15V7l6 5-6 5z"/></svg>
+                    {{ created_at }}
+                </div>
+            </div>
         </div>
     </div>
 </body>
