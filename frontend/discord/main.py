@@ -13,6 +13,7 @@ from utils.variable import BOT_TOKEN
 from utils.scheduler import add_task, start_scheduler, stop_scheduler
 
 from utils.scheduler_registry import auto_discover_tasks, get_all_tasks
+from backend.api_client import close_osu_api_client
 
 
 intents = discord.Intents.default()
@@ -46,8 +47,8 @@ async def on_ready():
 @bot.event
 async def on_disconnect():
     await stop_scheduler()
-
     await close_browser()
+    await close_osu_api_client()
 
 
 # 加载所有 Cog

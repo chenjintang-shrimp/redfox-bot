@@ -19,6 +19,21 @@ class OAuth2Handler:
         self.client_secret = client_secret
         self.token_url = token_url
         self.logger = get_logger("oauth2_handler")
+        self._client: Optional[AsyncClient] = None
+
+    @property
+    def client(self) -> AsyncClient:
+        """获取共享的 AsyncClient 实例"""
+        if self._client is None:
+            self._client = AsyncClient(timeout=30.0)
+        return self._client
+
+    async def aclose(self) -> None:
+        """关闭客户端连接"""
+        if self._client is not None:
+            await self._client.aclose()
+            self._client = None
+            self.logger.debug("OAuth2 client closed")
 
     @property
     def _cache_key(self) -> str:
@@ -55,28 +70,27 @@ class OAuth2Handler:
             "Content-Type": "application/x-www-form-urlencoded",
         }
 
-        async with AsyncClient() as client:
-            response = await client.post(self.token_url, data=data, headers=headers)
-            if response.status_code != 200:
-                self.logger.error(
-                    f"Failed to fetch token: {response.status_code} - {response.text}"
-                )
-                raise Exception(f"OAuth2 token fetch failed: {response.text}")
-
-            result = response.json()
-            token = result["access_token"]
-            expires_in = result.get("expires_in", 3600)
-            expires_at = time.time() + expires_in
-
-            # 缓存 token
-            await set_cache(
-                self._cache_key,
-                {"token": token, "expires_at": expires_at},
-                ttl=expires_in,
+        response = await self.client.post(self.token_url, data=data, headers=headers)
+        if response.status_code != 200:
+            self.logger.error(
+                f"Failed to fetch token: {response.status_code} - {response.text}"
             )
+            raise Exception(f"OAuth2 token fetch failed: {response.text}")
 
-            self.logger.info(f"Token refreshed successfully. Expires in {expires_in}s")
-            return token
+        result = response.json()
+        token = result["access_token"]
+        expires_in = result.get("expires_in", 3600)
+        expires_at = time.time() + expires_in
+
+        # 缓存 token
+        await set_cache(
+            self._cache_key,
+            {"token": token, "expires_at": expires_at},
+            ttl=expires_in,
+        )
+
+        self.logger.info(f"Token refreshed successfully. Expires in {expires_in}s")
+        return token
 
 
 # 全局 OAuth handler 实例（用于定时任务）
@@ -106,6 +120,7 @@ async def scheduled_refresh_token():
 class APIClient:
     """
     通用的API调用器类，支持异步HTTP请求
+    使用共享的 AsyncClient 实例复用连接池
     """
 
     def __init__(
@@ -128,6 +143,21 @@ class APIClient:
         self.headers = headers or {}
         self.oauth_handler = oauth_handler
         self.logger = get_logger("api_client")
+        self._client: Optional[AsyncClient] = None
+
+    @property
+    def client(self) -> AsyncClient:
+        """获取共享的 AsyncClient 实例"""
+        if self._client is None:
+            self._client = AsyncClient(timeout=self.timeout)
+        return self._client
+
+    async def aclose(self) -> None:
+        """关闭客户端连接"""
+        if self._client is not None:
+            await self._client.aclose()
+            self._client = None
+            self.logger.debug("HTTP client closed")
 
     def _build_url(self, endpoint: str) -> str:
         """构建完整的URL"""
@@ -152,12 +182,11 @@ class APIClient:
             token = await self.oauth_handler.get_access_token()
             request_headers["Authorization"] = f"Bearer {token}"
 
-        async with AsyncClient(timeout=self.timeout) as client:
-            response = await client.get(
-                url, params=params, headers=request_headers, **kwargs
-            )
-            self._log_response(response)
-            return response
+        response = await self.client.get(
+            url, params=params, headers=request_headers, **kwargs
+        )
+        self._log_response(response)
+        return response
 
     async def post(
         self,
@@ -177,12 +206,11 @@ class APIClient:
             token = await self.oauth_handler.get_access_token()
             request_headers["Authorization"] = f"Bearer {token}"
 
-        async with AsyncClient(timeout=self.timeout) as client:
-            response = await client.post(
-                url, data=data, json=json_data, headers=request_headers, **kwargs
-            )
-            self._log_response(response)
-            return response
+        response = await self.client.post(
+            url, data=data, json=json_data, headers=request_headers, **kwargs
+        )
+        self._log_response(response)
+        return response
 
     async def put(
         self,
@@ -202,12 +230,11 @@ class APIClient:
             token = await self.oauth_handler.get_access_token()
             request_headers["Authorization"] = f"Bearer {token}"
 
-        async with AsyncClient(timeout=self.timeout) as client:
-            response = await client.put(
-                url, data=data, json=json_data, headers=request_headers, **kwargs
-            )
-            self._log_response(response)
-            return response
+        response = await self.client.put(
+            url, data=data, json=json_data, headers=request_headers, **kwargs
+        )
+        self._log_response(response)
+        return response
 
     async def delete(
         self, endpoint: str, headers: Optional[Dict[str, str]] = None, **kwargs
@@ -222,10 +249,9 @@ class APIClient:
             token = await self.oauth_handler.get_access_token()
             request_headers["Authorization"] = f"Bearer {token}"
 
-        async with AsyncClient(timeout=self.timeout) as client:
-            response = await client.delete(url, headers=request_headers, **kwargs)
-            self._log_response(response)
-            return response
+        response = await self.client.delete(url, headers=request_headers, **kwargs)
+        self._log_response(response)
+        return response
 
     def _log_response(self, response: Response):
         """记录响应信息"""
@@ -248,29 +274,41 @@ class APIClient:
             return {}
 
 
-# 创建默认的API客户端实例
+_osu_api_client: Optional[APIClient] = None
 
 
-# 默认的osu! API客户端
 def get_osu_api_client() -> APIClient:
-    """获取osu! API客户端"""
-    # 自动创建 OAuth2Handler
-    oauth_handler = None
-    if OAUTH_APP_ID and OAUTH_SECRET:
-        oauth_handler = OAuth2Handler(
-            client_id=str(OAUTH_APP_ID),
-            client_secret=OAUTH_SECRET,
-            token_url=f"{API_URL.rstrip('/')}/oauth/token",
-        )
+    """获取 osu! API 客户端（单例）"""
+    global _osu_api_client
+    if _osu_api_client is None:
+        oauth_handler = None
+        if OAUTH_APP_ID and OAUTH_SECRET:
+            oauth_handler = OAuth2Handler(
+                client_id=str(OAUTH_APP_ID),
+                client_secret=OAUTH_SECRET,
+                token_url=f"{API_URL.rstrip('/')}/oauth/token",
+            )
 
-    return APIClient(
-        base_url=API_URL,
-        headers={
-            "User-Agent": "g0v0bot-discord/1.0",
-            "Accept": "application/json",
-            "Content-Type": "application/json",
-            "x-api-version": "20220710",
-        },
-        timeout=30.0,
-        oauth_handler=oauth_handler,
-    )
+        _osu_api_client = APIClient(
+            base_url=API_URL,
+            headers={
+                "User-Agent": "g0v0bot-discord/1.0",
+                "Accept": "application/json",
+                "Content-Type": "application/json",
+                "x-api-version": "20220710",
+            },
+            timeout=30.0,
+            oauth_handler=oauth_handler,
+        )
+    return _osu_api_client
+
+
+async def close_osu_api_client() -> None:
+    """关闭 osu! API 客户端和 OAuth2 handler"""
+    global _osu_api_client, _oauth_handler
+    if _osu_api_client is not None:
+        await _osu_api_client.aclose()
+        _osu_api_client = None
+    if _oauth_handler is not None:
+        await _oauth_handler.aclose()
+        _oauth_handler = None
