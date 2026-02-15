@@ -5,7 +5,7 @@ from backend.database import (
     get_osu_user_by_discord_id,
     delete_osu_user_by_discord_id,
 )
-from backend.expections.user import BindExistError, UserQueryError
+from backend.exceptions.user import BindExistError, UserQueryError
 from utils.logger import get_logger
 from backend.api_client import get_osu_api_client
 from utils.strings import get_api_url

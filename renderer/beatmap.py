@@ -1,5 +1,5 @@
 from backend.beatmap import get_beatmap_info
-from backend.expections.beatmap import BeatmapNotFoundError
+from backend.exceptions.beatmap import BeatmapNotFoundError
 from renderer.renderer_template import renderer, ExceptionHandler
 from renderer.skin_loader import render_template as render_skin_template
 from utils.flt_mgr import apply_minifilters_async

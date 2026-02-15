@@ -2,7 +2,7 @@ from pathlib import Path
 
 import yaml
 
-from backend.expections import NoSkinAvailableError
+from backend.exceptions import NoSkinAvailableError
 from jinja2 import Environment, BaseLoader
 from utils.logger import get_logger
 from utils.variable import working_dir

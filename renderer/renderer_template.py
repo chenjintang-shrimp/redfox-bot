@@ -3,7 +3,7 @@ import functools
 import traceback
 from typing import Callable, Any, Protocol, runtime_checkable, TypeVar, cast
 
-from backend.expections import (
+from backend.exceptions import (
     BindExistError,
     NoSkinAvailableError,
     ScoreQueryError,

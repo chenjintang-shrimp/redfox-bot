@@ -3,7 +3,7 @@ from utils.logger import get_logger
 from utils.strings import get_api_url
 from utils.caches import get_cache, set_cache
 
-from backend.expections.beatmap import BeatmapNotFoundError
+from backend.exceptions.beatmap import BeatmapNotFoundError
 
 
 async def get_beatmap_info(beatmap_id: int):
