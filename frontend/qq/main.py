@@ -15,6 +15,7 @@ from utils.logger import get_logger
 from utils.scheduler import start_scheduler, stop_scheduler
 from utils.scheduler_registry import auto_discover_tasks, get_all_tasks
 from backend.database import create_db_and_tables
+from backend.api_client import close_osu_api_client
 
 logger = get_logger("qq.exception_handler")
 
@@ -56,6 +57,7 @@ def main():
         get_logger("QQBot").info("QQ Bot shutting down...")
         await stop_scheduler()
         await close_browser()
+        await close_osu_api_client()
 
     nonebot.load_plugins("frontend/qq/plugins")
 

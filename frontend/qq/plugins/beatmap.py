@@ -2,7 +2,7 @@ from nonebot import on_command
 from nonebot.adapters.onebot.v11 import MessageEvent
 from nonebot.params import CommandArg
 
-from backend.expections.beatmap import BeatmapNotFoundError
+from backend.exceptions.beatmap import BeatmapNotFoundError
 from renderer.beatmap import render_beatmap_info
 from utils.logger import get_logger
 from utils.strings import format_template

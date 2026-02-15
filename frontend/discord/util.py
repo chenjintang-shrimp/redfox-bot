@@ -1,6 +1,6 @@
 from discord import Member, User
 from discord.ext.commands import Context
-from backend.expections.user import UserNotBindError
+from backend.exceptions.user import UserNotBindError
 import re
 
 from backend.database import get_osu_user_by_discord_id

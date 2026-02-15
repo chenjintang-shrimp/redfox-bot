@@ -1,5 +1,5 @@
 from backend.database import get_osu_user_by_qq_id
-from backend.expections.user import UserNotBindError
+from backend.exceptions.user import UserNotBindError
 
 
 async def resolve_username_qq(qq_id: int, username_arg: str | None) -> str:

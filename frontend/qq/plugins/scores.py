@@ -5,8 +5,8 @@ from nonebot.adapters.onebot.v11 import MessageEvent, MessageSegment
 from nonebot.params import CommandArg
 
 from backend.user_qq import get_user_info, get_user_gamemode_qq
-from backend.expections.user import UserNotBindError
-from backend.expections.scores import ScoreQueryError
+from backend.exceptions.user import UserNotBindError
+from backend.exceptions.scores import ScoreQueryError
 from frontend.qq.util import resolve_username_qq
 from renderer.scores import (
     render_user_beatmap_score_card,
