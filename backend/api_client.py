@@ -1,3 +1,4 @@
+import asyncio
 import time
 import base64
 from typing import Optional, Dict, Any
@@ -12,6 +13,7 @@ class OAuth2Handler:
     """
     OAuth2 验证处理器，处理 client_credentials 流程
     使用缓存系统存储 token，支持多实例共享
+    使用锁防止并发刷新 token
     """
 
     def __init__(self, client_id: str, client_secret: str, token_url: str):
@@ -20,6 +22,7 @@ class OAuth2Handler:
         self.token_url = token_url
         self.logger = get_logger("oauth2_handler")
         self._client: Optional[AsyncClient] = None
+        self._refresh_lock: asyncio.Lock = asyncio.Lock()
 
     @property
     def client(self) -> AsyncClient:
@@ -41,7 +44,7 @@ class OAuth2Handler:
         return f"oauth:token:{self.client_id}"
 
     async def get_access_token(self) -> str:
-        """获取有效的访问令牌"""
+        """获取有效的访问令牌（线程安全）"""
         cached = await get_cache(self._cache_key)
 
         if cached:
@@ -51,7 +54,17 @@ class OAuth2Handler:
             if token and time.time() < expires_at - 30:
                 return token
 
-        return await self.refresh_token()
+        # 使用锁防止并发刷新
+        async with self._refresh_lock:
+            # 双重检查：等待锁后再次检查缓存
+            cached = await get_cache(self._cache_key)
+            if cached:
+                token = cached.get("token")
+                expires_at = cached.get("expires_at", 0)
+                if token and time.time() < expires_at - 30:
+                    return token
+
+            return await self.refresh_token()
 
     async def refresh_token(self) -> str:
         """从服务器刷新访问令牌并缓存"""
