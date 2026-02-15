@@ -2,6 +2,7 @@
 <html>
 <head>
     <meta charset="UTF-8">
+    <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@400;600;700;800;900&display=swap" rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -11,58 +12,151 @@
 
         body {
             width: 800px;
-            background: linear-gradient(135deg, #2a2a2a, #1a1a1a);
-            font-family: 'Segoe UI', sans-serif;
+            font-family: 'Exo 2', 'Segoe UI', sans-serif;
             color: #ffffff;
-            padding: 30px;
+            overflow: hidden;
+            position: relative;
         }
 
-        .header {
-            font-size: 24px;
-            font-weight: bold;
-            color: #ff66aa;
-            margin-bottom: 20px;
+        .bg-layer {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, #1a0a2e 0%, #0f0520 50%, #150a28 100%);
+            z-index: 0;
+        }
+
+        .bg-overlay {
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(ellipse at top right, rgba(255, 102, 170, 0.08) 0%, transparent 50%),
+                        radial-gradient(ellipse at bottom left, rgba(102, 180, 255, 0.06) 0%, transparent 50%);
+            z-index: 1;
+        }
+
+        .glow-orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(100px);
+            z-index: 1;
+            pointer-events: none;
+        }
+        .glow-orb.pink {
+            width: 300px;
+            height: 300px;
+            background: rgba(255, 102, 170, 0.12);
+            top: -100px;
+            right: -50px;
+        }
+        .glow-orb.blue {
+            width: 250px;
+            height: 250px;
+            background: rgba(102, 180, 255, 0.08);
+            bottom: -80px;
+            left: -50px;
+        }
+
+        .container {
+            position: relative;
+            z-index: 2;
+            padding: 35px 40px;
+        }
+
+        .header-section {
             text-align: center;
+            margin-bottom: 28px;
+        }
+
+        .main-title {
+            font-size: 28px;
+            font-weight: 900;
+            background: linear-gradient(90deg, #ff66aa, #ff99cc, #ff66aa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: 1px;
+        }
+
+        .scores-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
         }
 
         .score-item {
             display: flex;
             align-items: center;
-            gap: 15px;
-            padding: 15px;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 8px;
-            margin-bottom: 10px;
+            gap: 16px;
+            padding: 16px 18px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 14px;
+            position: relative;
+            overflow: hidden;
+            transition: background 0.2s;
         }
 
         .rank-num {
-            font-size: 20px;
-            font-weight: bold;
-            color: #888;
-            width: 30px;
-            text-align: center;
+            width: 44px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: 800;
+            color: rgba(255, 255, 255, 0.5);
+            flex-shrink: 0;
         }
 
         .beatmap-info {
             flex: 1;
+            min-width: 0;
         }
 
         .title {
-            font-size: 16px;
-            font-weight: bold;
+            font-size: 15px;
+            font-weight: 700;
             color: #fff;
-            margin-bottom: 3px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-bottom: 4px;
         }
 
         .difficulty {
-            font-size: 12px;
-            color: #aaa;
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.4);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .difficulty .diff-name {
+            color: #88ccff;
+            font-weight: 600;
+        }
+
+        .difficulty .star {
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+            color: #ff99cc;
+            font-weight: 700;
+        }
+
+        .difficulty .star svg {
+            width: 10px;
+            height: 10px;
+            fill: #ff99cc;
         }
 
         .stats {
             display: flex;
-            gap: 20px;
+            gap: 14px;
             align-items: center;
+            flex-shrink: 0;
         }
 
         .stat {
@@ -70,66 +164,154 @@
         }
 
         .stat-value {
-            font-size: 16px;
-            font-weight: bold;
-            color: #ff66aa;
+            font-size: 14px;
+            font-weight: 800;
+            color: #ff99cc;
         }
 
         .stat-label {
-            font-size: 10px;
-            color: #666;
+            font-size: 9px;
+            color: rgba(255, 255, 255, 0.3);
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            margin-top: 2px;
+        }
+
+        .stat.acc .stat-value {
+            color: #88ddff;
+        }
+
+        .stat.combo .stat-value {
+            color: #88ffbb;
         }
 
         .grade {
-            font-size: 24px;
-            font-weight: bold;
-            color: #ffd700;
-            width: 40px;
-            text-align: center;
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            font-size: 20px;
+            font-weight: 900;
+            flex-shrink: 0;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            border: 2px solid rgba(255, 255, 255, 0.1);
         }
 
-        .mods {
-            font-size: 12px;
-            color: #66ccff;
+        .grade-ss, .grade-x {
+            background: linear-gradient(135deg, #ffd700, #ffaa00);
+            color: #1a1000;
+        }
+        .grade-s {
+            background: linear-gradient(135deg, #ffcc33, #ff9900);
+            color: #1a1000;
+        }
+        .grade-a {
+            background: linear-gradient(135deg, #66dd66, #33bb55);
+            color: #0a2a10;
+        }
+        .grade-b {
+            background: linear-gradient(135deg, #66aaff, #3377dd);
+            color: #0a1530;
+        }
+        .grade-c {
+            background: linear-gradient(135deg, #cc77ff, #9933ee);
+            color: #1a0a2e;
+        }
+        .grade-d {
+            background: linear-gradient(135deg, #ff6666, #dd3333);
+            color: #2a0a0a;
+        }
+        .grade-f {
+            background: linear-gradient(135deg, #888, #555);
+            color: #fff;
+        }
+
+        .mods-row {
+            display: flex;
+            gap: 4px;
+            flex-shrink: 0;
+        }
+
+        .mod-tag {
+            padding: 3px 8px;
+            border-radius: 5px;
+            font-size: 10px;
+            font-weight: 800;
+            letter-spacing: 0.3px;
+            background: linear-gradient(135deg, rgba(102, 180, 255, 0.15), rgba(102, 180, 255, 0.08));
+            border: 1px solid rgba(102, 180, 255, 0.2);
+            color: #88ccff;
+        }
+
+        .mod-hr, .mod-dt, .mod-fl, .mod-hd {
+            background: linear-gradient(135deg, rgba(255, 102, 170, 0.15), rgba(255, 102, 170, 0.08));
+            border: 1px solid rgba(255, 102, 170, 0.2);
+            color: #ff99cc;
         }
 
         .footer {
             text-align: center;
-            margin-top: 20px;
-            color: #666;
-            font-size: 14px;
+            margin-top: 24px;
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.25);
+            font-weight: 600;
         }
     </style>
 </head>
 <body>
-    <div class="header">{{ username }}'s {{ title }}</div>
-    {% for score in scores %}
-    <div class="score-item">
-        <div class="rank-num">#{{ loop.index }}</div>
-        <div class="beatmap-info">
-            <div class="title">{{ score.beatmapset.title }}</div>
-            <div class="difficulty">[{{ score.beatmap.version }}] ★{{ score.beatmap.difficulty_rating }}</div>
+    <div class="bg-layer"></div>
+    <div class="bg-overlay"></div>
+    <div class="glow-orb pink"></div>
+    <div class="glow-orb blue"></div>
+
+    <div class="container">
+        <div class="header-section">
+            <div class="main-title">{{ username }}'s {{ title }}</div>
         </div>
-        <div class="stats">
-            <div class="stat">
-                <div class="stat-value">{{ score.pp | round(2) }}pp</div>
-                <div class="stat-label">PP</div>
+
+        <div class="scores-list">
+            {% for score in scores %}
+            <div class="score-item">
+                <div class="rank-num">#{{ loop.index }}</div>
+                <div class="beatmap-info">
+                    <div class="title">{{ score.beatmapset.title }}</div>
+                    <div class="difficulty">
+                        <span class="diff-name">[{{ score.beatmap.version }}]</span>
+                        <span class="star">
+                            <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 22 12 18.56 5.82 22 7 14.14l-5-4.87 6.91-1.01z"/></svg>
+                            {{ score.beatmap.difficulty_rating }}
+                        </span>
+                    </div>
+                </div>
+                <div class="stats">
+                    <div class="stat">
+                        <div class="stat-value">{{ score.pp | round(2) }}</div>
+                        <div class="stat-label">PP</div>
+                    </div>
+                    <div class="stat acc">
+                        <div class="stat-value">{{ score.accuracy | round(2) }}%</div>
+                        <div class="stat-label">Acc</div>
+                    </div>
+                    <div class="stat combo">
+                        <div class="stat-value">{{ score.max_combo }}x</div>
+                        <div class="stat-label">Combo</div>
+                    </div>
+                </div>
+                <div class="grade grade-{{ score.rank | lower }}">{{ score.rank }}</div>
+                {% if score.mods %}
+                <div class="mods-row">
+                    {% for mod in score.mods %}
+                    <span class="mod-tag mod-{{ mod | lower }}">{{ mod }}</span>
+                    {% endfor %}
+                </div>
+                {% endif %}
             </div>
-            <div class="stat">
-                <div class="stat-value">{{ score.accuracy | round(2) }}%</div>
-                <div class="stat-label">Acc</div>
-            </div>
-            <div class="stat">
-                <div class="stat-value">{{ score.max_combo }}x</div>
-                <div class="stat-label">Combo</div>
-            </div>
+            {% endfor %}
         </div>
-        <div class="grade">{{ score.rank }}</div>
-        {% if score.mods %}
-        <div class="mods">{{ score.mods | join(',') }}</div>
-        {% endif %}
+
+        <div class="footer">Total: {{ scores | length }} scores</div>
     </div>
-    {% endfor %}
-    <div class="footer">Total: {{ scores | length }} scores</div>
 </body>
 </html>
