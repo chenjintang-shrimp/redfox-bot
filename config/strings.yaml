@@ -190,8 +190,8 @@ BEATMAP_INFO_TEMPLATE:
     🔗 [链接]({{ url }})
 
 BEATMAP_NOT_FOUND_TEMPLATE:
-  en: ❌ Beatmap not found! Please check the beatmap ID.
-  zh: ❌ 找不到谱面！请检查谱面ID是否正确。
+  en: ❌ Beatmap **{{ beatmap_id }}** not found! Please check the beatmap ID.
+  zh: ❌ 找不到谱面 **{{ beatmap_id }}**！请检查谱面ID是否正确。
 
 # --------------------------------------------
 # 今日BP
