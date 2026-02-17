@@ -3,15 +3,6 @@ import functools
 import traceback
 from typing import Callable, Any, Protocol, runtime_checkable, TypeVar, cast
 
-from backend.exceptions import (
-    BeatmapNotFoundError,
-    BindExistError,
-    NoSkinAvailableError,
-    ScoreQueryError,
-    UserNotBindError,
-    UserQueryError,
-    # 未来加的异常也放这里
-)
 from utils.strings import format_template
 from utils.logger import get_logger
 
@@ -42,69 +33,33 @@ class ExceptionHandler:
         """
         根据异常类型返回对应的格式化字符串
 
+        使用异常的 template_key 属性和 __dict__ 作为模板变量
+
         Args:
             e: 异常对象
             locale: 语言代码，默认"en"
         """
-        match e:
-            # 用户查询错误
-            case UserQueryError() if e.status_code == 404:
-                return format_template("USER_NOT_FOUND_TEMPLATE", locale=locale)
+        # 获取异常的模板key
+        template_key = getattr(e, "template_key", None)
 
-            case UserQueryError():
-                return format_template(
-                    "USER_QUERY_ERROR_TEMPLATE", locale=locale, error_msg=e.error_msg
-                )
-
-            # 用户未绑定
-            case UserNotBindError():
-                return format_template(
-                    "USER_NOT_BOUND_TEMPLATE", locale=locale, user=e.user_context
-                )
-
-            # 已绑定其他账号
-            case BindExistError():
-                return format_template(
-                    "USER_BIND_EXISTING_TEMPLATE", locale=locale, username=e.username
-                )
-
-            # === 未来加新异常，只需要在这里加一个 case ===
-            case ScoreQueryError() if e.status_code == 404:
-                return format_template(
-                    "SCORE_NOT_FOUND_TEMPLATE",
-                    locale=locale,
-                    username=e.username,
-                    beatmap_id=e.beatmap_id,
-                )
-
-            case ScoreQueryError():
-                return format_template(
-                    "SCORE_QUERY_ERROR_TEMPLATE", locale=locale, error_msg=e.error_msg
-                )
-
-            # 没有可用皮肤
-            case NoSkinAvailableError():
-                return format_template(
-                    "NO_SKIN_AVAILABLE_TEMPLATE",
-                    locale=locale,
-                    skin_name=e.skin_name,
-                    template_name=e.template_name,
-                )
-
-            # 谱面未找到
-            case BeatmapNotFoundError():
-                return format_template(
-                    "BEATMAP_NOT_FOUND_TEMPLATE",
-                    locale=locale,
-                    beatmap_id=e.beatmap_id,
-                )
-
-            # 兜底：未知异常
-            case _:
+        if template_key:
+            # 使用异常的 __dict__ 作为模板变量
+            context_vars = getattr(e, "__dict__", {})
+            try:
+                return format_template(template_key, locale=locale, **context_vars)
+            except Exception as fmt_error:
+                logger.error(f"Failed to format template {template_key}: {fmt_error}")
+                # 模板格式化失败，回退到通用错误
                 error_msg = f"[{type(e).__name__}] {str(e)}"
                 return format_template(
                     "RENDERER_ERROR_TEMPLATE", locale=locale, error_msg=error_msg
                 )
+
+        # 兜底：未知异常
+        error_msg = f"[{type(e).__name__}] {str(e)}"
+        return format_template(
+            "RENDERER_ERROR_TEMPLATE", locale=locale, error_msg=error_msg
+        )
 
 
 def renderer(

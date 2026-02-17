@@ -55,7 +55,7 @@ async def render_beatmap_info(beatmap_id: int, locale: str = "en"):
     except BeatmapNotFoundError:
         return format_template("BEATMAP_NOT_FOUND_TEMPLATE", locale=locale)
     except Exception as e:
-        return ExceptionHandler.handle(e)
+        return ExceptionHandler.handle(e, locale=locale)
 
 
 @renderer("beatmap_card")

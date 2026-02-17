@@ -548,15 +548,10 @@ async def render_user_beatmap_score_card(
     scores = await get_user_beatmap_all_scores(user_id, beatmap_id, limit=limit)
     if not scores:
         # 没有成绩，抛出异常让 decorator 处理
-        from backend.user import get_user_info
+        from services import UserService
 
-        user_info = await get_user_info(user_id)
-        raise ScoreQueryError(
-            user_info.get("username", str(user_id)),
-            beatmap_id,
-            "No scores found on this beatmap",
-            404,
-        )
+        user_info = await UserService.get_user_info_by_id(user_id)
+        raise ScoreQueryError(user_info.username, beatmap_id)
 
     # 获取第一条成绩
     score = scores[0]
@@ -622,12 +617,10 @@ async def render_user_recent_score_card(
     )
     if not scores:
         # 没有成绩，抛出异常让 decorator 处理
-        from backend.user import get_user_info
+        from services import UserService
 
-        user_info = await get_user_info(user_id)
-        raise ScoreQueryError(
-            user_info.get("username", str(user_id)), 0, "No recent scores found", 404
-        )
+        user_info = await UserService.get_user_info_by_id(user_id)
+        raise ScoreQueryError(user_info.username, 0)
 
     # 获取第一条成绩
     score = scores[0]
@@ -695,7 +688,7 @@ async def render_user_score_list_image(
         mode=mode,
     )
     if not scores:
-        raise ScoreQueryError(username, 0, f"No {score_type} scores found", 404)
+        raise ScoreQueryError(username, 0)
 
     # 检查第一条成绩的字段
     logger.debug(

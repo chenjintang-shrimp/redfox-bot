@@ -52,18 +52,28 @@ class UserService:
 
     @staticmethod
     async def get_user_info(username: str) -> UserInfo:
-        """获取用户信息
+        """获取用户信息（通过用户名）
 
         Args:
             username: osu! 用户名
 
         Returns:
             UserInfo: 用户信息对象
-
-        Raises:
-            UserQueryError: 用户不存在
         """
         data = await _get_user_info(username)
+        return UserInfo.from_api_response(data)
+
+    @staticmethod
+    async def get_user_info_by_id(user_id: int) -> UserInfo:
+        """获取用户信息（通过用户ID）
+
+        Args:
+            user_id: osu! 用户ID
+
+        Returns:
+            UserInfo: 用户信息对象
+        """
+        data = await _get_user_info(user_id)
         return UserInfo.from_api_response(data)
 
     @staticmethod
@@ -76,10 +86,6 @@ class UserService:
 
         Returns:
             UserInfo: 绑定的用户信息
-
-        Raises:
-            BindExistError: 用户已绑定
-            UserQueryError: 用户不存在
         """
         await _bind_user(context, username)
         return await UserService.get_user_info(username)

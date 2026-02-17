@@ -1,4 +1,5 @@
-from backend.user import bind_user, get_user_info, unbind_user
+from services import UserService
+from models.context import UserContext
 from renderer.renderer_template import renderer
 from renderer.skin_loader import render_template as render_skin_template
 from utils.flt_mgr import apply_minifilters_async
@@ -25,23 +26,23 @@ async def render_user_info(username: str, locale: str = "en") -> str:
     Returns:
         用户信息字符串
     """
-    user_info = await get_user_info(username)
-    return format_template("USER_INFO_TEMPLATE", locale=locale, **user_info)
+    user_info = await UserService.get_user_info(username)
+    return format_template("USER_INFO_TEMPLATE", locale=locale, **user_info.__dict__)
 
 
 @renderer
-async def render_unbinding_user(discord_id: int, locale: str = "en") -> str:
+async def render_unbinding_user(context: UserContext, locale: str = "en") -> str:
     """
     解绑用户
 
     Args:
-        discord_id: Discord user ID
+        context: 用户上下文
         locale: 语言代码，默认"en"
 
     Returns:
         解绑结果字符串
     """
-    deleted = await unbind_user(discord_id)
+    deleted = await UserService.unbind_user(context)
     if deleted:
         return format_template("USER_UNBIND_SUCCESS_TEMPLATE", locale=locale)
     else:
@@ -50,22 +51,22 @@ async def render_unbinding_user(discord_id: int, locale: str = "en") -> str:
 
 @renderer
 async def render_binding_user(
-    discord_id: int, username: str, locale: str = "en"
+    context: UserContext, username: str, locale: str = "en"
 ) -> str:
     """
     绑定用户
 
     Args:
-        discord_id: Discord用户ID
+        context: 用户上下文
         username: osu!用户名
         locale: 语言代码，默认"en"
 
     Returns:
         绑定结果字符串
     """
-    await bind_user(discord_id, username)
+    user_info = await UserService.bind_user(context, username)
     return format_template(
-        "USER_BIND_SUCCESS_TEMPLATE", locale=locale, username=username
+        "USER_BIND_SUCCESS_TEMPLATE", locale=locale, username=user_info.username
     )
 
 
