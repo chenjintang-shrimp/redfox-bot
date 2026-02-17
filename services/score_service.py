@@ -7,7 +7,6 @@ from typing import Optional
 from backend.scores import (
     get_user_beatmap_score as _get_user_beatmap_score,
     get_user_beatmap_all_scores as _get_user_beatmap_all_scores,
-    get_user_beatmap_best_score as _get_user_beatmap_best_score,
     get_user_scores as _get_user_scores,
 )
 from backend.exceptions.scores import ScoreQueryError

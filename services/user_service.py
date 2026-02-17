@@ -11,7 +11,7 @@ from backend.user import (
     get_user_gamemode as _get_user_gamemode,
     get_user_binding_by_context,
 )
-from backend.exceptions.user import UserQueryError, BindExistError, UserNotBindError
+from backend.exceptions.user import UserNotBindError
 from models.context import UserContext
 
 
