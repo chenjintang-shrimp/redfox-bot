@@ -2,7 +2,7 @@ from nonebot import on_command
 from nonebot.adapters.onebot.v11 import MessageEvent
 from nonebot.params import CommandArg
 
-from backend.exceptions.beatmap import BeatmapNotFoundError
+from adapters.qq_adapter import QQAdapter
 from renderer.beatmap import render_beatmap_info
 from utils.logger import get_logger
 from utils.strings import format_template
@@ -10,6 +10,8 @@ from utils.strings import format_template
 logger = get_logger("qq.plugins.beatmap")
 
 m_cmd = on_command("m", priority=5)
+
+adapter = QQAdapter()
 
 
 @m_cmd.handle()
@@ -29,8 +31,5 @@ async def handle_m(event: MessageEvent, args=CommandArg()):
     try:
         msg = await render_beatmap_info(beatmap_id, locale="zh")  # type: ignore[call-arg]
         await m_cmd.send(msg)
-    except BeatmapNotFoundError:
-        await m_cmd.send(format_template("BEATMAP_NOT_FOUND_TEMPLATE", locale="zh"))
     except Exception as e:
-        logger.error(f"查询谱面失败: {e}")
-        await m_cmd.send(format_template("QUERY_FAILED", locale="zh"))
+        await adapter.handle_error(event, e, locale="zh")

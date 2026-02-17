@@ -10,17 +10,21 @@ from utils.variable import SQL_DB_FILE
 
 class Platform(str, Enum):
     """平台类型"""
+
     DISCORD = "discord"
     QQ = "qq"
 
 
 class UserBinding(SQLModel, table=True):
     """统一的用户绑定表，支持多平台"""
+
     id: int = Field(primary_key=True, description="平台用户ID (discord_id 或 qq_id)")
     platform: str = Field(primary_key=True, description="平台类型: discord/qq")
     osu_id: int
     osu_username: str
-    current_gamemode: str | None = Field(default=None, description="用户自定义的查询游戏模式: osu/taiko/fruits/mania")
+    current_gamemode: str | None = Field(
+        default=None, description="用户自定义的查询游戏模式: osu/taiko/fruits/mania"
+    )
     access_token: str | None = None
     refresh_token: str | None = None
     expires_at: datetime | None = None
@@ -46,8 +50,7 @@ async def get_user_binding(platform: str, user_id: int) -> Optional[UserBinding]
     """根据平台和用户ID获取绑定信息"""
     async with SQLModelAsyncSession(engine) as session:
         statement = select(UserBinding).where(
-            UserBinding.platform == platform,
-            UserBinding.id == user_id
+            UserBinding.platform == platform, UserBinding.id == user_id
         )
         results = await session.exec(statement)
         return results.first()
@@ -65,8 +68,7 @@ async def delete_user_binding(platform: str, user_id: int) -> bool:
     """删除用户绑定"""
     async with SQLModelAsyncSession(engine) as session:
         statement = select(UserBinding).where(
-            UserBinding.platform == platform,
-            UserBinding.id == user_id
+            UserBinding.platform == platform, UserBinding.id == user_id
         )
         results = await session.exec(statement)
         binding = results.first()

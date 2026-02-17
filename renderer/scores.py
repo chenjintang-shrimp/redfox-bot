@@ -90,7 +90,9 @@ def _format_score_item(score: Dict[str, Any], index: int, locale: str = "en") ->
     return format_template("SCORES_LIST_ITEM_TEMPLATE", locale=locale, **context)
 
 
-def _format_user_score_item(score: Dict[str, Any], index: int, locale: str = "en") -> str:
+def _format_user_score_item(
+    score: Dict[str, Any], index: int, locale: str = "en"
+) -> str:
     """格式化用户成绩列表中的单条成绩"""
     beatmap = score.get("beatmap", {})
     beatmapset = score.get("beatmapset", {})
@@ -167,7 +169,9 @@ async def render_user_beatmap_scores(
 
     # 处理空成绩
     if not scores:
-        return format_template("SCORES_LIST_EMPTY_TEMPLATE", locale=locale, username=username)
+        return format_template(
+            "SCORES_LIST_EMPTY_TEMPLATE", locale=locale, username=username
+        )
 
     # 按 score_id 去重（防止 API 返回重复数据）
     seen_ids = set()
@@ -381,7 +385,11 @@ async def render_user_recent_score(
 
 
 async def get_user_scores_page_count(
-    user_id: int, type: str, include_fails: bool = False, limit: int = 100, mode: str | None = None
+    user_id: int,
+    type: str,
+    include_fails: bool = False,
+    limit: int = 100,
+    mode: str | None = None,
 ) -> int:
     try:
         scores = await get_user_scores(
@@ -439,13 +447,17 @@ async def render_user_today_bp(
     username = user_info.get("username", "Unknown")
 
     if not scores:
-        return format_template("TODAY_BP_EMPTY_TEMPLATE", locale=locale, username=username)
+        return format_template(
+            "TODAY_BP_EMPTY_TEMPLATE", locale=locale, username=username
+        )
 
     # 过滤24小时内的成绩
     today_scores = [score for score in scores if _is_today_score(score)]
 
     if not today_scores:
-        return format_template("TODAY_BP_EMPTY_TEMPLATE", locale=locale, username=username)
+        return format_template(
+            "TODAY_BP_EMPTY_TEMPLATE", locale=locale, username=username
+        )
 
     total_scores = len(today_scores)
     start_idx, end_idx, total_pages = _calculate_pagination(total_scores, page)
@@ -453,7 +465,9 @@ async def render_user_today_bp(
 
     lines = []
 
-    header = format_template("TODAY_BP_HEADER_TEMPLATE", locale=locale, username=username)
+    header = format_template(
+        "TODAY_BP_HEADER_TEMPLATE", locale=locale, username=username
+    )
     lines.append(header)
 
     for i, score in enumerate(today_scores[start_idx:end_idx], start=start_idx + 1):
@@ -534,15 +548,10 @@ async def render_user_beatmap_score_card(
     scores = await get_user_beatmap_all_scores(user_id, beatmap_id, limit=limit)
     if not scores:
         # 没有成绩，抛出异常让 decorator 处理
-        from backend.user import get_user_info
+        from services import UserService
 
-        user_info = await get_user_info(user_id)
-        raise ScoreQueryError(
-            user_info.get("username", str(user_id)),
-            beatmap_id,
-            "No scores found on this beatmap",
-            404,
-        )
+        user_info = await UserService.get_user_info_by_id(user_id)
+        raise ScoreQueryError(user_info.username, beatmap_id)
 
     # 获取第一条成绩
     score = scores[0]
@@ -608,12 +617,10 @@ async def render_user_recent_score_card(
     )
     if not scores:
         # 没有成绩，抛出异常让 decorator 处理
-        from backend.user import get_user_info
+        from services import UserService
 
-        user_info = await get_user_info(user_id)
-        raise ScoreQueryError(
-            user_info.get("username", str(user_id)), 0, "No recent scores found", 404
-        )
+        user_info = await UserService.get_user_info_by_id(user_id)
+        raise ScoreQueryError(user_info.username, 0)
 
     # 获取第一条成绩
     score = scores[0]
@@ -681,7 +688,7 @@ async def render_user_score_list_image(
         mode=mode,
     )
     if not scores:
-        raise ScoreQueryError(username, 0, f"No {score_type} scores found", 404)
+        raise ScoreQueryError(username, 0)
 
     # 检查第一条成绩的字段
     logger.debug(
@@ -807,7 +814,9 @@ async def render_user_today_bp_image(
     )
 
     # 获取 best 成绩
-    scores = await get_user_scores(user_id, "best", include_fails=False, limit=100, mode=mode)
+    scores = await get_user_scores(
+        user_id, "best", include_fails=False, limit=100, mode=mode
+    )
 
     # 检查第一条成绩的字段
     if scores:

@@ -15,8 +15,10 @@ def _escape_message(message: str) -> str:
 
 def _format_record(record):
     """自定义格式化函数，兼容没有 module 字段的日志"""
-    module = record["extra"].get("module", "unknown") if "extra" in record else "unknown"
-    message = _escape_message(str(record['message']))
+    module = (
+        record["extra"].get("module", "unknown") if "extra" in record else "unknown"
+    )
+    message = _escape_message(str(record["message"]))
     return (
         f"<green>{record['time']:YYYY-MM-DD HH:mm:ss}</green> "
         f"<level>{record['level'].name}</level> "
@@ -27,8 +29,10 @@ def _format_record(record):
 
 def _format_file_record(record):
     """文件格式化函数"""
-    module = record["extra"].get("module", "unknown") if "extra" in record else "unknown"
-    message = _escape_message(str(record['message']))
+    module = (
+        record["extra"].get("module", "unknown") if "extra" in record else "unknown"
+    )
+    message = _escape_message(str(record["message"]))
     return (
         f"{record['time']:YYYY-MM-DD HH:mm:ss} | "
         f"{record['level'].name} | "

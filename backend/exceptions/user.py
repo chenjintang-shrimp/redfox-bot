@@ -1,27 +1,28 @@
-from discord.ext.commands import CommandError
+class UserQueryError(Exception):
+    """查询用户失败"""
 
-
-class UserQueryError(CommandError):
-    username: str
-    error_msg: str
-    status_code: int
-
-    def __init__(self, username: str, error_msg: str, status_code: int):
-        self.username = username
-        self.error_msg = error_msg
-        self.status_code = status_code
-        super().__init__(f"User {username} query error: {error_msg}")
-
-
-class BindExistError(CommandError):
-    username: str
+    template_key = "USER_NOT_FOUND_TEMPLATE"
 
     def __init__(self, username: str):
         self.username = username
-        super().__init__(f"User {username} bind exist error")
+        super().__init__(f"User {username} not found")
 
 
-class UserNotBindError(CommandError):
-    def __init__(self, user_context: str):
+class BindExistError(Exception):
+    """用户已绑定"""
+
+    template_key = "USER_BIND_EXISTING_TEMPLATE"
+
+    def __init__(self, username: str):
+        self.username = username
+        super().__init__(f"User {username} already bound")
+
+
+class UserNotBindError(Exception):
+    """用户未绑定"""
+
+    template_key = "USER_NOT_BOUND_TEMPLATE"
+
+    def __init__(self, user_context: str = ""):
         self.user_context = user_context
-        super().__init__(f"User {user_context} is not bound.")
+        super().__init__(f"User {user_context} is not bound")
