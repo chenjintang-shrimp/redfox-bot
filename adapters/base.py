@@ -4,7 +4,8 @@ from abc import ABC, abstractmethod
 from typing import Any, Optional
 
 from models.context import UserContext
-from adapters.message_types import Message
+from adapters.message_types import Message, TextMessage
+from utils.strings import format_template
 
 
 class PlatformAdapter(ABC):
@@ -67,3 +68,27 @@ class PlatformAdapter(ABC):
             UserNotBindError: 用户未绑定且未提供用户名
         """
         pass
+
+    async def handle_error(
+        self, platform_ctx: Any, error: Exception, locale: str = "zh"
+    ) -> None:
+        """统一错误处理和本地化
+
+        根据异常类型选择对应的本地化模板并发送错误消息
+
+        Args:
+            platform_ctx: 平台特定的上下文对象
+            error: 捕获的异常
+            locale: 语言代码 (en/zh)
+        """
+        # 获取异常的模板key和上下文
+        template_key = getattr(error, "template_key", None)
+        context_vars = getattr(error, "__dict__", {})
+
+        if template_key:
+            message = format_template(template_key, locale=locale, **context_vars)
+        else:
+            # 未知异常使用通用错误模板
+            message = format_template("QUERY_FAILED", locale=locale)
+
+        await self.send(platform_ctx, TextMessage(content=message))

@@ -1,19 +1,9 @@
-from discord.ext.commands import CommandError
+class ScoreQueryError(Exception):
+    """成绩查询失败"""
 
+    template_key = "SCORE_QUERY_ERROR_TEMPLATE"
 
-class ScoreQueryError(CommandError):
-    username: str
-    beatmap_id: int
-    error_msg: str
-    status_code: int
-
-    def __init__(
-        self, username: str, beatmap_id: int, error_msg: str, status_code: int
-    ):
+    def __init__(self, username: str, beatmap_id: int):
         self.username = username
         self.beatmap_id = beatmap_id
-        self.error_msg = error_msg
-        self.status_code = status_code
-        super().__init__(
-            f"User {self.username} score query error on beatmap {self.beatmap_id}: {error_msg}"
-        )
+        super().__init__(f"User {username} score query error on beatmap {beatmap_id}")

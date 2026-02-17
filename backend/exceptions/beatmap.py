@@ -1,8 +1,7 @@
-from discord.ext.commands import CommandError
+class BeatmapNotFoundError(Exception):
+    """谱面不存在"""
 
-
-class BeatmapNotFoundError(CommandError):
-    beatmap_id: int
+    template_key = "BEATMAP_NOT_FOUND_TEMPLATE"
 
     def __init__(self, beatmap_id: int):
         self.beatmap_id = beatmap_id

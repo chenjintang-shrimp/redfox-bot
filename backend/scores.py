@@ -2,7 +2,6 @@ from typing import Optional
 from backend.api_client import get_osu_api_client
 from backend.user import get_user_info
 from backend.exceptions import ScoreQueryError
-from utils import logger
 from utils.logger import get_logger
 from utils.strings import get_api_url
 
@@ -28,12 +27,7 @@ async def get_user_beatmap_score(user_id: int, beatmap_id: int):
         get_logger("backend").error(
             f"API error: {response.status_code} - {response.text}"
         )
-        raise ScoreQueryError(
-            username,
-            beatmap_id,
-            f"API returned {response.status_code} when requesting endpoint {url}",
-            response.status_code,
-        )
+        raise ScoreQueryError(username, beatmap_id)
 
     return response.json()
 
@@ -83,12 +77,7 @@ async def get_user_beatmap_all_scores(
             get_logger("backend").error(
                 f"API error: {response.status_code} - {response.text}"
             )
-            raise ScoreQueryError(
-                username,
-                beatmap_id,
-                f"API returned {response.status_code} when requesting endpoint {url}",
-                response.status_code,
-            )
+            raise ScoreQueryError(username, beatmap_id)
 
         data = response.json()
 
@@ -136,12 +125,7 @@ async def get_user_beatmap_best_score(user_id: int, beatmap_id: int):
         get_logger("backend").error(
             f"API error: {response.status_code} - {response.text}"
         )
-        raise ScoreQueryError(
-            username,
-            beatmap_id,
-            f"API returned {response.status_code} when requesting endpoint {url}",
-            response.status_code,
-        )
+        raise ScoreQueryError(username, beatmap_id)
 
     return response.json()
 
@@ -201,12 +185,7 @@ async def get_user_scores(
         get_logger("backend").error(
             f"API error: {response.status_code} - {response.text}"
         )
-        raise ScoreQueryError(
-            username,
-            0,  # No specific beatmap_id
-            f"API returned {response.status_code} when requesting endpoint {url}",
-            response.status_code,
-        )
+        raise ScoreQueryError(username, 0)
 
     return response.json()
 

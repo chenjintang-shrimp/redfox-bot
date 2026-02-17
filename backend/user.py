@@ -20,27 +20,23 @@ async def get_user_info(user: str | int):
 
     Returns:
         用户信息字典
+
+    Raises:
+        UserQueryError: 用户不存在或API请求失败
     """
     api_client = get_osu_api_client()
     url = get_api_url("user_info", user_id=user)
     response = await api_client.get(url)
 
     if response.status_code == 404:
-        raise UserQueryError(
-            str(user),
-            "User not found",
-            response.status_code,
-        )
+        raise UserQueryError(str(user))
 
     if response.status_code != 200:
         get_logger("backend").error(
             f"API error: {response.status_code} - {response.text}"
         )
-        raise UserQueryError(
-            str(user),
-            f"API returned {response.status_code} when requesting endpoint {url}",
-            response.status_code,
-        )
+        raise UserQueryError(str(user))
+
     return response.json()
 
 
