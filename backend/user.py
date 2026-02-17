@@ -1,29 +1,28 @@
 from backend.database import (
     UserBinding,
-    Platform,
     save_user_binding,
-    get_osu_user_by_discord_id,
-    delete_osu_user_by_discord_id,
+    get_user_binding,
+    delete_user_binding,
 )
 from backend.exceptions.user import BindExistError, UserQueryError
 from utils.logger import get_logger
 from backend.api_client import get_osu_api_client
 from utils.strings import get_api_url
+from models.context import UserContext
 
 
 async def get_user_info(user: str | int):
     """
+    获取 osu! 用户信息（平台无关）
+
     Args:
         user: 用户名或用户ID
 
     Returns:
-        格式化的用户信息字符串
+        用户信息字典
     """
-    # 使用新的API调用器
     api_client = get_osu_api_client()
-
     url = get_api_url("user_info", user_id=user)
-
     response = await api_client.get(url)
 
     if response.status_code == 404:
@@ -45,77 +44,112 @@ async def get_user_info(user: str | int):
     return response.json()
 
 
-async def bind_user(user_id: int, username: str):
+async def get_user_binding_by_context(context: UserContext) -> UserBinding | None:
     """
-    绑定用户
+    根据用户上下文获取绑定信息
+
     Args:
-        user_id: 用户在聊天频道中的ID
-        username: osu!用户名
+        context: 用户上下文
+
+    Returns:
+        UserBinding 或 None
     """
-    # 使用新的API调用器获取用户信息
+    user_id = int(context.platform_user_id)
+    return await get_user_binding(context.platform, user_id)
+
+
+async def bind_user(context: UserContext, username: str) -> None:
+    """
+    绑定用户（平台无关）
+
+    Args:
+        context: 用户上下文
+        username: osu! 用户名
+
+    Raises:
+        BindExistError: 用户已绑定
+        UserQueryError: 查询 osu! 用户失败
+    """
     user_data = await get_user_info(username)
+    user_id = int(context.platform_user_id)
 
-    current_user = await get_osu_user_by_discord_id(user_id)
-    if current_user is not None:
-        raise BindExistError(current_user.osu_username)
-    else:
-        new_user = UserBinding(
-            id=user_id,
-            platform=Platform.DISCORD,
-            osu_id=user_data["id"],
-            osu_username=username,
-        )
-        await save_user_binding(new_user)
-        get_logger("backend").info(f"Successfully retrieved user data for {username}")
-        return None
+    # 检查是否已绑定
+    existing = await get_user_binding(context.platform, user_id)
+    if existing is not None:
+        raise BindExistError(existing.osu_username)
+
+    # 创建新绑定
+    new_user = UserBinding(
+        id=user_id,
+        platform=context.platform,
+        osu_id=user_data["id"],
+        osu_username=username,
+    )
+    await save_user_binding(new_user)
+    get_logger("backend").info(
+        f"Successfully bound {context.platform} user {context.platform_user_id} to osu! user {username}"
+    )
 
 
-async def unbind_user(discord_id: int) -> bool:
+async def unbind_user(context: UserContext) -> bool:
     """
-    Unbind user
+    解绑用户（平台无关）
+
     Args:
-        discord_id: Discord user ID
+        context: 用户上下文
+
     Returns:
         True if user was unbound, False if no binding existed
     """
-    deleted = await delete_osu_user_by_discord_id(discord_id)
+    user_id = int(context.platform_user_id)
+    deleted = await delete_user_binding(context.platform, user_id)
     if deleted:
-        get_logger("backend").info(f"Successfully unbound Discord user {discord_id}")
+        get_logger("backend").info(
+            f"Successfully unbound {context.platform} user {context.platform_user_id}"
+        )
     else:
-        get_logger("backend").info(f"No binding found for Discord user {discord_id}")
+        get_logger("backend").info(
+            f"No binding found for {context.platform} user {context.platform_user_id}"
+        )
     return deleted
 
 
-async def set_user_gamemode(discord_id: int, gamemode: str | None) -> bool:
+async def set_user_gamemode(context: UserContext, gamemode: str | None) -> bool:
     """
-    设置用户的默认游戏模式
+    设置用户的默认游戏模式（平台无关）
+
     Args:
-        discord_id: Discord user ID
+        context: 用户上下文
         gamemode: 游戏模式 (osu/taiko/fruits/mania) 或 None 清除设置
+
     Returns:
         True if successful, False if user not found
     """
-    user = await get_osu_user_by_discord_id(discord_id)
+    user_id = int(context.platform_user_id)
+    user = await get_user_binding(context.platform, user_id)
     if user is None:
         return False
 
     user.current_gamemode = gamemode
     await save_user_binding(user)
     get_logger("backend").info(
-        f"Set gamemode for Discord user {discord_id} to {gamemode}"
+        f"Set gamemode for {context.platform} user {context.platform_user_id} to {gamemode}"
     )
     return True
 
 
-async def get_user_gamemode(discord_id: int) -> str | None:
+async def get_user_gamemode(context: UserContext) -> str | None:
     """
-    获取用户的默认游戏模式
+    获取用户的默认游戏模式（平台无关）
+
     Args:
-        discord_id: Discord user ID
+        context: 用户上下文
+
     Returns:
         游戏模式 (osu/taiko/fruits/mania) 或 None
     """
-    user = await get_osu_user_by_discord_id(discord_id)
+    user_id = int(context.platform_user_id)
+    user = await get_user_binding(context.platform, user_id)
     if user is None:
         return None
     return user.current_gamemode
