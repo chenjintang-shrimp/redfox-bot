@@ -64,7 +64,9 @@ async def bind_user_qq(qq_id: int, username: str):
             osu_username=username,
         )
         await save_user_binding(new_user)
-        get_logger("backend").info(f"Successfully bound QQ {qq_id} to osu! user {username}")
+        get_logger("backend").info(
+            f"Successfully bound QQ {qq_id} to osu! user {username}"
+        )
         return None
 
 

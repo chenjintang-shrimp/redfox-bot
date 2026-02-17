@@ -25,15 +25,16 @@ class DiscordAdapter(PlatformAdapter):
     def platform_name(self) -> str:
         return "discord"
 
-    async def get_user_context(self, ctx: Context) -> UserContext:
+    async def get_user_context(self, platform_ctx: Context) -> UserContext:
         """从 Discord Context 获取统一的用户上下文
 
         Args:
-            ctx: discord.ext.commands.Context
+            platform_ctx: discord.ext.commands.Context
 
         Returns:
             UserContext: 包含用户绑定信息的上下文
         """
+        ctx = platform_ctx
         discord_id = ctx.author.id
         binding = await get_user_binding(self.platform_name, discord_id)
 
@@ -45,23 +46,24 @@ class DiscordAdapter(PlatformAdapter):
             current_gamemode=binding.current_gamemode if binding else None,
         )
 
-    async def send(self, ctx: Context, message: Message) -> Any:
+    async def send(self, platform_ctx: Context, message: Message) -> Any:
         """发送消息到 Discord
 
         Args:
-            ctx: discord.ext.commands.Context
+            platform_ctx: discord.ext.commands.Context
             message: 统一消息对象
 
         Returns:
             discord.Message: 发送的消息对象
         """
+        ctx = platform_ctx
         if isinstance(message, TextMessage):
             return await ctx.send(message.content)
 
         elif isinstance(message, ImageMessage):
             file = File(
                 io.BytesIO(message.image_bytes),
-                filename=message.filename or "image.png"
+                filename=message.filename or "image.png",
             )
             if message.caption:
                 return await ctx.send(content=message.caption, file=file)
@@ -71,14 +73,14 @@ class DiscordAdapter(PlatformAdapter):
             embed = Embed(
                 title=message.title,
                 description=message.description,
-                color=message.color
+                color=message.color,
             )
             if message.fields:
                 for field in message.fields:
                     embed.add_field(
                         name=field.get("name", ""),
                         value=field.get("value", ""),
-                        inline=field.get("inline", False)
+                        inline=field.get("inline", False),
                     )
             if message.image_url:
                 embed.set_image(url=message.image_url)
@@ -92,7 +94,7 @@ class DiscordAdapter(PlatformAdapter):
             raise ValueError(f"Unknown message type: {type(message)}")
 
     async def resolve_username(
-        self, ctx: Context, username_arg: Optional[str | User | Member]
+        self, platform_ctx: Context, username_arg: Optional[str | User | Member]
     ) -> str:
         """解析用户名
 
@@ -102,7 +104,7 @@ class DiscordAdapter(PlatformAdapter):
         如果 username_arg 是 mention，解析并返回该用户的绑定用户名
 
         Args:
-            ctx: Discord Context
+            platform_ctx: Discord Context
             username_arg: 用户名参数（可以是字符串、User 或 Member）
 
         Returns:
@@ -111,6 +113,7 @@ class DiscordAdapter(PlatformAdapter):
         Raises:
             UserNotBindError: 用户未绑定且未提供有效用户名
         """
+        ctx = platform_ctx
         target_discord_id: int | None = None
 
         if username_arg is None:
@@ -137,7 +140,7 @@ class DiscordAdapter(PlatformAdapter):
 
     async def send_image_bytes(
         self,
-        ctx: Context,
+        platform_ctx: Context,
         image_bytes: bytes,
         filename: str = "image.png",
         caption: Optional[str] = None
@@ -145,7 +148,7 @@ class DiscordAdapter(PlatformAdapter):
         """便捷方法：发送图片字节
 
         Args:
-            ctx: Discord Context
+            platform_ctx: Discord Context
             image_bytes: 图片字节数据
             filename: 文件名
             caption: 说明文字
@@ -158,4 +161,4 @@ class DiscordAdapter(PlatformAdapter):
             filename=filename,
             caption=caption
         )
-        return await self.send(ctx, message)
+        return await self.send(platform_ctx, message)

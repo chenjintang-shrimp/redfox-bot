@@ -85,12 +85,16 @@ async def load_cogs():
             else:
                 # 在子目录中
                 # 统一处理 Windows 和 Linux 的路径分隔符
-                sub_package = rel_path.replace(os.sep, ".").replace("/", ".").replace("\\", ".")
+                sub_package = (
+                    rel_path.replace(os.sep, ".").replace("/", ".").replace("\\", ".")
+                )
                 if is_package:
                     # 如果是包，只加载 __init__.py，忽略其他文件
                     # __init__.py 中的 setup 函数应该负责加载包内的所有 Cog
                     if filename != "__init__.py":
-                        logger.debug(f"跳过包内文件: {filename} (包 {sub_package} 将通过 __init__.py 加载)")
+                        logger.debug(
+                            f"跳过包内文件: {filename} (包 {sub_package} 将通过 __init__.py 加载)"
+                        )
                         continue
                     extension = f"{base_module}.{sub_package}"
                 else:

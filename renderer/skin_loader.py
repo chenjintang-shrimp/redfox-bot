@@ -87,7 +87,9 @@ def find_template(skin: str, renderer_name: str) -> Path | None:
         if template_filename:
             template_path = skin_dir / template_filename
             if template_path.exists():
-                logger.debug(f"从配置找到模板: {renderer_name} -> {template_filename} (skin: {skin})")
+                logger.debug(
+                    f"从配置找到模板: {renderer_name} -> {template_filename} (skin: {skin})"
+                )
                 return template_path
 
     # 2. Fallback: 默认命名约定 {renderer_name}.html

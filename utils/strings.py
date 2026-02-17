@@ -30,7 +30,9 @@ def get_api_url(endpoint: str, **kwargs) -> str:
     return f"{base_url}{api_config[endpoint]}".format(**kwargs)
 
 
-def format_template(name: str, context: dict | None = None, locale = "zh",**kwargs) -> str:
+def format_template(
+    name: str, context: dict | None = None, locale="zh", **kwargs
+) -> str:
     """
     使用 Jinja2 渲染模板
 

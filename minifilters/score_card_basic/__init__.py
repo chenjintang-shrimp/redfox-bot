@@ -69,7 +69,9 @@ async def process(data: dict) -> dict:
                 result["beatmapset"] = beatmap_info["beatmapset"]
             logger.debug(f"[score_card_basic] 已获取 beatmap 信息: {beatmap_id}")
         except Exception as e:
-            logger.warning(f"[score_card_basic] 获取 beatmap 信息失败: {beatmap_id}, {e}")
+            logger.warning(
+                f"[score_card_basic] 获取 beatmap 信息失败: {beatmap_id}, {e}"
+            )
 
     # 格式化 mods
     if "mods" in result and isinstance(result["mods"], list):

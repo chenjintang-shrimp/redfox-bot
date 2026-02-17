@@ -2,7 +2,13 @@ from nonebot import on_command
 from nonebot.adapters.onebot.v11 import MessageEvent, MessageSegment
 from nonebot.params import CommandArg
 
-from backend.user_qq import bind_user_qq, get_user_info, unbind_user_qq, set_user_gamemode_qq, get_user_gamemode_qq
+from backend.user_qq import (
+    bind_user_qq,
+    get_user_info,
+    unbind_user_qq,
+    set_user_gamemode_qq,
+    get_user_gamemode_qq,
+)
 from backend.exceptions.user import BindExistError, UserNotBindError, UserQueryError
 from frontend.qq.util import resolve_username_qq
 from renderer.user import render_user_card_image, render_user_info

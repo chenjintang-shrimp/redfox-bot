@@ -21,7 +21,9 @@ logger = get_logger("renderer")
 @runtime_checkable
 class RendererFunc(Protocol):
     """Renderer 函数协议，包含 __view_name__ 属性"""
+
     __view_name__: str
+
     async def __call__(self, *args: Any, **kwargs: Any) -> Any: ...
 
 
@@ -56,7 +58,9 @@ class ExceptionHandler:
 
             # 用户未绑定
             case UserNotBindError():
-                return format_template("USER_NOT_BOUND_TEMPLATE", locale=locale, user=e.user_context)
+                return format_template(
+                    "USER_NOT_BOUND_TEMPLATE", locale=locale, user=e.user_context
+                )
 
             # 已绑定其他账号
             case BindExistError():
@@ -98,7 +102,9 @@ class ExceptionHandler:
             # 兜底：未知异常
             case _:
                 error_msg = f"[{type(e).__name__}] {str(e)}"
-                return format_template("RENDERER_ERROR_TEMPLATE", locale=locale, error_msg=error_msg)
+                return format_template(
+                    "RENDERER_ERROR_TEMPLATE", locale=locale, error_msg=error_msg
+                )
 
 
 def renderer(
@@ -136,9 +142,7 @@ def renderer(
 
         # 保存视图名，供 minifilter 使用
         # 优先使用显式声明的 view_name，否则使用函数名
-        actual_view_name = (
-            view_name if isinstance(view_name, str) else func.__name__
-        )
+        actual_view_name = view_name if isinstance(view_name, str) else func.__name__
         wrapper.__view_name__ = actual_view_name  # type: ignore[attr-defined]
         # 使用 cast 保留原函数类型签名
         return cast(F, wrapper)

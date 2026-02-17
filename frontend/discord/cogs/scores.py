@@ -96,7 +96,11 @@ class UserScoresPaginationView(BasePaginationView):
 
     async def update_view(self, interaction: discord.Interaction):
         content = await render_user_score_list(  # type: ignore
-            self.user_id, self.type, include_fails=self.include_fails, page=self.page, locale="en"
+            self.user_id,
+            self.type,
+            include_fails=self.include_fails,
+            page=self.page,
+            locale="en",
         )
         self.update_buttons()
         await interaction.response.edit_message(content=content, view=self)
@@ -220,7 +224,9 @@ class Scores(Cog):
         user_id = user_info["id"]
 
         # type=recent, include_fails=False, limit=1
-        content = await render_user_recent_score(user_id, "recent", include_fails=False, locale="en")  # type: ignore[call-arg]
+        content = await render_user_recent_score(
+            user_id, "recent", include_fails=False, locale="en"
+        )  # type: ignore[call-arg]
         await ctx.send(content=content)
 
     @commands.hybrid_command(
@@ -234,7 +240,9 @@ class Scores(Cog):
         user_id = user_info["id"]
 
         # type=recent, include_fails=True, limit=1
-        content = await render_user_recent_score(user_id, "recent", include_fails=True, locale="en")  # type: ignore[call-arg]
+        content = await render_user_recent_score(
+            user_id, "recent", include_fails=True, locale="en"
+        )  # type: ignore[call-arg]
         await ctx.send(content=content)
 
     # ============ 图片版本命令 ============
@@ -314,7 +322,9 @@ class Scores(Cog):
         user_id = user_info["id"]
         gamemode = await get_user_gamemode(ctx.author.id)
 
-        image = await render_user_recent_score_card(user_id, include_fails=False, mode=gamemode)
+        image = await render_user_recent_score_card(
+            user_id, include_fails=False, mode=gamemode
+        )
         await ctx.send(file=File(io.BytesIO(image), f"{username}_latest.png"))
 
     @commands.hybrid_command(
@@ -329,14 +339,14 @@ class Scores(Cog):
         user_id = user_info["id"]
         gamemode = await get_user_gamemode(ctx.author.id)
 
-        image = await render_user_recent_score_card(user_id, include_fails=True, mode=gamemode)
+        image = await render_user_recent_score_card(
+            user_id, include_fails=True, mode=gamemode
+        )
         await ctx.send(file=File(io.BytesIO(image), f"{username}_latest_all.png"))
 
     # ============ Best 成绩命令 ============
 
-    @commands.hybrid_command(
-        name="b", description="Query your best score (single)"
-    )
+    @commands.hybrid_command(name="b", description="Query your best score (single)")
     @app_commands.describe(user="osu! username or mention")
     async def b(self, ctx: commands.Context, user: str | None = None):
         """查询最佳成绩（文字版，单条）"""
@@ -347,17 +357,23 @@ class Scores(Cog):
         gamemode = await get_user_gamemode(ctx.author.id)
 
         content = await render_user_score_list(  # type: ignore
-            user_id, "best", include_fails=False, page=1, limit=1, locale="en", mode=gamemode
+            user_id,
+            "best",
+            include_fails=False,
+            page=1,
+            limit=1,
+            locale="en",
+            mode=gamemode,
         )
         await ctx.send(content=content)
 
-    @commands.hybrid_command(
-        name="bs", description="Query your best scores list"
+    @commands.hybrid_command(name="bs", description="Query your best scores list")
+    @app_commands.describe(
+        count="Number of scores (1-100, default 20)", user="osu! username or mention"
     )
-    @app_commands.describe(count="Number of scores (1-100, default 20)", user="osu! username or mention")
     async def bs(self, ctx: commands.Context, count: int = 20, user: str | None = None):
         """查询最佳成绩列表（文字版，多条）
-        
+
         使用方式:
         /bs 3 - 查询自己的前3个best成绩
         /bs 5 someone - 查询某人的前5个best成绩
@@ -370,7 +386,13 @@ class Scores(Cog):
         gamemode = await get_user_gamemode(ctx.author.id)
 
         content = await render_user_score_list(  # type: ignore
-            user_id, "best", include_fails=False, page=1, limit=count, locale="en", mode=gamemode
+            user_id,
+            "best",
+            include_fails=False,
+            page=1,
+            limit=count,
+            locale="en",
+            mode=gamemode,
         )
         await ctx.send(content=content)
 
@@ -387,17 +409,26 @@ class Scores(Cog):
         gamemode = await get_user_gamemode(ctx.author.id)
 
         image = await render_user_score_list_image(
-            user_id, username, score_type="best", include_fails=False, count=1, mode=gamemode
+            user_id,
+            username,
+            score_type="best",
+            include_fails=False,
+            count=1,
+            mode=gamemode,
         )
         await ctx.send(file=File(io.BytesIO(image), f"{username}_best.png"))
 
     @commands.hybrid_command(
         name="ubs", description="Query your best scores (image card, multiple)"
     )
-    @app_commands.describe(count="Number of scores (1-100, default 20)", user="osu! username or mention")
-    async def ubs(self, ctx: commands.Context, count: int = 20, user: str | None = None):
+    @app_commands.describe(
+        count="Number of scores (1-100, default 20)", user="osu! username or mention"
+    )
+    async def ubs(
+        self, ctx: commands.Context, count: int = 20, user: str | None = None
+    ):
         """查询最佳成绩列表（图片卡片版，多条）
-        
+
         使用方式:
         /ubs 3 - 查询自己的前3个best成绩
         /ubs 5 someone - 查询某人的前5个best成绩
@@ -410,7 +441,12 @@ class Scores(Cog):
         gamemode = await get_user_gamemode(ctx.author.id)
 
         image = await render_user_score_list_image(
-            user_id, username, score_type="best", include_fails=False, count=count, mode=gamemode
+            user_id,
+            username,
+            score_type="best",
+            include_fails=False,
+            count=count,
+            mode=gamemode,
         )
         await ctx.send(file=File(io.BytesIO(image), f"{username}_best_list.png"))
 

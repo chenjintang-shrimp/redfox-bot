@@ -62,8 +62,12 @@ class User(commands.Cog):
     @commands.hybrid_command(
         name="set_gamemode", description="Set your default game mode for score queries"
     )
-    @app_commands.describe(gamemode="Game mode (e.g., osu, taiko, fruits, mania, or custom)")
-    async def set_gamemode_cmd(self, ctx: commands.Context, gamemode: str | None = None):
+    @app_commands.describe(
+        gamemode="Game mode (e.g., osu, taiko, fruits, mania, or custom)"
+    )
+    async def set_gamemode_cmd(
+        self, ctx: commands.Context, gamemode: str | None = None
+    ):
         """设置默认游戏模式"""
         await ctx.defer()
 
@@ -74,12 +78,12 @@ class User(commands.Cog):
             current_mode = await get_user_gamemode(discord_id)
             if current_mode:
                 await ctx.send(
-                    format_template("GAMEMODE_CURRENT", gamemode=current_mode, locale="en")
+                    format_template(
+                        "GAMEMODE_CURRENT", gamemode=current_mode, locale="en"
+                    )
                 )
             else:
-                await ctx.send(
-                    format_template("GAMEMODE_NOT_SET", locale="en")
-                )
+                await ctx.send(format_template("GAMEMODE_NOT_SET", locale="en"))
             return
 
         # 设置游戏模式（不限制输入，支持任意私服模式）

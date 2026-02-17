@@ -21,11 +21,11 @@ class PlatformAdapter(ABC):
         pass
 
     @abstractmethod
-    async def get_user_context(self, ctx: Any) -> UserContext:
+    async def get_user_context(self, platform_ctx: Any) -> UserContext:
         """从平台特定的上下文获取统一的用户上下文
 
         Args:
-            ctx: 平台特定的上下文对象
+            platform_ctx: 平台特定的上下文对象
                 - Discord: commands.Context
                 - QQ: MessageEvent
 
@@ -35,11 +35,11 @@ class PlatformAdapter(ABC):
         pass
 
     @abstractmethod
-    async def send(self, ctx: Any, message: Message) -> Any:
+    async def send(self, platform_ctx: Any, message: Message) -> Any:
         """发送消息到平台
 
         Args:
-            ctx: 平台特定的上下文对象
+            platform_ctx: 平台特定的上下文对象
             message: 统一的消息对象（TextMessage/ImageMessage/EmbedMessage）
 
         Returns:
@@ -49,7 +49,7 @@ class PlatformAdapter(ABC):
 
     @abstractmethod
     async def resolve_username(
-        self, ctx: Any, username_arg: Optional[str]
+        self, platform_ctx: Any, username_arg: Optional[str]
     ) -> str:
         """解析用户名
 
@@ -57,7 +57,7 @@ class PlatformAdapter(ABC):
         如果 username_arg 不为 None，则直接返回
 
         Args:
-            ctx: 平台特定的上下文对象
+            platform_ctx: 平台特定的上下文对象
             username_arg: 用户提供的用户名参数
 
         Returns:

@@ -101,7 +101,9 @@ async def set_user_gamemode(discord_id: int, gamemode: str | None) -> bool:
 
     user.current_gamemode = gamemode
     await save_user_binding(user)
-    get_logger("backend").info(f"Set gamemode for Discord user {discord_id} to {gamemode}")
+    get_logger("backend").info(
+        f"Set gamemode for Discord user {discord_id} to {gamemode}"
+    )
     return True
 
 

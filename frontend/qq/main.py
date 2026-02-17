@@ -42,6 +42,7 @@ def main():
         auto_discover_tasks("backend")
         for task in get_all_tasks():
             from utils.scheduler import add_task
+
             add_task(task.name, task.func, task.interval, *task.args, **task.kwargs)
 
         get_logger("QQBot").info(f"已注册 {len(get_all_tasks())} 个定时任务")
@@ -71,7 +72,9 @@ def _register_exception_handlers():
     """注册全局异常处理器，捕获详细的 matcher 执行错误"""
 
     @run_preprocessor
-    async def on_run_preprocessor(bot: Bot, event: Event, state: T_State, matcher: Matcher):
+    async def on_run_preprocessor(
+        bot: Bot, event: Event, state: T_State, matcher: Matcher
+    ):
         """在 matcher 运行前记录日志"""
         logger.debug(f"Running matcher: {matcher.type}, module: {matcher.module_name}")
 
@@ -81,7 +84,7 @@ def _register_exception_handlers():
         event: Event,
         state: T_State,
         matcher: Matcher,
-        exception: Exception | None
+        exception: Exception | None,
     ):
         """在 matcher 运行后捕获异常，并向用户发送错误信息"""
         if exception is not None:
@@ -105,7 +108,10 @@ def _register_exception_handlers():
 
             # 向用户发送友好的错误提示（包含技术细节）
             try:
-                from nonebot.adapters.onebot.v11 import MessageEvent, PrivateMessageEvent
+                from nonebot.adapters.onebot.v11 import (
+                    MessageEvent,
+                    PrivateMessageEvent,
+                )
 
                 if isinstance(event, MessageEvent):
                     user_msg = "❌ 命令执行出错\n"
