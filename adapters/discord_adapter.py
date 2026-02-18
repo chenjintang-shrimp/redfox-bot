@@ -143,7 +143,7 @@ class DiscordAdapter(PlatformAdapter):
         platform_ctx: Context,
         image_bytes: bytes,
         filename: str = "image.png",
-        caption: Optional[str] = None
+        caption: Optional[str] = None,
     ) -> discord.Message:
         """便捷方法：发送图片字节
 
@@ -157,8 +157,6 @@ class DiscordAdapter(PlatformAdapter):
             discord.Message: 发送的消息
         """
         message = ImageMessage(
-            image_bytes=image_bytes,
-            filename=filename,
-            caption=caption
+            image_bytes=image_bytes, filename=filename, caption=caption
         )
         return await self.send(platform_ctx, message)

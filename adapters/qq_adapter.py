@@ -84,7 +84,7 @@ class QQAdapter(PlatformAdapter):
             if message.fields:
                 for field in message.fields:
                     lines.append(f"\n{field.get('name', '')}:")
-                    lines.append(field.get('value', ''))
+                    lines.append(field.get("value", ""))
             if message.footer:
                 lines.append(f"\n{message.footer}")
 
@@ -129,7 +129,7 @@ class QQAdapter(PlatformAdapter):
         self,
         platform_ctx: MessageEvent,
         image_bytes: bytes,
-        caption: Optional[str] = None
+        caption: Optional[str] = None,
     ) -> Any:
         """便捷方法：发送图片字节
 
@@ -142,8 +142,6 @@ class QQAdapter(PlatformAdapter):
             发送结果
         """
         message = ImageMessage(
-            image_bytes=image_bytes,
-            filename="image.png",
-            caption=caption
+            image_bytes=image_bytes, filename="image.png", caption=caption
         )
         return await self.send(platform_ctx, message)
