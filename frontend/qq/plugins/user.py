@@ -92,9 +92,13 @@ async def handle_unbind(event: MessageEvent):
         context = await adapter.get_user_context(event)
         deleted = await UserService.unbind_user(context)
         if deleted:
-            await unbind_cmd.send(format_template("USER_UNBIND_SUCCESS_TEMPLATE", locale="zh"))
+            await unbind_cmd.send(
+                format_template("USER_UNBIND_SUCCESS_TEMPLATE", locale="zh")
+            )
         else:
-            await unbind_cmd.send(format_template("USER_NOT_BOUND_TEMPLATE", locale="zh", user="你"))
+            await unbind_cmd.send(
+                format_template("USER_NOT_BOUND_TEMPLATE", locale="zh", user="你")
+            )
     except Exception as e:
         await adapter.handle_error(event, e, locale="zh")
 
@@ -112,7 +116,9 @@ async def handle_switch_gamemode(event: MessageEvent, args=CommandArg()):
             current_mode = await UserService.get_gamemode(context)
             if current_mode:
                 await switch_gamemode_cmd.send(
-                    format_template("GAMEMODE_CURRENT", gamemode=current_mode, locale="zh")
+                    format_template(
+                        "GAMEMODE_CURRENT", gamemode=current_mode, locale="zh"
+                    )
                 )
             else:
                 await switch_gamemode_cmd.send(

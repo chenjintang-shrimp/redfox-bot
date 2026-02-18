@@ -118,7 +118,9 @@ class Scores(Cog):
         self.adapter = DiscordAdapter()
         get_logger("cogs.scores").info("Cog scores Loaded")
 
-    async def _get_user_context_and_id(self, ctx: commands.Context, user_arg: str | None) -> tuple:
+    async def _get_user_context_and_id(
+        self, ctx: commands.Context, user_arg: str | None
+    ) -> tuple:
         """获取用户上下文和用户ID
 
         Returns:
@@ -139,10 +141,14 @@ class Scores(Cog):
         try:
             _, user_id = await self._get_user_context_and_id(ctx, None)
             total_pages = await ScoreService.get_page_count(user_id, beatmap_id)
-            content = await render_user_beatmap_scores(user_id, beatmap_id, 1, locale="en")  # type: ignore[call-arg]
+            content = await render_user_beatmap_scores(
+                user_id, beatmap_id, 1, locale="en"
+            )  # type: ignore[call-arg]
 
             if total_pages > 1:
-                view = ScoresPaginationView(user_id, beatmap_id, ctx.author.id, total_pages)
+                view = ScoresPaginationView(
+                    user_id, beatmap_id, ctx.author.id, total_pages
+                )
                 await ctx.send(content=content, view=view)
             else:
                 await ctx.send(content=content)
@@ -286,7 +292,11 @@ class Scores(Cog):
             gamemode = await UserService.get_gamemode(context)
 
             image = await render_user_score_list_image(
-                user_id, username, score_type="recent", include_fails=False, mode=gamemode
+                user_id,
+                username,
+                score_type="recent",
+                include_fails=False,
+                mode=gamemode,
             )
             await ctx.send(file=File(io.BytesIO(image), f"{username}_recent.png"))
         except Exception as e:
@@ -306,7 +316,11 @@ class Scores(Cog):
             gamemode = await UserService.get_gamemode(context)
 
             image = await render_user_score_list_image(
-                user_id, username, score_type="recent", include_fails=True, mode=gamemode
+                user_id,
+                username,
+                score_type="recent",
+                include_fails=True,
+                mode=gamemode,
             )
             await ctx.send(file=File(io.BytesIO(image), f"{username}_recent_all.png"))
         except Exception as e:
