@@ -10,6 +10,7 @@ from backend.scores import get_user_beatmap_all_scores, get_user_scores, ScoreQu
 from backend.beatmap import get_beatmap_info
 from backend.user import get_user_info
 from renderer.renderer_template import renderer
+from renderer.service import render_service
 from renderer.skin_loader import render_template as render_skin_template
 from utils.flt_mgr import apply_minifilters_async
 from utils.html2image import html_to_image
@@ -539,9 +540,8 @@ async def render_user_beatmap_score_card(
     Raises:
         ScoreQueryError: 查询成绩失败
     """
-    skin = skin or DEFAULT_SKIN
     logger.info(
-        f"[render_user_beatmap_score_card] 开始渲染，user_id={user_id}, beatmap_id={beatmap_id}, skin={skin}"
+        f"[render_user_beatmap_score_card] 开始渲染，user_id={user_id}, beatmap_id={beatmap_id}"
     )
 
     # 获取用户在该谱面上的所有成绩
@@ -569,19 +569,21 @@ async def render_user_beatmap_score_card(
         f"[render_user_beatmap_score_card] beatmap_id: {score.get('beatmap_id')}"
     )
 
-    # 应用 minifilters 处理数据（按 renderer 视图名 hook）
-    processed_score = await apply_minifilters_async("user_beatmap_score_card", score)
-
-    # 渲染模板
-    html = await render_skin_template(skin, "user_beatmap_score_card", processed_score)
-    logger.debug(f"[render_user_beatmap_score_card] HTML 长度: {len(html)} chars")
-
-    image_bytes = await html_to_image(html, width=800, height=300)
-    logger.info(
-        f"[render_user_beatmap_score_card] 图片生成完成，大小: {len(image_bytes)} bytes"
+    # 使用新的渲染服务
+    result = await render_service.render(
+        view_name="user_beatmap_score_card",
+        data=score,
+        skin=skin,
+        width=800,
+        height=300,
     )
 
-    return image_bytes
+    # 返回图片数据（保持向后兼容）
+    if result.content_type == "image":
+        return result.data  # type: ignore
+    else:
+        # 如果返回的是文本，编码为 bytes
+        return result.data.encode("utf-8")  # type: ignore
 
 
 @renderer("user_recent_score_card")
@@ -606,9 +608,8 @@ async def render_user_recent_score_card(
     Raises:
         ScoreQueryError: 查询成绩失败
     """
-    skin = skin or DEFAULT_SKIN
     logger.info(
-        f"[render_user_recent_score_card] 开始渲染，user_id={user_id}, include_fails={include_fails}, mode={mode}, skin={skin}"
+        f"[render_user_recent_score_card] 开始渲染，user_id={user_id}, include_fails={include_fails}, mode={mode}"
     )
 
     # 获取用户最近成绩
@@ -631,19 +632,21 @@ async def render_user_recent_score_card(
         f"[render_user_recent_score_card] beatmap_id: {score.get('beatmap_id')}, id: {score.get('id')}"
     )
 
-    # 应用 minifilters 处理数据（按 renderer 视图名 hook）
-    processed_score = await apply_minifilters_async("user_recent_score_card", score)
-
-    # 渲染模板
-    html = await render_skin_template(skin, "user_recent_score_card", processed_score)
-    logger.debug(f"[render_user_recent_score_card] HTML 长度: {len(html)} chars")
-
-    image_bytes = await html_to_image(html, width=800, height=300)
-    logger.info(
-        f"[render_user_recent_score_card] 图片生成完成，大小: {len(image_bytes)} bytes"
+    # 使用新的渲染服务
+    result = await render_service.render(
+        view_name="user_recent_score_card",
+        data=score,
+        skin=skin,
+        width=800,
+        height=300,
     )
 
-    return image_bytes
+    # 返回图片数据（保持向后兼容）
+    if result.content_type == "image":
+        return result.data  # type: ignore
+    else:
+        # 如果返回的是文本，编码为 bytes
+        return result.data.encode("utf-8")  # type: ignore
 
 
 @renderer("user_score_list")
@@ -674,9 +677,8 @@ async def render_user_score_list_image(
     Raises:
         ScoreQueryError: 查询成绩失败
     """
-    skin = skin or DEFAULT_SKIN
     logger.info(
-        f"[render_user_score_list_image] 开始渲染，user_id={user_id}, type={score_type}, mode={mode}, skin={skin}"
+        f"[render_user_score_list_image] 开始渲染，user_id={user_id}, type={score_type}, mode={mode}"
     )
 
     # 获取所有成绩（限制20个，与yumu保持一致）
@@ -716,23 +718,25 @@ async def render_user_score_list_image(
         "title": title,
     }
 
-    # 应用 minifilters 处理数据（按 renderer 视图名 hook）
-    processed_data = await apply_minifilters_async("user_score_list", data)
-
-    # 渲染模板
-    html = await render_skin_template(skin, "user_score_list", processed_data)
-    logger.debug(f"[render_user_score_list_image] HTML 长度: {len(html)} chars")
-
     # 动态计算高度（根据成绩数量）
     height = 100 + len(scores) * 80 + 50
     height = max(400, min(height, 3000))  # 最大高度 3000，防止过长
 
-    image_bytes = await html_to_image(html, width=800, height=height)
-    logger.info(
-        f"[render_user_score_list_image] 图片生成完成，大小: {len(image_bytes)} bytes, 包含 {len(scores)} 条成绩"
+    # 使用新的渲染服务
+    result = await render_service.render(
+        view_name="user_score_list",
+        data=data,
+        skin=skin,
+        width=800,
+        height=height,
     )
 
-    return image_bytes
+    # 返回图片数据（保持向后兼容）
+    if result.content_type == "image":
+        return result.data  # type: ignore
+    else:
+        # 如果返回的是文本，编码为 bytes
+        return result.data.encode("utf-8")  # type: ignore
 
 
 async def render_score_list_image(
@@ -808,9 +812,8 @@ async def render_user_today_bp_image(
     Raises:
         ScoreQueryError: 查询成绩失败
     """
-    skin = skin or DEFAULT_SKIN
     logger.info(
-        f"[render_user_today_bp_image] 开始渲染，user_id={user_id}, mode={mode}, skin={skin}"
+        f"[render_user_today_bp_image] 开始渲染，user_id={user_id}, mode={mode}"
     )
 
     # 获取 best 成绩
@@ -850,23 +853,25 @@ async def render_user_today_bp_image(
         "total_pages": total_pages,
     }
 
-    # 应用 minifilters 处理数据（按 renderer 视图名 hook）
-    processed_data = await apply_minifilters_async("user_today_bp", data)
-
-    # 渲染模板
-    html = await render_skin_template(skin, "user_today_bp", processed_data)
-    logger.debug(f"[render_user_today_bp_image] HTML 长度: {len(html)} chars")
-
     # 动态计算高度
     height = 120 + len(today_scores[:5]) * 90 + 50
     height = max(400, min(height, 1200))
 
-    image_bytes = await html_to_image(html, width=800, height=height)
-    logger.info(
-        f"[render_user_today_bp_image] 图片生成完成，大小: {len(image_bytes)} bytes"
+    # 使用新的渲染服务
+    result = await render_service.render(
+        view_name="user_today_bp",
+        data=data,
+        skin=skin,
+        width=800,
+        height=height,
     )
 
-    return image_bytes
+    # 返回图片数据（保持向后兼容）
+    if result.content_type == "image":
+        return result.data  # type: ignore
+    else:
+        # 如果返回的是文本，编码为 bytes
+        return result.data.encode("utf-8")  # type: ignore
 
 
 async def render_today_bp_image(

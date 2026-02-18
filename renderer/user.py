@@ -1,12 +1,9 @@
 from services import UserService
 from models.context import UserContext
 from renderer.renderer_template import renderer
-from renderer.skin_loader import render_template as render_skin_template
-from utils.flt_mgr import apply_minifilters_async
-from utils.html2image import html_to_image
+from renderer.service import render_service
 from utils.logger import get_logger
 from utils.strings import format_template
-from utils.variable import DEFAULT_SKIN
 
 logger = get_logger("renderer.user")
 
@@ -88,23 +85,23 @@ async def render_user_card_image(
     Returns:
         PNG 图片字节
     """
-    skin = skin or DEFAULT_SKIN
-    logger.info(f"[render_user_card_image] 开始渲染，skin={skin}")
+    logger.info("[render_user_card_image] 开始渲染")
 
-    # 应用 minifilters 处理数据（按 renderer 视图名 hook）
-    processed_data = await apply_minifilters_async("user_card", data)
-
-    # 渲染 HTML 模板
-    html = await render_skin_template(skin, "user_card", processed_data)
-    logger.debug(f"[render_user_card_image] HTML 长度: {len(html)} chars")
-
-    # 转换为图片
-    image_bytes = await html_to_image(html, width=800, height=400)
-    logger.info(
-        f"[render_user_card_image] 图片生成完成，大小: {len(image_bytes)} bytes"
+    # 使用新的渲染服务
+    result = await render_service.render(
+        view_name="user_card",
+        data=data,
+        skin=skin,
+        width=800,
+        height=400,
     )
 
-    return image_bytes
+    # 返回图片数据（保持向后兼容）
+    if result.content_type == "image":
+        return result.data  # type: ignore
+    else:
+        # 如果返回的是文本，编码为 bytes
+        return result.data.encode("utf-8")  # type: ignore
 
 
 def render_user_card_text(data: dict, locale: str = "en") -> str:
