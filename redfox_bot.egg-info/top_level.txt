@@ -1,5 +1,8 @@
+adapters
 backend
 frontend
 minifilters
+models
 renderer
+services
 utils

@@ -58,17 +58,17 @@ async def close_browser() -> None:
 async def html_to_image(
     html: str,
     width: int = 800,
-    height: int = 400,
+    height: int | None = None,
 ) -> bytes:
     """
     将 HTML 转换为 PNG 图片
 
-    使用全局 Browser 实例
+    使用全局 Browser 实例，支持自适应高度
 
     Args:
         html: HTML 字符串
         width: 图片宽度
-        height: 图片高度
+        height: 图片高度（如果为 None，则自适应 full page）
 
     Returns:
         PNG 图片字节
@@ -76,14 +76,15 @@ async def html_to_image(
     if _browser is None:
         raise RuntimeError("Browser 未初始化，请先调用 init_browser()")
 
-    logger.info(f"[html2image] 创建新页面 {width}x{height}")
-    page = await _browser.new_page(viewport={"width": width, "height": height})
+    viewport_height = height or 600
+    logger.info(f"[html2image] 创建新页面 {width}x{viewport_height}, full_page: {height is None}")
+    page = await _browser.new_page(viewport={"width": width, "height": viewport_height})
 
     try:
         logger.info("[html2image] 设置 HTML 内容")
         await page.set_content(html)
         logger.info("[html2image] 开始截图")
-        screenshot = await page.screenshot(type="png", full_page=False)
+        screenshot = await page.screenshot(type="png", full_page=height is None)
         logger.info(f"[html2image] 截图完成，大小: {len(screenshot)} bytes")
         return screenshot
     except Exception as e:

@@ -82,7 +82,7 @@ async def render_beatmap_card_image(
     html = await render_skin_template(skin, "beatmap_card", processed_data)
     logger.debug(f"[render_beatmap_card_image] HTML 长度: {len(html)} chars")
 
-    image_bytes = await html_to_image(html, width=800, height=400)
+    image_bytes = await html_to_image(html, width=800, height=None)
     logger.info(
         f"[render_beatmap_card_image] 图片生成完成，大小: {len(image_bytes)} bytes"
     )

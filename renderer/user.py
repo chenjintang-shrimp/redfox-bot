@@ -99,7 +99,7 @@ async def render_user_card_image(
     logger.debug(f"[render_user_card_image] HTML 长度: {len(html)} chars")
 
     # 转换为图片
-    image_bytes = await html_to_image(html, width=800, height=400)
+    image_bytes = await html_to_image(html, width=800, height=None)
     logger.info(
         f"[render_user_card_image] 图片生成完成，大小: {len(image_bytes)} bytes"
     )

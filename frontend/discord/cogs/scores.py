@@ -1,4 +1,5 @@
 import io
+import traceback
 
 import discord
 from discord import File, app_commands
@@ -18,6 +19,8 @@ from renderer.scores import (
     render_user_today_bp_image,
 )
 from utils.logger import get_logger
+
+logger = get_logger("cogs.scores")
 
 
 class BasePaginationView(discord.ui.View):
@@ -370,8 +373,6 @@ class Scores(Cog):
         except Exception as e:
             await self.adapter.handle_error(ctx, e, locale="en")
 
-    # ============ Best 成绩命令 ============
-
     @commands.hybrid_command(name="b", description="Query your best score (single)")
     @app_commands.describe(user="osu! username or mention")
     async def b(self, ctx: commands.Context, user: str | None = None):
@@ -395,7 +396,7 @@ class Scores(Cog):
         except Exception as e:
             await self.adapter.handle_error(ctx, e, locale="en")
 
-    @commands.hybrid_command(name="bs", description="Query your best scores list")
+    @commands.hybrid_command(name="bs", description="Query your best scores (multiple)")
     @app_commands.describe(
         count="Number of scores (1-100, default 20)", user="osu! username or mention"
     )
@@ -470,10 +471,15 @@ class Scores(Cog):
         count = min(max(count, 1), 100)  # 限制 1-100
 
         try:
+            logger.info("[ubs] 开始执行指令")
             context, user_id = await self._get_user_context_and_id(ctx, user)
+            logger.info(f"[ubs] 获取到 user_id: {user_id}")
             username = await UserService.resolve_username(context, user)
+            logger.info(f"[ubs] 获取到 username: {username}")
             gamemode = await UserService.get_gamemode(context)
+            logger.info(f"[ubs] 获取到 gamemode: {gamemode}")
 
+            logger.info("[ubs] 开始渲染图片")
             image = await render_user_score_list_image(
                 user_id,
                 username,
@@ -482,8 +488,13 @@ class Scores(Cog):
                 count=count,
                 mode=gamemode,
             )
+            logger.info(f"[ubs] 图片渲染成功，长度: {len(image)} 字节")
+            logger.info("[ubs] 准备发送图片")
             await ctx.send(file=File(io.BytesIO(image), f"{username}_best_list.png"))
+            logger.info("[ubs] 图片发送成功")
         except Exception as e:
+            logger.error(f"[ubs] 发生错误: {e}")
+            logger.error(traceback.format_exc())
             await self.adapter.handle_error(ctx, e, locale="en")
 
 
