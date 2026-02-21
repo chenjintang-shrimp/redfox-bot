@@ -254,6 +254,10 @@ UNBIND_FAILED:
   en: Unbind failed, please try again later.
   zh: 解绑失败，请稍后重试
 
+CONNECTION_FAILED:
+  en: Server connection failed. Please try again later or check your network connection.
+  zh: 服务器连接失败，请稍后重试或检查网络连接。
+
 QUERY_FAILED:
   en: Query failed, please try again later.
   zh: 查询失败，请稍后重试
