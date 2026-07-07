@@ -12,6 +12,7 @@ logger = get_logger("renderer")
 P = ParamSpec("P")
 R = TypeVar("R")
 RendererFunc = Callable[P, Awaitable[R]]
+AnyRendererFunc = Callable[..., Awaitable[Any]]
 
 
 def handle_exception(e: Exception, locale: str = "en") -> str:
@@ -54,8 +55,8 @@ def renderer(view_name: RendererFunc[P, R]) -> RendererFunc[P, R]:
 
 
 def renderer(
-    view_name: str | RendererFunc[Any, Any] | None = None,
-) -> Callable[[RendererFunc[P, R]], RendererFunc[P, R]] | RendererFunc[Any, Any]:
+    view_name: str | AnyRendererFunc | None = None,
+) -> Callable[[RendererFunc[P, R]], RendererFunc[P, R]] | AnyRendererFunc:
     """
     装饰器：自动捕获异常并调用统一处理器
 
@@ -76,6 +77,7 @@ def renderer(
     def decorator(func: RendererFunc[P, R]) -> RendererFunc[P, R]:
         func_name = getattr(func, "__name__", type(func).__name__)
         actual_view_name = view_name if isinstance(view_name, str) else func_name
+        returns_bytes = getattr(func, "__annotations__", {}).get("return") is bytes
 
         @functools.wraps(func)
         async def wrapper(*args: P.args, **kwargs: P.kwargs) -> R:
@@ -84,6 +86,8 @@ def renderer(
             except Exception as e:
                 logger.error(f"Error in renderer '{func_name}': {e}")
                 logger.error(traceback.format_exc())
+                if returns_bytes:
+                    raise
                 locale_value = kwargs.get("locale", "en")
                 locale = locale_value if isinstance(locale_value, str) else "en"
                 return cast(R, handle_exception(e, locale))
@@ -92,5 +96,5 @@ def renderer(
         return cast(RendererFunc[P, R], wrapper)
 
     if callable(view_name):
-        return decorator(cast(RendererFunc[Any, Any], view_name))
+        return decorator(cast(AnyRendererFunc, view_name))
     return decorator
