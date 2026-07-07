@@ -34,11 +34,6 @@ packages = ["frontend", "backend", "utils", "renderer", "minifilters", "adapters
 
 [dependency-groups]
 dev = [
-    "pyright>=1.1.408",
     "ruff>=0.14.14",
+    "ty>=0.0.56",
 ]
-
-[tool.pyright]
-# 装饰器会改变函数签名，导致调用检查误报
-# 使用 # type: ignore 注释来抑制特定错误
-reportCallIssue = "warning"
