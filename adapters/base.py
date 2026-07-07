@@ -10,6 +10,54 @@ from utils.strings import format_template
 from utils.logger import get_logger
 
 
+def _classify_error(error: Exception) -> str:
+    """将异常分类为模板 key 字符串
+
+    优先使用异常的 template_key 属性；其次检测 httpx/网络错误返回 CONNECTION_FAILED；
+    兜底返回 QUERY_FAILED。
+
+    Args:
+        error: 捕获的异常
+
+    Returns:
+        对应的 i18n 模板 key
+    """
+    template_key = getattr(error, "template_key", None)
+    if template_key:
+        return template_key
+
+    error_module = getattr(type(error), "__module__", "")
+    is_httpx_error = "httpx" in error_module
+
+    error_str = str(error).lower()
+    is_connection_error_keywords = any(
+        keyword in error_str
+        for keyword in [
+            "connecterror", "connection error", "timeout", "timed out",
+            "network error", "unreachable", "refused", "no route",
+        ]
+    )
+
+    if is_httpx_error or is_connection_error_keywords:
+        return "CONNECTION_FAILED"
+    return "QUERY_FAILED"
+
+
+def _format_error_message(template_key: str, error: Exception, locale: str) -> str:
+    """根据模板 key 和异常上下文格式化本地化错误消息
+
+    Args:
+        template_key: i18n 模板 key
+        error: 捕获的异常
+        locale: 语言代码 (en/zh)
+
+    Returns:
+        本地化后的错误消息字符串
+    """
+    context_vars = getattr(error, "__dict__", {})
+    return format_template(template_key, context=context_vars, locale=locale)
+
+
 class PlatformAdapter(ABC):
     """平台适配器抽象基类
 
@@ -90,31 +138,7 @@ class PlatformAdapter(ABC):
         self.logger.error(f"发生错误: {type(error).__name__}: {error}")
         self.logger.error(traceback.format_exc())
 
-        # 检查是否是 httpx 相关的异常
-        error_module = getattr(type(error), "__module__", "")
-        is_httpx_error = "httpx" in error_module
-        
-        # 检查是否是网络连接错误（通过错误字符串关键词，作为兜底）
-        error_str = str(error).lower()
-        is_connection_error_keywords = any(
-            keyword in error_str 
-            for keyword in [
-                "connecterror", "connection error", "timeout", "timed out",
-                "network error", "unreachable", "refused", "no route"
-            ]
-        )
-
-        # 获取异常的模板key和上下文
-        template_key = getattr(error, "template_key", None)
-        context_vars = getattr(error, "__dict__", {})
-
-        if template_key:
-            message = format_template(template_key, locale=locale, **context_vars)
-        elif is_httpx_error or is_connection_error_keywords:
-            # httpx 异常或网络连接关键词错误，使用 CONNECTION_FAILED 模板
-            message = format_template("CONNECTION_FAILED", locale=locale)
-        else:
-            # 未知异常使用通用错误模板
-            message = format_template("QUERY_FAILED", locale=locale)
+        template_key = _classify_error(error)
+        message = _format_error_message(template_key, error, locale)
 
         await self.send(platform_ctx, TextMessage(content=message))

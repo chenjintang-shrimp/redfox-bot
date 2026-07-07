@@ -1,6 +1,6 @@
 from backend.beatmap import get_beatmap_info
 from backend.exceptions.beatmap import BeatmapNotFoundError
-from renderer.renderer_template import renderer, ExceptionHandler
+from renderer.renderer_template import renderer, handle_exception
 from renderer.skin_loader import render_template as render_skin_template
 from utils.flt_mgr import apply_minifilters_async
 from utils.html2image import html_to_image
@@ -50,12 +50,12 @@ async def render_beatmap_info(beatmap_id: int, locale: str = "en"):
             "url": beatmap_info.get("url", ""),
         }
 
-        return format_template("BEATMAP_INFO_TEMPLATE", locale=locale, **context)
+        return format_template("BEATMAP_INFO_TEMPLATE", context=context, locale=locale)
 
     except BeatmapNotFoundError:
         return format_template("BEATMAP_NOT_FOUND_TEMPLATE", locale=locale)
     except Exception as e:
-        return ExceptionHandler.handle(e, locale=locale)
+        return handle_exception(e, locale=locale)
 
 
 @renderer("beatmap_card")

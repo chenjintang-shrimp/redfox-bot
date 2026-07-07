@@ -1,7 +1,25 @@
-from typing import Any, Optional
+from typing import Any, Optional, Protocol, cast
 from aiocache import Cache
 
-_cache = Cache(Cache.MEMORY)
+
+class AsyncCache(Protocol):
+    async def set(self, key: str, value: Any, ttl: int | None = None) -> Any:
+        ...
+
+    async def get(self, key: str) -> Any:
+        ...
+
+    async def delete(self, key: str) -> int:
+        ...
+
+    async def exists(self, key: str) -> bool:
+        ...
+
+    async def clear(self) -> Any:
+        ...
+
+
+_cache = cast(AsyncCache, Cache(Cache.MEMORY))
 
 
 async def set_cache(key: str, value: Any, ttl: int = 300) -> None:
