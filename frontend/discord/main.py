@@ -1,3 +1,4 @@
+import asyncio
 import discord
 
 from discord.ext import commands
@@ -29,24 +30,13 @@ bot = commands.Bot(command_prefix="!", intents=intents)
 async def on_ready():
     get_logger("Bot").info(f"Bot Online:{bot.user}")
 
-    # 自动发现并注册定时任务
-
-    auto_discover_tasks("backend")
-
-    for task in get_all_tasks():
-        add_task(task.name, task.func, task.interval, *task.args, **task.kwargs)
-
-    get_logger("Bot").info(f"已注册 {len(get_all_tasks())} 个定时任务")
-
-    await start_scheduler()
-
-    await init_browser()
-
-    init_flt_mgr()
-
 
 @bot.event
 async def on_disconnect():
+    get_logger("Bot").warning("Bot disconnected")
+
+
+async def close_resources():
     await stop_scheduler()
     await close_browser()
     await close_osu_api_client()
@@ -83,11 +73,27 @@ async def setup_hook():
 
     await create_db_and_tables()
 
+    auto_discover_tasks("backend")
+    for task in get_all_tasks():
+        add_task(task.name, task.func, task.interval, *task.args, **task.kwargs)
+    get_logger("Bot").info(f"已注册 {len(get_all_tasks())} 个定时任务")
+
+    await start_scheduler()
+    await init_browser()
+    init_flt_mgr()
+
     await load_cogs()
 
 
 def main():
-    bot.run(BOT_TOKEN)
+    async def runner():
+        try:
+            async with bot:
+                await bot.start(BOT_TOKEN)
+        finally:
+            await close_resources()
+
+    asyncio.run(runner())
 
 
 if __name__ == "__main__":

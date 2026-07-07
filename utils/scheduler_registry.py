@@ -34,6 +34,8 @@ def scheduled_task(name: str, interval: int, *args, **kwargs):
     """
 
     def decorator(func: Callable):
+        global _scheduled_tasks
+        _scheduled_tasks = [task for task in _scheduled_tasks if task.name != name]
         _scheduled_tasks.append(
             TaskDef(name=name, func=func, interval=interval, args=args, kwargs=kwargs)
         )
