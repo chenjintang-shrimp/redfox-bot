@@ -29,7 +29,7 @@ async def handle_m(event: MessageEvent, args=CommandArg()):
         return
 
     try:
-        msg = await render_beatmap_info(beatmap_id, locale="zh")  # type: ignore[call-arg]
+        msg = await render_beatmap_info(beatmap_id, locale="zh")
         await m_cmd.send(msg)
     except Exception as e:
         await adapter.handle_error(event, e, locale="zh")

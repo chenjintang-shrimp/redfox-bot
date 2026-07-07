@@ -1,7 +1,7 @@
 import traceback
 
 from nonebot import on_command
-from nonebot.adapters.onebot.v11 import MessageEvent, MessageSegment
+from nonebot.adapters.onebot.v11 import MessageEvent
 from nonebot.params import CommandArg
 
 from adapters.qq_adapter import QQAdapter
@@ -59,7 +59,7 @@ async def handle_ss(event: MessageEvent, args=CommandArg()):
     try:
         _, user_id, _ = await _get_user_info_from_event(event, None)
         image = await render_user_beatmap_score_card(user_id, beatmap_id)
-        await ss_cmd.send(MessageSegment.image(image))
+        await adapter.send_image_bytes(event, image)
     except Exception as e:
         await adapter.handle_error(event, e, locale="zh")
 
@@ -78,7 +78,7 @@ async def handle_ps(event: MessageEvent, args=CommandArg()):
         image = await render_user_score_list_image(
             user_id, username, score_type="recent", include_fails=False, mode=gamemode
         )
-        await ps_cmd.send(MessageSegment.image(image))
+        await adapter.send_image_bytes(event, image)
     except Exception as e:
         await adapter.handle_error(event, e, locale="zh")
 
@@ -97,7 +97,7 @@ async def handle_rs(event: MessageEvent, args=CommandArg()):
         image = await render_user_score_list_image(
             user_id, username, score_type="recent", include_fails=True, mode=gamemode
         )
-        await rs_cmd.send(MessageSegment.image(image))
+        await adapter.send_image_bytes(event, image)
     except Exception as e:
         await adapter.handle_error(event, e, locale="zh")
 
@@ -114,7 +114,7 @@ async def handle_t(event: MessageEvent, args=CommandArg()):
         gamemode = await UserService.get_gamemode(context)
 
         image = await render_user_today_bp_image(user_id, username, mode=gamemode)
-        await t_cmd.send(MessageSegment.image(image))
+        await adapter.send_image_bytes(event, image)
     except Exception as e:
         await adapter.handle_error(event, e, locale="zh")
 
@@ -133,7 +133,7 @@ async def handle_p(event: MessageEvent, args=CommandArg()):
         image = await render_user_recent_score_card(
             user_id, include_fails=False, mode=gamemode
         )
-        await p_cmd.send(MessageSegment.image(image))
+        await adapter.send_image_bytes(event, image)
     except Exception as e:
         await adapter.handle_error(event, e, locale="zh")
 
@@ -152,7 +152,7 @@ async def handle_r(event: MessageEvent, args=CommandArg()):
         image = await render_user_recent_score_card(
             user_id, include_fails=True, mode=gamemode
         )
-        await r_cmd.send(MessageSegment.image(image))
+        await adapter.send_image_bytes(event, image)
     except Exception as e:
         await adapter.handle_error(event, e, locale="zh")
 
@@ -176,7 +176,7 @@ async def handle_b(event: MessageEvent, args=CommandArg()):
             count=1,
             mode=gamemode,
         )
-        await b_cmd.send(MessageSegment.image(image))
+        await adapter.send_image_bytes(event, image)
     except Exception as e:
         logger.error(f"查询最佳成绩失败: {e}")
         logger.error(traceback.format_exc())
@@ -218,7 +218,7 @@ async def handle_bs(event: MessageEvent, args=CommandArg()):
             count=count,
             mode=gamemode,
         )
-        await bs_cmd.send(MessageSegment.image(image))
+        await adapter.send_image_bytes(event, image)
     except Exception as e:
         logger.error(f"查询最佳成绩列表失败: {e}")
         logger.error(traceback.format_exc())

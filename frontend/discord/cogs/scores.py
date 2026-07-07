@@ -6,6 +6,7 @@ from discord.ext import commands
 from discord.ext.commands import Cog
 
 from adapters.discord_adapter import DiscordAdapter
+from models.context import UserContext
 from services import UserService, ScoreService
 from renderer.scores import (
     render_user_beatmap_scores,
@@ -30,16 +31,18 @@ class Scores(Cog):
         self.adapter = DiscordAdapter()
         get_logger("cogs.scores").info("Cog scores Loaded")
 
-    async def _get_user_context_and_id(self, ctx: commands.Context, user_arg: str | None) -> tuple:
-        """获取用户上下文和用户ID
+    async def _get_score_target(
+        self, ctx: commands.Context, user_arg: str | None
+    ) -> tuple[UserContext, int, str]:
+        """获取用户上下文、目标 osu! 用户 ID 和用户名
 
         Returns:
-            tuple: (UserContext, user_id)
+            tuple: (UserContext, user_id, username)
         """
         context = await self.adapter.get_user_context(ctx)
-        username = await UserService.resolve_username(context, user_arg)
+        username = await self.adapter.resolve_username(ctx, user_arg)
         user_info = await UserService.get_user_info(username)
-        return context, user_info.id
+        return context, user_info.id, username
 
     @commands.hybrid_command(
         name="ss", description="Query your all scores on a beatmap"
@@ -49,9 +52,11 @@ class Scores(Cog):
         await ctx.defer()
 
         try:
-            _, user_id = await self._get_user_context_and_id(ctx, None)
+            _, user_id, _ = await self._get_score_target(ctx, None)
             total_pages = await ScoreService.get_page_count(user_id, beatmap_id)
-            content = await render_user_beatmap_scores(user_id, beatmap_id, 1, locale="en")  # type: ignore[call-arg]
+            content = await render_user_beatmap_scores(
+                user_id, beatmap_id, 1, locale="en"
+            )
 
             if total_pages > 1:
                 view = ScoresPaginationView(user_id, beatmap_id, ctx.author.id, total_pages)
@@ -69,7 +74,7 @@ class Scores(Cog):
         await ctx.defer()
 
         try:
-            _, user_id = await self._get_user_context_and_id(ctx, user)
+            _, user_id, _ = await self._get_score_target(ctx, user)
             content = await render_user_score_list(
                 user_id, "recent", include_fails=False, page=1, locale="en"
             )
@@ -95,7 +100,7 @@ class Scores(Cog):
         await ctx.defer()
 
         try:
-            _, user_id = await self._get_user_context_and_id(ctx, user)
+            _, user_id, _ = await self._get_score_target(ctx, user)
             content = await render_user_score_list(
                 user_id, "recent", include_fails=True, page=1, locale="en"
             )
@@ -122,8 +127,8 @@ class Scores(Cog):
         await ctx.defer()
 
         try:
-            _, user_id = await self._get_user_context_and_id(ctx, user)
-            content = await render_user_today_bp(user_id, page=1, locale="en")  # type: ignore[call-arg]
+            _, user_id, _ = await self._get_score_target(ctx, user)
+            content = await render_user_today_bp(user_id, page=1, locale="en")
             # Note: Today BP page count is not implemented in ScoreService yet
             total_pages = 1
 
@@ -141,11 +146,11 @@ class Scores(Cog):
         await ctx.defer()
 
         try:
-            context, user_id = await self._get_user_context_and_id(ctx, user)
+            context, user_id, _ = await self._get_score_target(ctx, user)
             gamemode = await UserService.get_gamemode(context)
             content = await render_user_recent_score(
                 user_id, "recent", include_fails=False, locale="en", mode=gamemode
-            )  # type: ignore[call-arg]
+            )
             await ctx.send(content=content)
         except Exception as e:
             await self.adapter.handle_error(ctx, e, locale="en")
@@ -158,11 +163,11 @@ class Scores(Cog):
         await ctx.defer()
 
         try:
-            context, user_id = await self._get_user_context_and_id(ctx, user)
+            context, user_id, _ = await self._get_score_target(ctx, user)
             gamemode = await UserService.get_gamemode(context)
             content = await render_user_recent_score(
                 user_id, "recent", include_fails=True, locale="en", mode=gamemode
-            )  # type: ignore[call-arg]
+            )
             await ctx.send(content=content)
         except Exception as e:
             await self.adapter.handle_error(ctx, e, locale="en")
@@ -178,7 +183,7 @@ class Scores(Cog):
         await ctx.defer()
 
         try:
-            _, user_id = await self._get_user_context_and_id(ctx, None)
+            _, user_id, _ = await self._get_score_target(ctx, None)
             image = await render_user_beatmap_score_card(user_id, beatmap_id)
             await ctx.send(file=File(io.BytesIO(image), f"score_{beatmap_id}.png"))
         except Exception as e:
@@ -193,8 +198,7 @@ class Scores(Cog):
         await ctx.defer()
 
         try:
-            context, user_id = await self._get_user_context_and_id(ctx, user)
-            username = await UserService.resolve_username(context, user)
+            context, user_id, username = await self._get_score_target(ctx, user)
             gamemode = await UserService.get_gamemode(context)
 
             image = await render_user_score_list_image(
@@ -213,8 +217,7 @@ class Scores(Cog):
         await ctx.defer()
 
         try:
-            context, user_id = await self._get_user_context_and_id(ctx, user)
-            username = await UserService.resolve_username(context, user)
+            context, user_id, username = await self._get_score_target(ctx, user)
             gamemode = await UserService.get_gamemode(context)
 
             image = await render_user_score_list_image(
@@ -233,8 +236,7 @@ class Scores(Cog):
         await ctx.defer()
 
         try:
-            context, user_id = await self._get_user_context_and_id(ctx, user)
-            username = await UserService.resolve_username(context, user)
+            context, user_id, username = await self._get_score_target(ctx, user)
             gamemode = await UserService.get_gamemode(context)
 
             image = await render_user_today_bp_image(user_id, username, mode=gamemode)
@@ -251,8 +253,7 @@ class Scores(Cog):
         await ctx.defer()
 
         try:
-            context, user_id = await self._get_user_context_and_id(ctx, user)
-            username = await UserService.resolve_username(context, user)
+            context, user_id, username = await self._get_score_target(ctx, user)
             gamemode = await UserService.get_gamemode(context)
 
             image = await render_user_recent_score_card(
@@ -271,8 +272,7 @@ class Scores(Cog):
         await ctx.defer()
 
         try:
-            context, user_id = await self._get_user_context_and_id(ctx, user)
-            username = await UserService.resolve_username(context, user)
+            context, user_id, username = await self._get_score_target(ctx, user)
             gamemode = await UserService.get_gamemode(context)
 
             image = await render_user_recent_score_card(
@@ -289,7 +289,7 @@ class Scores(Cog):
         await ctx.defer()
 
         try:
-            context, user_id = await self._get_user_context_and_id(ctx, user)
+            context, user_id, _ = await self._get_score_target(ctx, user)
             gamemode = await UserService.get_gamemode(context)
 
             content = await render_user_score_list(
@@ -320,7 +320,7 @@ class Scores(Cog):
         count = min(max(count, 1), 100)  # 限制 1-100
 
         try:
-            context, user_id = await self._get_user_context_and_id(ctx, user)
+            context, user_id, _ = await self._get_score_target(ctx, user)
             gamemode = await UserService.get_gamemode(context)
 
             content = await render_user_score_list(
@@ -345,8 +345,7 @@ class Scores(Cog):
         await ctx.defer()
 
         try:
-            context, user_id = await self._get_user_context_and_id(ctx, user)
-            username = await UserService.resolve_username(context, user)
+            context, user_id, username = await self._get_score_target(ctx, user)
             gamemode = await UserService.get_gamemode(context)
 
             image = await render_user_score_list_image(
@@ -381,9 +380,8 @@ class Scores(Cog):
 
         try:
             logger.info("[ubs] 开始执行指令")
-            context, user_id = await self._get_user_context_and_id(ctx, user)
+            context, user_id, username = await self._get_score_target(ctx, user)
             logger.info(f"[ubs] 获取到 user_id: {user_id}")
-            username = await UserService.resolve_username(context, user)
             logger.info(f"[ubs] 获取到 username: {username}")
             gamemode = await UserService.get_gamemode(context)
             logger.info(f"[ubs] 获取到 gamemode: {gamemode}")

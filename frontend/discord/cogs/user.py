@@ -23,8 +23,7 @@ class User(commands.Cog):
         await ctx.defer()
 
         try:
-            context = await self.adapter.get_user_context(ctx)
-            username = await UserService.resolve_username(context, user)
+            username = await self.adapter.resolve_username(ctx, user)
             msg = await render_user_info(username, locale="en")
             await ctx.send(msg)
         except Exception as e:
@@ -39,8 +38,7 @@ class User(commands.Cog):
         await ctx.defer()
 
         try:
-            context = await self.adapter.get_user_context(ctx)
-            username = await UserService.resolve_username(context, user)
+            username = await self.adapter.resolve_username(ctx, user)
             user_data = await UserService.get_user_info(username)
             image = await render_user_card_image(asdict(user_data))
             await ctx.send(file=File(io.BytesIO(image), f"{username}_card.png"))

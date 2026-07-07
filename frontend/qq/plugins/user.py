@@ -1,7 +1,7 @@
 from dataclasses import asdict
 
 from nonebot import on_command
-from nonebot.adapters.onebot.v11 import MessageEvent, MessageSegment
+from nonebot.adapters.onebot.v11 import MessageEvent
 from nonebot.params import CommandArg
 
 from adapters.qq_adapter import QQAdapter
@@ -35,7 +35,7 @@ async def handle_info_text(event: MessageEvent, args):
         return
 
     try:
-        msg = await render_user_info(username, locale="zh")  # type: ignore[call-arg]
+        msg = await render_user_info(username, locale="zh")
         await info_short_cmd.send(msg)
     except Exception as e:
         await adapter.handle_error(event, e, locale="zh")
@@ -63,7 +63,7 @@ async def handle_info(event: MessageEvent, args=CommandArg()):
     try:
         user_info = await UserService.get_user_info(username)
         image = await render_user_card_image(asdict(user_info))
-        await info_cmd.send(MessageSegment.image(image))
+        await adapter.send_image_bytes(event, image)
     except Exception as e:
         await adapter.handle_error(event, e, locale="zh")
 
