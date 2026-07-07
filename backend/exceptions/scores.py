@@ -6,4 +6,5 @@ class ScoreQueryError(Exception):
     def __init__(self, username: str, beatmap_id: int):
         self.username = username
         self.beatmap_id = beatmap_id
-        super().__init__(f"User {username} score query error on beatmap {beatmap_id}")
+        self.error_msg = f"User {username} score query error on beatmap {beatmap_id}"
+        super().__init__(self.error_msg)

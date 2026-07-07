@@ -1,7 +1,7 @@
 """成绩服务 - 平台无关的成绩业务逻辑"""
 
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional
 
 from backend.scores import (
@@ -240,7 +240,63 @@ class ScoreService:
         """
         from datetime import timedelta
 
-        now = datetime.now()
+        now = datetime.now(timezone.utc)
         cutoff = now - timedelta(hours=24)
 
         return [s for s in scores if s.created_at >= cutoff]
+
+    @staticmethod
+    def filter_today_scores(scores: list[dict]) -> list[dict]:
+        """筛选 24 小时内的原始 API 成绩字典。"""
+        from datetime import timedelta
+
+        now = datetime.now(timezone.utc)
+        cutoff = now - timedelta(hours=24)
+        result = []
+
+        for score in scores:
+            time_str = score.get("ended_at") or score.get("created_at")
+            if not time_str:
+                continue
+            try:
+                score_time = datetime.fromisoformat(time_str.replace("Z", "+00:00"))
+            except (ValueError, TypeError):
+                continue
+
+            if score_time >= cutoff:
+                result.append(score)
+
+        return result
+
+    @staticmethod
+    async def get_today_bp_scores(
+        user_id: int, limit: int = 100, mode: Optional[str] = None
+    ) -> list[dict]:
+        """获取用户 24 小时内刷新的 BP 原始成绩。"""
+        scores_data = await _get_user_scores(
+            user_id,
+            "best",
+            include_fails=False,
+            mode=mode,
+            limit=limit,
+            offset=0,
+        )
+        if not isinstance(scores_data, list):
+            return []
+        return ScoreService.filter_today_scores(scores_data)
+
+    @staticmethod
+    async def get_today_bp_page_count(
+        user_id: int,
+        limit: int = 100,
+        mode: Optional[str] = None,
+    ) -> int:
+        """获取今日 BP 页数。"""
+        scores = await ScoreService.get_today_bp_scores(user_id, limit=limit, mode=mode)
+        if not scores:
+            return 0
+        return max(
+            1,
+            (len(scores) + ScoreService.SCORES_PER_PAGE - 1)
+            // ScoreService.SCORES_PER_PAGE,
+        )

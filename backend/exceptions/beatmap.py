@@ -5,4 +5,5 @@ class BeatmapNotFoundError(Exception):
 
     def __init__(self, beatmap_id: int):
         self.beatmap_id = beatmap_id
-        super().__init__(f"Beatmap {beatmap_id} not found")
+        self.error_msg = f"Beatmap {beatmap_id} not found"
+        super().__init__(self.error_msg)

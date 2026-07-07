@@ -162,17 +162,3 @@ async def get_user_scores(
         raise ScoreQueryError(username, 0)
 
     return response.json()
-
-
-async def main():
-    var = await get_user_scores(7, "best")
-    import json
-
-    with open("1.json", "w", encoding="utf-8") as f:
-        json.dump(var, f, ensure_ascii=False, indent=2)
-
-
-if __name__ == "__main__":
-    import asyncio
-
-    asyncio.run(main())

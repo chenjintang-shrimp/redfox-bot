@@ -3,7 +3,7 @@
 Scores Renderer - Renders user's scores on a beatmap with pagination support
 """
 
-from datetime import datetime, timedelta, timezone
+from datetime import datetime
 from typing import List, Dict, Any, Tuple, Optional
 
 from backend.scores import get_user_beatmap_all_scores, get_user_scores, ScoreQueryError
@@ -16,6 +16,7 @@ from utils.html2image import html_to_image
 from utils.logger import get_logger
 from utils.strings import format_template
 from utils.variable import DEFAULT_SKIN
+from services import ScoreService
 
 logger = get_logger("renderer.scores")
 
@@ -410,29 +411,6 @@ async def get_user_scores_page_count(
         return 0
 
 
-def _is_today_score(score: Dict[str, Any]) -> bool:
-    """检查成绩是否在24小时内"""
-    try:
-        # 获取成绩时间
-        time_str = score.get("ended_at") or score.get("created_at")
-        if not time_str:
-            return False
-
-        # 解析时间
-        score_time = datetime.fromisoformat(time_str.replace("Z", "+00:00"))
-
-        # 获取当前时间（UTC）
-        now = datetime.now(timezone.utc)
-
-        # 计算时间差
-        time_diff = now - score_time
-
-        # 检查是否在24小时内
-        return time_diff <= timedelta(hours=24)
-    except (ValueError, TypeError):
-        return False
-
-
 @renderer
 async def render_user_today_bp(
     user_id: int, page: int = 1, limit: int = 100, locale: str = "en"
@@ -449,18 +427,9 @@ async def render_user_today_bp(
     Returns:
         格式化后的今日BP列表字符串
     """
-    # 获取用户的best成绩
-    scores = await get_user_scores(user_id, "best", include_fails=False, limit=limit)
+    today_scores = await ScoreService.get_today_bp_scores(user_id, limit=limit)
     user_info = await get_user_info(user_id)
     username = user_info.get("username", "Unknown")
-
-    if not scores:
-        return format_template(
-            "TODAY_BP_EMPTY_TEMPLATE", locale=locale, username=username
-        )
-
-    # 过滤24小时内的成绩
-    today_scores = [score for score in scores if _is_today_score(score)]
 
     if not today_scores:
         return format_template(
@@ -505,19 +474,7 @@ async def get_today_bp_page_count(user_id: int, limit: int = 100) -> int:
         总页数
     """
     try:
-        scores = await get_user_scores(
-            user_id, "best", include_fails=False, limit=limit
-        )
-        if not scores:
-            return 0
-
-        # 过滤24小时内的成绩
-        today_scores = [score for score in scores if _is_today_score(score)]
-
-        if not today_scores:
-            return 0
-
-        return max(1, (len(today_scores) + SCORES_PER_PAGE - 1) // SCORES_PER_PAGE)
+        return await ScoreService.get_today_bp_page_count(user_id, limit=limit)
     except Exception:
         return 0
 
@@ -813,35 +770,23 @@ async def render_user_today_bp_image(
         f"[render_user_today_bp_image] 开始渲染，user_id={user_id}, mode={mode}, skin={skin}"
     )
 
-    # 获取 best 成绩
-    scores = await get_user_scores(
-        user_id, "best", include_fails=False, limit=100, mode=mode
-    )
+    today_scores = await ScoreService.get_today_bp_scores(user_id, limit=100, mode=mode)
 
     # 检查第一条成绩的字段
-    if scores:
+    if today_scores:
         logger.debug(
-            f"[render_user_today_bp_image] 第一条成绩数据键: {list(scores[0].keys())}"
+            f"[render_user_today_bp_image] 第一条成绩数据键: {list(today_scores[0].keys())}"
         )
         logger.debug(
-            f"[render_user_today_bp_image] beatmap_id: {scores[0].get('beatmap_id')}, id: {scores[0].get('id')}"
+            f"[render_user_today_bp_image] beatmap_id: {today_scores[0].get('beatmap_id')}, id: {today_scores[0].get('id')}"
         )
-
-    # 过滤今日成绩（24小时内）
-    def _is_today(score):
-        try:
-            time_str = score.get("ended_at") or score.get("created_at")
-            if not time_str:
-                return False
-            score_time = datetime.fromisoformat(time_str.replace("Z", "+00:00"))
-            return datetime.now(timezone.utc) - score_time <= timedelta(hours=24)
-        except Exception:
-            return False
-
-    today_scores = [s for s in scores if _is_today(s)]
 
     # 获取总页数（如果有成绩）
-    total_pages = await get_today_bp_page_count(user_id) if today_scores else 1
+    total_pages = (
+        await ScoreService.get_today_bp_page_count(user_id, mode=mode)
+        if today_scores
+        else 1
+    )
 
     data = {
         "scores": today_scores[:5],
