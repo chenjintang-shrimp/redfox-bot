@@ -1,3 +1,5 @@
+from dataclasses import asdict
+
 from services import UserService
 from models.context import UserContext
 from renderer.renderer_template import renderer
@@ -27,7 +29,7 @@ async def render_user_info(username: str, locale: str = "en") -> str:
         用户信息字符串
     """
     user_info = await UserService.get_user_info(username)
-    return format_template("USER_INFO_TEMPLATE", locale=locale, **user_info.__dict__)
+    return format_template("USER_INFO_TEMPLATE", context=asdict(user_info), locale=locale)
 
 
 @renderer
@@ -120,4 +122,4 @@ def render_user_card_text(data: dict, locale: str = "en") -> str:
     Returns:
         格式化的文本字符串
     """
-    return format_template("USER_INFO_TEMPLATE", locale=locale, **data)
+    return format_template("USER_INFO_TEMPLATE", context=data, locale=locale)

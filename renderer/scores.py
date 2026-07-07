@@ -87,7 +87,7 @@ def _format_score_item(score: Dict[str, Any], index: int, locale: str = "en") ->
         "created_at": created_at,
     }
 
-    return format_template("SCORES_LIST_ITEM_TEMPLATE", locale=locale, **context)
+    return format_template("SCORES_LIST_ITEM_TEMPLATE", context=context, locale=locale)
 
 
 def _format_user_score_item(
@@ -118,7 +118,9 @@ def _format_user_score_item(
         "created_at": created_at,
     }
 
-    return format_template("USER_SCORES_LIST_ITEM_TEMPLATE", locale=locale, **context)
+    return format_template(
+        "USER_SCORES_LIST_ITEM_TEMPLATE", context=context, locale=locale
+    )
 
 
 def _calculate_pagination(
@@ -329,7 +331,11 @@ async def render_user_score_list(
 
 @renderer
 async def render_user_recent_score(
-    user_id: int, type: str, include_fails: bool = False, locale: str = "en"
+    user_id: int,
+    type: str,
+    include_fails: bool = False,
+    locale: str = "en",
+    mode: str | None = None,
 ) -> str:
     """
     渲染用户最新的单条成绩 (p/r)
@@ -344,7 +350,9 @@ async def render_user_recent_score(
         格式化后的单条成绩详情
     """
     # 获取 limit=1 的成绩
-    scores = await get_user_scores(user_id, type, include_fails=include_fails, limit=1)
+    scores = await get_user_scores(
+        user_id, type, include_fails=include_fails, limit=1, mode=mode
+    )
     user_info = await get_user_info(user_id)
     username = user_info.get("username", "Unknown")
 
@@ -381,7 +389,7 @@ async def render_user_recent_score(
         "beatmap_url": f"https://osu.ppy.sh/b/{beatmap.get('id', 0)}",  # 假设这是官网链接
     }
 
-    return format_template("USER_SCORE_SINGLE_TEMPLATE", locale=locale, **context)
+    return format_template("USER_SCORE_SINGLE_TEMPLATE", context=context, locale=locale)
 
 
 async def get_user_scores_page_count(

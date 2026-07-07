@@ -1,3 +1,5 @@
+from dataclasses import asdict
+
 from nonebot import on_command
 from nonebot.adapters.onebot.v11 import MessageEvent, MessageSegment
 from nonebot.params import CommandArg
@@ -60,7 +62,7 @@ async def handle_info(event: MessageEvent, args=CommandArg()):
 
     try:
         user_info = await UserService.get_user_info(username)
-        image = await render_user_card_image(user_info.__dict__)
+        image = await render_user_card_image(asdict(user_info))
         await info_cmd.send(MessageSegment.image(image))
     except Exception as e:
         await adapter.handle_error(event, e, locale="zh")

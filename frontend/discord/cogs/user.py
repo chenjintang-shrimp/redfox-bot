@@ -1,4 +1,5 @@
 import io
+from dataclasses import asdict
 
 from discord.ext import commands
 from discord import app_commands, File
@@ -41,7 +42,7 @@ class User(commands.Cog):
             context = await self.adapter.get_user_context(ctx)
             username = await UserService.resolve_username(context, user)
             user_data = await UserService.get_user_info(username)
-            image = await render_user_card_image(user_data.__dict__)
+            image = await render_user_card_image(asdict(user_data))
             await ctx.send(file=File(io.BytesIO(image), f"{username}_card.png"))
         except Exception as e:
             await self.adapter.handle_error(ctx, e, locale="en")

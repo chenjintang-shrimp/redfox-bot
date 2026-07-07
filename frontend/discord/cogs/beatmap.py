@@ -1,4 +1,5 @@
 import io
+from dataclasses import asdict
 
 from discord import File, app_commands
 from discord.ext import commands
@@ -45,7 +46,7 @@ class BeatmapCog(commands.Cog):
 
         try:
             beatmap_info = await BeatmapService.get_beatmap(beatmap_id)
-            image = await render_beatmap_card_image(beatmap_info.__dict__)
+            image = await render_beatmap_card_image(asdict(beatmap_info))
             await ctx.send(file=File(io.BytesIO(image), f"beatmap_{beatmap_id}.png"))
         except Exception as e:
             await self.adapter.handle_error(ctx, e, locale="en")
