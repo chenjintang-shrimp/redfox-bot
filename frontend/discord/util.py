@@ -3,7 +3,7 @@ from discord.ext.commands import Context
 from backend.exceptions.user import UserNotBindError
 import re
 
-from backend.database import get_osu_user_by_discord_id
+from backend.database import get_user_binding
 
 
 async def resolve_username(ctx: Context, user_arg: str | User | Member | None) -> str:
@@ -19,7 +19,7 @@ async def resolve_username(ctx: Context, user_arg: str | User | Member | None) -
         else:
             return user_arg
 
-    osu_user = await get_osu_user_by_discord_id(target_discord_id)
+    osu_user = await get_user_binding("discord", target_discord_id)
     if osu_user is None:
         user_mention_str = f"<@{target_discord_id}>"
         raise UserNotBindError(

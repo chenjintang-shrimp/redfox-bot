@@ -79,37 +79,3 @@ async def delete_user_binding(platform: str, user_id: int) -> bool:
         await session.delete(binding)
         await session.commit()
         return True
-
-
-# 兼容旧接口 - Discord
-async def get_osu_user_by_discord_id(discord_id: int) -> Optional[UserBinding]:
-    """兼容旧接口：通过 Discord ID 获取用户绑定"""
-    return await get_user_binding(Platform.DISCORD, discord_id)
-
-
-async def save_osu_user(user: UserBinding):
-    """兼容旧接口：保存 Discord 用户绑定"""
-    user.platform = Platform.DISCORD
-    await save_user_binding(user)
-
-
-async def delete_osu_user_by_discord_id(discord_id: int) -> bool:
-    """兼容旧接口：删除 Discord 用户绑定"""
-    return await delete_user_binding(Platform.DISCORD, discord_id)
-
-
-# 兼容旧接口 - QQ
-async def get_osu_user_by_qq_id(qq_id: int) -> Optional[UserBinding]:
-    """兼容旧接口：通过 QQ ID 获取用户绑定"""
-    return await get_user_binding(Platform.QQ, qq_id)
-
-
-async def save_osu_user_qq(user: UserBinding):
-    """兼容旧接口：保存 QQ 用户绑定"""
-    user.platform = Platform.QQ
-    await save_user_binding(user)
-
-
-async def delete_osu_user_by_qq_id(qq_id: int) -> bool:
-    """兼容旧接口：删除 QQ 用户绑定"""
-    return await delete_user_binding(Platform.QQ, qq_id)

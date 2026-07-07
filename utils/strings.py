@@ -20,7 +20,8 @@ def load_strings():
 
 
 # 加载 API 配置
-API_DICT = yaml.safe_load(open(working_dir / API_FILE, "r", encoding="utf-8"))
+with open(working_dir / API_FILE, "r", encoding="utf-8") as _api_file:
+    API_DICT = yaml.safe_load(_api_file)
 
 
 def get_api_url(endpoint: str, **kwargs) -> str:
@@ -47,10 +48,7 @@ def format_template(
     template_str = load_strings()[name][locale]
 
     # 合并字典参数和关键字参数
-    merged_context = {}
-    if context:
-        merged_context.update(context)
-    merged_context.update(kwargs)
+    merged_context = {**(context or {}), **kwargs}
 
     # 使用 Jinja2 渲染模板
     template = _jinja_env.from_string(template_str)

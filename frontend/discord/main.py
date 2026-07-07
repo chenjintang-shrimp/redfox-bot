@@ -1,7 +1,8 @@
 import discord
 
 from discord.ext import commands
-import os
+import importlib
+import pkgutil
 
 
 from utils.flt_mgr import init_flt_mgr
@@ -55,58 +56,25 @@ async def on_disconnect():
 
 
 async def load_cogs():
-    current_dir = os.path.dirname(os.path.abspath(__file__))
-    cogs_dir = os.path.join(current_dir, "cogs")
     base_module = "frontend.discord.cogs"
-
     logger = get_logger("Bot")
-    logger.debug(f"开始扫描 Cogs 目录: {cogs_dir}")
+    logger.debug(f"开始扫描 Cog 模块: {base_module}")
 
-    for root, _dirs, files in os.walk(cogs_dir):
-        # 检查是否是包目录（包含 __init__.py）
-        is_package = "__init__.py" in files
+    pkg = importlib.import_module(base_module)
 
-        logger.debug(f"扫描目录: {root}, 文件: {files}, 是否包: {is_package}")
+    for _importer, modname, _ispkg in pkgutil.walk_packages(
+        pkg.__path__, prefix=f"{base_module}."
+    ):
+        simple_name = modname.rsplit(".", 1)[-1]
+        if simple_name.startswith("_") and simple_name != "__init__":
+            continue
 
-        for filename in files:
-            if not filename.endswith(".py"):
-                continue
-            # 跳过以 _ 开头的文件，但保留 __init__.py
-            if filename.startswith("_") and filename != "__init__.py":
-                continue
-
-            # 计算相对路径
-            rel_path = os.path.relpath(root, cogs_dir)
-            module_name = filename[:-3]
-
-            if rel_path == ".":
-                # 直接在 cogs 目录下
-                extension = f"{base_module}.{module_name}"
-            else:
-                # 在子目录中
-                # 统一处理 Windows 和 Linux 的路径分隔符
-                sub_package = (
-                    rel_path.replace(os.sep, ".").replace("/", ".").replace("\\", ".")
-                )
-                if is_package:
-                    # 如果是包，只加载 __init__.py，忽略其他文件
-                    # __init__.py 中的 setup 函数应该负责加载包内的所有 Cog
-                    if filename != "__init__.py":
-                        logger.debug(
-                            f"跳过包内文件: {filename} (包 {sub_package} 将通过 __init__.py 加载)"
-                        )
-                        continue
-                    extension = f"{base_module}.{sub_package}"
-                else:
-                    # 非包子目录，按普通模块加载
-                    extension = f"{base_module}.{sub_package}.{module_name}"
-
-            logger.debug(f"尝试加载 Cog: {extension}")
-            try:
-                await bot.load_extension(extension)
-                logger.info(f"已加载 Cog: {extension}")
-            except Exception as e:
-                logger.error(f"加载 Cog 失败 {extension}: {e}")
+        logger.debug(f"尝试加载 Cog: {modname}")
+        try:
+            await bot.load_extension(modname)
+            logger.info(f"已加载 Cog: {modname}")
+        except Exception as e:
+            logger.error(f"加载 Cog 失败 {modname}: {e}")
 
 
 @bot.event

@@ -6,13 +6,18 @@ from utils.logger import get_logger
 from utils.strings import get_api_url
 
 
-async def get_user_beatmap_score(user_id: int, beatmap_id: int):
-    client = get_osu_api_client()
+async def _resolve_username(user_id: int) -> str:
+    """Resolve a user ID to a username, falling back to the user ID on failure."""
     try:
         user_info = await get_user_info(user_id)
-        username = user_info.get("username", str(user_id))
+        return user_info.get("username", str(user_id))
     except Exception:
-        username = str(user_id)
+        return str(user_id)
+
+
+async def get_user_beatmap_score(user_id: int, beatmap_id: int):
+    client = get_osu_api_client()
+    username = await _resolve_username(user_id)
 
     url = get_api_url(
         "beatmap_scores",
@@ -48,11 +53,7 @@ async def get_user_beatmap_all_scores(
         成绩列表
     """
     client = get_osu_api_client()
-    try:
-        user_info = await get_user_info(user_id)
-        username = user_info.get("username", str(user_id))
-    except Exception:
-        username = str(user_id)
+    username = await _resolve_username(user_id)
 
     url = get_api_url(
         "beatmap_all_scores",
@@ -130,11 +131,7 @@ async def get_user_scores(
         成绩列表
     """
     client = get_osu_api_client()
-    try:
-        user_info = await get_user_info(user_id)
-        username = user_info.get("username", str(user_id))
-    except Exception:
-        username = str(user_id)
+    username = await _resolve_username(user_id)
 
     url = get_api_url(
         "user_scores",
