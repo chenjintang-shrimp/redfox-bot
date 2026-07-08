@@ -10,6 +10,8 @@ from utils.logger import get_logger
 
 logger = get_logger("minifilters.beatmap_card_basic")
 
+HOOKS: list[str] = ["beatmap_card"]
+
 
 def process(data: dict) -> dict:
     """

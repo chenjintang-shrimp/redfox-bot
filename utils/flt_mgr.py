@@ -2,8 +2,9 @@
 FltMgr - Filter Manager
 Simple direct-registration filter manager.
 
-Minifilters are directly imported and registered at startup.
-No YAML scanning, no topological sort, no dependency resolution.
+Minifilters 在启动时由 _register_known_filters 动态扫描 minifilters/ 包发现：
+每个子包的 __init__.py 需声明 HOOKS（绑定的 hook 列表）与 process 处理函数。
+无 YAML 扫描、无拓扑排序、无依赖解析。
 """
 
 from typing import Any, Callable
@@ -85,26 +86,48 @@ _flt_mgr: FltMgr | None = None
 
 
 def _register_known_filters(flt_mgr: FltMgr) -> None:
-    """Directly import and register all known minifilters."""
-    from minifilters.beatmap_card_basic import process as beatmap_card_process
-    from minifilters.score_card_basic import process as score_card_process
-    from minifilters.score_list_basic import process as score_list_process
-    from minifilters.today_bp_basic import process as today_bp_process
+    """
+    动态扫描 minifilters 包并注册所有 minifilter。
 
-    # beatmap_card_basic: hooks beatmap_card
-    flt_mgr.register("beatmap_card", beatmap_card_process)
+    约定：minifilters/ 下每个子包的 __init__.py 需暴露：
+      - HOOKS: list[str]   绑定的 hook 名称列表
+      - process: Callable  处理函数（同步或异步均可）
+    发现失败的单个 minifilter 不会阻断其它 minifilter 的加载。
+    """
+    import importlib
+    from pathlib import Path
 
-    # score_card_basic: hooks user_beatmap_score_card, user_recent_score_card
-    flt_mgr.register("user_beatmap_score_card", score_card_process)
-    flt_mgr.register("user_recent_score_card", score_card_process)
+    from minifilters import __file__ as _mf_init
 
-    # score_list_basic: hooks user_score_list
-    flt_mgr.register("user_score_list", score_list_process)
+    base_dir = Path(_mf_init).resolve().parent
+    count = 0
 
-    # today_bp_basic: hooks user_today_bp
-    flt_mgr.register("user_today_bp", today_bp_process)
+    for sub in sorted(base_dir.iterdir()):
+        if not sub.is_dir() or sub.name.startswith("_"):
+            continue
+        if not (sub / "__init__.py").exists():
+            continue
 
-    logger.info("[FltMgr] 已注册 4 个 minifilter")
+        module_name = f"minifilters.{sub.name}"
+        try:
+            module = importlib.import_module(module_name)
+        except Exception as e:
+            logger.error(f"[FltMgr] 导入 minifilter 失败 {module_name}: {e}")
+            continue
+
+        hooks = getattr(module, "HOOKS", None)
+        process_func = getattr(module, "process", None)
+        if not hooks or process_func is None:
+            logger.warning(
+                f"[FltMgr] {module_name} 缺少 HOOKS 或 process，跳过"
+            )
+            continue
+
+        for hook in hooks:
+            flt_mgr.register(hook, process_func)
+        count += 1
+
+    logger.info(f"[FltMgr] 动态发现并注册 {count} 个 minifilter")
 
 
 def get_flt_mgr() -> FltMgr:

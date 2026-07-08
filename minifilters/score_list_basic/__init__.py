@@ -8,6 +8,12 @@ API 返回的数据已经包含 beatmap 和 beatmapset 嵌套对象，
 此 minifilter 专注于数据格式化。
 """
 
+from utils.logger import get_logger
+
+logger = get_logger("minifilters.score_list_basic")
+
+HOOKS: list[str] = ["user_score_list"]
+
 
 def _format_mods(mods: list) -> list:
     """

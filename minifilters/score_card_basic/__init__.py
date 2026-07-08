@@ -11,6 +11,8 @@ from utils.logger import get_logger
 
 logger = get_logger("minifilters.score_card_basic")
 
+HOOKS: list[str] = ["user_beatmap_score_card", "user_recent_score_card"]
+
 
 def _format_mods(mods: list) -> list:
     """
