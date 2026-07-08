@@ -86,9 +86,13 @@ _flt_mgr: FltMgr | None = None
 
 def _register_known_filters(flt_mgr: FltMgr) -> None:
     """Directly import and register all known minifilters."""
+    from minifilters.beatmap_card_basic import process as beatmap_card_process
     from minifilters.score_card_basic import process as score_card_process
     from minifilters.score_list_basic import process as score_list_process
     from minifilters.today_bp_basic import process as today_bp_process
+
+    # beatmap_card_basic: hooks beatmap_card
+    flt_mgr.register("beatmap_card", beatmap_card_process)
 
     # score_card_basic: hooks user_beatmap_score_card, user_recent_score_card
     flt_mgr.register("user_beatmap_score_card", score_card_process)
@@ -100,7 +104,7 @@ def _register_known_filters(flt_mgr: FltMgr) -> None:
     # today_bp_basic: hooks user_today_bp
     flt_mgr.register("user_today_bp", today_bp_process)
 
-    logger.info("[FltMgr] 已注册 3 个 minifilter")
+    logger.info("[FltMgr] 已注册 4 个 minifilter")
 
 
 def get_flt_mgr() -> FltMgr:
