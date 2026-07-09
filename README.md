@@ -9,7 +9,7 @@
 ### 多平台支持
 
 - **Discord** - 完整的 Discord 机器人支持
-- **QQ** - QQ 机器人支持（开发中）
+- **QQ** - QQ 机器人支持（非常简陋）
 - **统一API** - 基于相同的后端 API 服务
 
 ## 🚀 快速开始
@@ -25,7 +25,7 @@
 1. **克隆项目**
 
 ```bash
-git clone https://github.com/your-username/g0v0bot-discord.git
+git clone https://github.com/chenjintang-shrimp/redfox-bot.git
 cd g0v0bot-discord
 ```
 
