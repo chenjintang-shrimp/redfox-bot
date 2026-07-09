@@ -1,0 +1,6 @@
+# QQ 机器人配置 (仅 QQ 侧使用)
+# 复制 config/qq.example.yaml 为此文件并按需填写
+
+group_whitelist: []
+
+private_enabled: true

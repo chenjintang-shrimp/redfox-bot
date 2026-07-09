@@ -8,7 +8,13 @@ from nonebot.matcher import Matcher
 from nonebot.message import run_preprocessor, run_postprocessor
 from nonebot.typing import T_State
 from nonebot.adapters import Bot, Event
+from nonebot.adapters.onebot.v11 import (
+    GroupMessageEvent,
+    MessageEvent,
+    PrivateMessageEvent,
+)
 
+from frontend.qq import config as qq_config
 from utils.flt_mgr import init_flt_mgr
 from utils.html2image import close_browser, init_browser
 from utils.logger import get_logger
@@ -51,6 +57,16 @@ def main():
         await init_browser()
         init_flt_mgr()
 
+        if qq_config.group_whitelist:
+            get_logger("QQBot").info(
+                f"群聊白名单已启用: {len(qq_config.group_whitelist)} 个群"
+            )
+        else:
+            get_logger("QQBot").info("群聊白名单为空，允许所有群")
+        get_logger("QQBot").info(
+            f"私聊命令: {'已启用' if qq_config.private_enabled else '已禁用'}"
+        )
+
         get_logger("QQBot").info("QQ Bot started!")
 
     @driver.on_shutdown
@@ -75,7 +91,16 @@ def _register_exception_handlers():
     async def on_run_preprocessor(
         bot: Bot, event: Event, state: T_State, matcher: Matcher
     ):
-        """在 matcher 运行前记录日志"""
+        """在 matcher 运行前进行群白名单/私聊开关检查并记录日志"""
+        # 仅对消息事件做准入控制
+        if isinstance(event, MessageEvent):
+            if isinstance(event, GroupMessageEvent):
+                if not qq_config.is_group_allowed(event.group_id):
+                    raise IgnoredException("群聊未在白名单中")
+            elif isinstance(event, PrivateMessageEvent):
+                if not qq_config.private_enabled:
+                    raise IgnoredException("私聊已被禁用")
+
         logger.debug(f"Running matcher: {matcher.type}, module: {matcher.module_name}")
 
     @run_postprocessor
@@ -108,11 +133,6 @@ def _register_exception_handlers():
 
             # 向用户发送友好的错误提示（包含技术细节）
             try:
-                from nonebot.adapters.onebot.v11 import (
-                    MessageEvent,
-                    PrivateMessageEvent,
-                )
-
                 if isinstance(event, MessageEvent):
                     user_msg = "❌ 命令执行出错\n"
                     user_msg += f"类型: {error_type}\n"
