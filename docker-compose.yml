@@ -1,0 +1,14 @@
+services:
+  qq-bot:
+    build: .
+    container_name: redfox-qq-bot
+    restart: unless-stopped
+    command: uv run qq-bot
+    ports:
+      - "8001:8080"
+    volumes:
+      - ./config:/config
+      - ./database.db:/database.db
+    environment:
+      - TZ=Asia/Shanghai
+      - PYTHONUNBUFFERED=1
