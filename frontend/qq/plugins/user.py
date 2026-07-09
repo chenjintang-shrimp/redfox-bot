@@ -5,6 +5,7 @@ from nonebot.adapters.onebot.v11 import MessageEvent
 from nonebot.params import CommandArg
 
 from adapters.qq_adapter import QQAdapter
+from backend.rulesets import list_short_names, normalize_gamemode
 from services import UserService
 from renderer.user import render_user_card_image, render_user_info
 from utils.logger import get_logger
@@ -17,6 +18,7 @@ info_short_cmd = on_command("i", priority=5)
 bind_cmd = on_command("bind", priority=5)
 unbind_cmd = on_command("unbind", priority=5)
 switch_gamemode_cmd = on_command("set_gamemode", priority=5)
+gm_cmd = on_command("gm", priority=5)
 
 adapter = QQAdapter()
 
@@ -103,7 +105,16 @@ async def handle_unbind(event: MessageEvent):
 
 @switch_gamemode_cmd.handle()
 async def handle_switch_gamemode(event: MessageEvent, args=CommandArg()):
-    """设置默认游戏模式"""
+    await _handle_gamemode(event, args)
+
+
+@gm_cmd.handle()
+async def handle_gm(event: MessageEvent, args=CommandArg()):
+    await _handle_gamemode(event, args)
+
+
+async def _handle_gamemode(event: MessageEvent, args) -> None:
+    """set_gamemode / gm 共享实现"""
     gamemode = args.extract_plain_text().strip()
 
     try:
@@ -122,11 +133,23 @@ async def handle_switch_gamemode(event: MessageEvent, args=CommandArg()):
                 )
             return
 
+        normalized = normalize_gamemode(gamemode)
+        if normalized is None:
+            await switch_gamemode_cmd.send(
+                format_template(
+                    "GAMEMODE_INVALID",
+                    input=gamemode,
+                    modes=", ".join(list_short_names()),
+                    locale="zh",
+                )
+            )
+            return
+
         # 设置游戏模式
-        success = await UserService.set_gamemode(context, gamemode)
+        success = await UserService.set_gamemode(context, normalized)
         if success:
             await switch_gamemode_cmd.send(
-                format_template("GAMEMODE_SET_SUCCESS", gamemode=gamemode, locale="zh")
+                format_template("GAMEMODE_SET_SUCCESS", gamemode=normalized, locale="zh")
             )
         else:
             await switch_gamemode_cmd.send(

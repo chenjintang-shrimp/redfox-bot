@@ -5,6 +5,7 @@ from discord.ext import commands
 from discord import app_commands, File
 
 from adapters.discord_adapter import DiscordAdapter
+from backend.rulesets import list_short_names, normalize_gamemode
 from services import UserService
 from renderer.user import render_user_card_image, render_user_info
 from utils.strings import format_template
@@ -79,16 +80,10 @@ class User(commands.Cog):
         except Exception as e:
             await self.adapter.handle_error(ctx, e, locale="en")
 
-    @commands.hybrid_command(
-        name="set_gamemode", description="Set your default game mode for score queries"
-    )
-    @app_commands.describe(
-        gamemode="Game mode (e.g., osu, taiko, fruits, mania, or custom)"
-    )
-    async def set_gamemode_cmd(
-        self, ctx: commands.Context, gamemode: str | None = None
-    ):
-        """设置默认游戏模式"""
+    async def _do_set_gamemode(
+        self, ctx: commands.Context, gamemode: str | None
+    ) -> None:
+        """set_gamemode / gm 共享实现"""
         await ctx.defer()
 
         try:
@@ -106,17 +101,47 @@ class User(commands.Cog):
                 await ctx.send(msg)
                 return
 
-            # 设置游戏模式
-            success = await UserService.set_gamemode(context, gamemode)
+            normalized = normalize_gamemode(gamemode)
+            if normalized is None:
+                msg = format_template(
+                    "GAMEMODE_INVALID",
+                    input=gamemode,
+                    modes=", ".join(list_short_names()),
+                    locale="en",
+                )
+                await ctx.send(msg)
+                return
+
+            success = await UserService.set_gamemode(context, normalized)
             if success:
                 msg = format_template(
-                    "GAMEMODE_SET_SUCCESS", gamemode=gamemode, locale="en"
+                    "GAMEMODE_SET_SUCCESS", gamemode=normalized, locale="en"
                 )
             else:
                 msg = format_template("GAMEMODE_SET_FAILED_NOT_BOUND", locale="en")
             await ctx.send(msg)
         except Exception as e:
             await self.adapter.handle_error(ctx, e, locale="en")
+
+    @commands.hybrid_command(
+        name="set_gamemode", description="Set your default game mode for score queries"
+    )
+    @app_commands.describe(
+        gamemode="Game mode (osu, taiko, fruits, mania, osurx, ... or id)"
+    )
+    async def set_gamemode_cmd(
+        self, ctx: commands.Context, gamemode: str | None = None
+    ):
+        """设置默认游戏模式"""
+        await self._do_set_gamemode(ctx, gamemode)
+
+    @commands.hybrid_command(name="gm", description="Set your default game mode (short)")
+    @app_commands.describe(
+        gamemode="Game mode (osu, taiko, fruits, mania, osurx, ... or id)"
+    )
+    async def gm_cmd(self, ctx: commands.Context, gamemode: str | None = None):
+        """设置默认游戏模式（短命令）"""
+        await self._do_set_gamemode(ctx, gamemode)
 
 
 async def setup(bot: commands.Bot):

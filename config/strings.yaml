@@ -296,3 +296,11 @@ GAMEMODE_SET_SUCCESS:
 GAMEMODE_SET_FAILED_NOT_BOUND:
   en: "Please bind your osu! account first using `/bind <username>` or `!bind <username>`."
   zh: "请先使用 `/bind <用户名>` 或 `!bind <用户名>` 绑定 osu! 账号。"
+
+GAMEMODE_INVALID:
+  en: "Unknown game mode: {{ input }}. Available: {{ modes }}"
+  zh: "未知游戏模式: {{ input }}。可用: {{ modes }}"
+
+GAMEMODE_AVAILABLE:
+  en: "Available game modes: {{ modes }}"
+  zh: "可用游戏模式: {{ modes }}"
