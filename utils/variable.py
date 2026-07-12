@@ -63,3 +63,9 @@ API_FILE = _CONFIG_FILES.get("api", "config/api.yaml")
 # 皮肤配置
 _SKIN_CONFIG = _CONFIG.get("skin", {})
 DEFAULT_SKIN = _SKIN_CONFIG.get("default", "default")
+
+# 渲染后端配置
+_RENDERER_CONFIG = _CONFIG.get("renderer", {})
+RENDERER_BACKEND = str(_RENDERER_CONFIG.get("backend", "playwright")).lower()
+TAKUMI_ADDRESS = str(_RENDERER_CONFIG.get("takumi_address", "")).strip()
+TAKUMI_ENDPOINT = str(_RENDERER_CONFIG.get("takumi_endpoint", "/render")).strip()

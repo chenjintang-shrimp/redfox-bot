@@ -306,6 +306,17 @@
         .diff-bar-fill.od  { background: linear-gradient(90deg, #ff7766, #ff4433); }
         .diff-bar-fill.hp  { background: linear-gradient(90deg, #66ff99, #33cc66); }
 
+        /* Shared default-card visual language. */
+        body { font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif; background: #171b22; }
+        .bg-layer { background: #171b22; filter: none; transform: none; }
+        .bg-overlay { background: transparent; }
+        .glow-orb { display: none; }
+        .beatmap-cover { border-radius: 8px; box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3); border: 1px solid #404754; }
+        .star-badge, .status { border-radius: 6px; }
+        .title { color: #f5f5f5; background: none; -webkit-text-fill-color: #f5f5f5; }
+        .artist, .meta-row, .stat-label { color: #aeb7c5; }
+        .stat-card { background: #202630; border-color: #303741; border-radius: 6px; }
+
         .diff-bar-val {
             font-size: 10px;
             font-weight: 700;
@@ -337,9 +348,6 @@
     <!-- 模糊背景 -->
     <div class="bg-layer"></div>
     <div class="bg-overlay"></div>
-    <div class="glow-orb pink"></div>
-    <div class="glow-orb blue"></div>
-
     <!-- 主卡片 -->
     <div class="card">
         <!-- 封面 -->

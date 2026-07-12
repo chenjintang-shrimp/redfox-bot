@@ -1,11 +1,9 @@
 from dataclasses import asdict
 
 from services import UserService
+from renderer.backend import render_card_image
 from models.context import UserContext
 from renderer.renderer_template import renderer
-from renderer.skin_loader import render_template as render_skin_template
-from utils.flt_mgr import apply_minifilters_async
-from utils.html2image import html_to_image
 from utils.logger import get_logger
 from utils.strings import format_template
 from utils.variable import DEFAULT_SKIN
@@ -93,15 +91,9 @@ async def render_user_card_image(
     skin = skin or DEFAULT_SKIN
     logger.info(f"[render_user_card_image] 开始渲染，skin={skin}")
 
-    # 应用 minifilters 处理数据（按 renderer 视图名 hook）
-    processed_data = await apply_minifilters_async("user_card", data)
-
-    # 渲染 HTML 模板
-    html = await render_skin_template(skin, "user_card", processed_data)
-    logger.debug(f"[render_user_card_image] HTML 长度: {len(html)} chars")
-
-    # 转换为图片
-    image_bytes = await html_to_image(html, width=800, height=None)
+    image_bytes = await render_card_image(
+        "user_card", data, skin=skin, width=800, height=400
+    )
     logger.info(
         f"[render_user_card_image] 图片生成完成，大小: {len(image_bytes)} bytes"
     )

@@ -258,14 +258,24 @@
             color: rgba(255, 255, 255, 0.25);
             font-weight: 600;
         }
+
+        /* Shared default-card visual language. */
+        body { font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif; background: #171b22; }
+        .bg-layer { background: #171b22; }
+        .bg-overlay { background: transparent; }
+        .glow-orb { display: none; }
+        .main-title { color: #ff66aa; background: none; -webkit-text-fill-color: #ff66aa; }
+        .score-item { background: #202630; border-color: #303741; border-radius: 8px; }
+        .rank-num { background: #171b22; border-color: #404754; border-radius: 6px; color: #aeb7c5; }
+        .title { color: #f5f5f5; }
+        .difficulty, .stat-label, .footer { color: #aeb7c5; }
+        .mod-tag { background: #1e2b3a; border-color: #35506c; }
+        .mod-hr, .mod-dt, .mod-fl, .mod-hd { background: #382238; border-color: #70415f; }
     </style>
 </head>
 <body>
     <div class="bg-layer"></div>
     <div class="bg-overlay"></div>
-    <div class="glow-orb pink"></div>
-    <div class="glow-orb blue"></div>
-
     <div class="container">
         <div class="header-section">
             <div class="main-title">{{ username }}'s {{ title }}</div>

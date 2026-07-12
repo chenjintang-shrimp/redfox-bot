@@ -9,10 +9,8 @@ from typing import List, Dict, Any, Tuple, Optional
 from backend.scores import get_user_beatmap_all_scores, get_user_scores, ScoreQueryError
 from backend.beatmap import get_beatmap_info
 from backend.user import get_user_info
+from renderer.backend import render_card_image
 from renderer.renderer_template import renderer
-from renderer.skin_loader import render_template as render_skin_template
-from utils.flt_mgr import apply_minifilters_async
-from utils.html2image import html_to_image
 from utils.logger import get_logger
 from utils.strings import format_template
 from utils.variable import DEFAULT_SKIN
@@ -534,14 +532,9 @@ async def render_user_beatmap_score_card(
         f"[render_user_beatmap_score_card] beatmap_id: {score.get('beatmap_id')}"
     )
 
-    # 应用 minifilters 处理数据（按 renderer 视图名 hook）
-    processed_score = await apply_minifilters_async("user_beatmap_score_card", score)
-
-    # 渲染模板
-    html = await render_skin_template(skin, "user_beatmap_score_card", processed_score)
-    logger.debug(f"[render_user_beatmap_score_card] HTML 长度: {len(html)} chars")
-
-    image_bytes = await html_to_image(html, width=800, height=None)
+    image_bytes = await render_card_image(
+        "user_beatmap_score_card", score, skin=skin, width=800, height=None
+    )
     logger.info(
         f"[render_user_beatmap_score_card] 图片生成完成，大小: {len(image_bytes)} bytes"
     )
@@ -596,14 +589,9 @@ async def render_user_recent_score_card(
         f"[render_user_recent_score_card] beatmap_id: {score.get('beatmap_id')}, id: {score.get('id')}"
     )
 
-    # 应用 minifilters 处理数据（按 renderer 视图名 hook）
-    processed_score = await apply_minifilters_async("user_recent_score_card", score)
-
-    # 渲染模板
-    html = await render_skin_template(skin, "user_recent_score_card", processed_score)
-    logger.debug(f"[render_user_recent_score_card] HTML 长度: {len(html)} chars")
-
-    image_bytes = await html_to_image(html, width=800, height=None)
+    image_bytes = await render_card_image(
+        "user_recent_score_card", score, skin=skin, width=800, height=None
+    )
     logger.info(
         f"[render_user_recent_score_card] 图片生成完成，大小: {len(image_bytes)} bytes"
     )
@@ -681,14 +669,9 @@ async def render_user_score_list_image(
         "title": title,
     }
 
-    # 应用 minifilters 处理数据（按 renderer 视图名 hook）
-    processed_data = await apply_minifilters_async("user_score_list", data)
-
-    # 渲染模板
-    html = await render_skin_template(skin, "user_score_list", processed_data)
-    logger.debug(f"[render_user_score_list_image] HTML 长度: {len(html)} chars")
-
-    image_bytes = await html_to_image(html, width=800, height=None)
+    image_bytes = await render_card_image(
+        "user_score_list", data, skin=skin, width=800, height=None
+    )
     logger.info(
         f"[render_user_score_list_image] 图片生成完成，大小: {len(image_bytes)} bytes, 包含 {len(scores)} 条成绩"
     )
@@ -729,13 +712,9 @@ async def render_score_list_image(
         "total_pages": total_pages,
     }
 
-    # 应用 minifilters 处理数据（复用 user_score_list 的 hook）
-    processed_data = await apply_minifilters_async("user_score_list", data)
-
-    html = await render_skin_template(skin, "user_score_list", processed_data)
-    logger.debug(f"[render_score_list_image] HTML 长度: {len(html)} chars")
-
-    image_bytes = await html_to_image(html, width=800, height=None)
+    image_bytes = await render_card_image(
+        "user_score_list", data, skin=skin, width=800, height=None
+    )
     logger.info(
         f"[render_score_list_image] 图片生成完成，大小: {len(image_bytes)} bytes"
     )
@@ -795,14 +774,9 @@ async def render_user_today_bp_image(
         "total_pages": total_pages,
     }
 
-    # 应用 minifilters 处理数据（按 renderer 视图名 hook）
-    processed_data = await apply_minifilters_async("user_today_bp", data)
-
-    # 渲染模板
-    html = await render_skin_template(skin, "user_today_bp", processed_data)
-    logger.debug(f"[render_user_today_bp_image] HTML 长度: {len(html)} chars")
-
-    image_bytes = await html_to_image(html, width=800, height=None)
+    image_bytes = await render_card_image(
+        "user_today_bp", data, skin=skin, width=800, height=None
+    )
     logger.info(
         f"[render_user_today_bp_image] 图片生成完成，大小: {len(image_bytes)} bytes"
     )
@@ -840,13 +814,9 @@ async def render_today_bp_image(
         "total_pages": total_pages,
     }
 
-    # 应用 minifilters 处理数据（复用 user_today_bp 的 hook）
-    processed_data = await apply_minifilters_async("user_today_bp", data)
-
-    html = await render_skin_template(skin, "user_today_bp", processed_data)
-    logger.debug(f"[render_today_bp_image] HTML 长度: {len(html)} chars")
-
-    image_bytes = await html_to_image(html, width=800, height=None)
+    image_bytes = await render_card_image(
+        "user_today_bp", data, skin=skin, width=800, height=None
+    )
     logger.info(f"[render_today_bp_image] 图片生成完成，大小: {len(image_bytes)} bytes")
 
     return image_bytes

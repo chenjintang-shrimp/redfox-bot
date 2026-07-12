@@ -15,6 +15,7 @@ HTML 转图片工具 - 全局共享 Browser 实例
 from typing import TYPE_CHECKING
 
 from utils.logger import get_logger
+from utils.variable import RENDERER_BACKEND
 
 if TYPE_CHECKING:
     from playwright.async_api import Browser, Playwright
@@ -30,6 +31,10 @@ async def init_browser() -> None:
     """初始化全局 Browser 实例"""
     global _playwright, _browser
 
+    if RENDERER_BACKEND != "playwright":
+        logger.info(f"[html2image] 后端为 {RENDERER_BACKEND}，跳过 Playwright 初始化")
+        return
+
     if _browser is not None:
         return
 
@@ -43,6 +48,9 @@ async def init_browser() -> None:
 async def close_browser() -> None:
     """关闭全局 Browser 实例"""
     global _playwright, _browser
+
+    if RENDERER_BACKEND != "playwright":
+        return
 
     if _browser is not None:
         await _browser.close()
@@ -84,7 +92,33 @@ async def html_to_image(
         logger.info("[html2image] 设置 HTML 内容")
         await page.set_content(html)
         logger.info("[html2image] 开始截图")
-        screenshot = await page.screenshot(type="png", full_page=height is None)
+        if height is None:
+            canvas = await page.evaluate(
+                """() => {
+                    const body = document.body.getBoundingClientRect();
+                    const root = document.documentElement;
+                    const contentBottom = Array.from(document.body.children).reduce(
+                        (bottom, element) => Math.max(
+                            bottom,
+                            element.getBoundingClientRect().bottom,
+                        ),
+                        body.bottom,
+                    );
+                    return {
+                        width: Math.ceil(body.width),
+                        height: Math.ceil(Math.max(
+                            body.height,
+                            document.body.scrollHeight,
+                            root.scrollHeight,
+                            contentBottom,
+                        )),
+                    };
+                }"""
+            )
+            await page.set_viewport_size(canvas)
+            screenshot = await page.screenshot(type="png")
+        else:
+            screenshot = await page.screenshot(type="png")
         logger.info(f"[html2image] 截图完成，大小: {len(screenshot)} bytes")
         return screenshot
     except Exception as e:

@@ -13,3 +13,12 @@ config_files:
   # 其他配置文件路径
   strings: "config/strings.yaml"
   api: "config/api.yaml"
+
+# 渲染后端配置
+renderer:
+  # 可选: playwright（默认）或 takumi
+  backend: "playwright"
+  # backend 为 takumi 时使用的 HTTP POST 地址
+  takumi_address: "http://127.0.0.1:3000"
+  # Takumi 渲染接口路径
+  takumi_endpoint: "/render"
