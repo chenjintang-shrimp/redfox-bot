@@ -27,11 +27,19 @@ class UserInfo:
     country: dict
     pp: float
     global_rank: int | None
+    rank_history: list[int]
+    rank_history_mode: str | None
 
     @classmethod
     def from_api_response(cls, data: dict) -> "UserInfo":
         """从API响应创建UserInfo"""
-        stats = data.get("statistics", {})
+        stats = data.get("statistics") or {}
+        raw_rank_history = data.get("rank_history", {})
+        history_data = (
+            raw_rank_history.get("data", [])
+            if isinstance(raw_rank_history, dict)
+            else []
+        )
         return cls(
             id=data["id"],
             username=data["username"],
@@ -41,6 +49,16 @@ class UserInfo:
             country=data.get("country", {}),
             pp=stats.get("pp", 0.0),
             global_rank=stats.get("global_rank"),
+            rank_history=[
+                rank
+                for rank in history_data
+                if isinstance(rank, int) and not isinstance(rank, bool) and rank > 0
+            ],
+            rank_history_mode=(
+                raw_rank_history.get("mode")
+                if isinstance(raw_rank_history, dict)
+                else None
+            ),
         )
 
 
@@ -51,29 +69,35 @@ class UserService:
     """
 
     @staticmethod
-    async def get_user_info(username: str) -> UserInfo:
+    async def get_user_info(
+        username: str, mode: str | None = None
+    ) -> UserInfo:
         """获取用户信息（通过用户名）
 
         Args:
             username: osu! 用户名
+            mode: 指定的游戏模式，省略时使用 API 默认模式
 
         Returns:
             UserInfo: 用户信息对象
         """
-        data = await _get_user_info(username)
+        data = await _get_user_info(username, mode=mode)
         return UserInfo.from_api_response(data)
 
     @staticmethod
-    async def get_user_info_by_id(user_id: int) -> UserInfo:
+    async def get_user_info_by_id(
+        user_id: int, mode: str | None = None
+    ) -> UserInfo:
         """获取用户信息（通过用户ID）
 
         Args:
             user_id: osu! 用户ID
+            mode: 指定的游戏模式，省略时使用 API 默认模式
 
         Returns:
             UserInfo: 用户信息对象
         """
-        data = await _get_user_info(user_id)
+        data = await _get_user_info(user_id, mode=mode)
         return UserInfo.from_api_response(data)
 
     @staticmethod

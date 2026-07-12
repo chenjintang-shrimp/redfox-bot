@@ -304,3 +304,11 @@ GAMEMODE_INVALID:
 GAMEMODE_AVAILABLE:
   en: "Available game modes: {{ modes }}"
   zh: "可用游戏模式: {{ modes }}"
+
+HELP_COMMAND_NOT_FOUND:
+  en: "Unknown command: {{ command }}. Use help to view available commands."
+  zh: "未找到命令：{{ command }}。请使用 help 查看可用命令。"
+
+CACHE_CLEAR_SUCCESS:
+  en: "Memory cache cleared."
+  zh: "内存缓存已清理。"

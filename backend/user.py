@@ -11,7 +11,7 @@ from utils.strings import get_api_url
 from models.context import UserContext
 
 
-async def get_user_info(user: str | int):
+async def get_user_info(user: str | int, mode: str | None = None):
     """
     获取 osu! 用户信息（平台无关）
 
@@ -25,7 +25,11 @@ async def get_user_info(user: str | int):
         UserQueryError: 用户不存在或API请求失败
     """
     api_client = get_osu_api_client()
-    url = get_api_url("user_info", user_id=user)
+    url = get_api_url(
+        "user_info_mode" if mode else "user_info",
+        user_id=user,
+        mode=mode,
+    )
     response = await api_client.get(url)
 
     if response.status_code == 404:

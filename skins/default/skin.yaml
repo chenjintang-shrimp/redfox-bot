@@ -5,6 +5,7 @@ description: "默认皮肤，提供简洁美观的卡片样式"
 
 templates:
   user_card: "user_card.html"
+  help_card: "help_card.html"
   user_beatmap_score_card: "score_card.html"
   user_recent_score_card: "score_card.html"
   user_score_list: "score_list.html"

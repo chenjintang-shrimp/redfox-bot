@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            width: 960px;
+            min-height: 600px;
+            padding: 38px 38px 42px;
+            color: #f5f5f5;
+            background: #171b22;
+            font-family: "Segoe UI", "Microsoft YaHei", sans-serif;
+        }
+        .header { display: flex; align-items: baseline; justify-content: space-between; border-bottom: 1px solid #404754; padding-bottom: 15px; margin-bottom: 22px; }
+        h1 { font-size: 28px; letter-spacing: 0; color: #ff66aa; }
+        .subtitle { color: #aeb7c5; font-size: 14px; }
+        .groups { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; }
+        .group { border-left: 3px solid #ff66aa; padding-left: 14px; }
+        h2 { font-size: 16px; color: #f3c5d8; margin-bottom: 9px; }
+        .command { padding: 8px 0; border-top: 1px solid #303741; }
+        .command:first-of-type { border-top: 0; }
+        .usage { color: #ffffff; font-family: Consolas, monospace; font-size: 15px; }
+        .summary { margin-top: 4px; color: #aeb7c5; font-size: 13px; line-height: 1.5; }
+        .detail-card {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            min-height: 402px;
+            border-left: 4px solid #ff66aa;
+            background: #202630;
+        }
+        .detail-command { padding: 32px 28px; border-right: 1px solid #404754; }
+        .eyebrow { color: #ff9bc5; font-size: 12px; font-weight: 600; margin-bottom: 14px; text-transform: uppercase; }
+        .detail-card h2 { font-family: Consolas, monospace; font-size: 27px; color: #ffffff; line-height: 1.2; margin-bottom: 18px; }
+        .detail-card .usage { font-size: 16px; color: #ff9bc5; line-height: 1.5; }
+        .detail-content { display: flex; flex-direction: column; justify-content: center; padding: 38px 42px; }
+        .detail-label { color: #aeb7c5; font-size: 12px; margin-bottom: 8px; text-transform: uppercase; }
+        .detail-card .summary { font-size: 18px; line-height: 1.5; margin: 0 0 16px; color: #ffffff; }
+        .detail { color: #c0c8d4; font-size: 14px; line-height: 1.75; }
+        .aliases { color: #aeb7c5; font-size: 12px; line-height: 1.5; margin-top: 28px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>g0v0bot QQ Help</h1>
+        <div class="subtitle">使用 help &lt;命令&gt; 查看详细用法</div>
+    </div>
+    {% if view == "detail" %}
+    <section class="detail-card">
+        <div class="detail-command">
+            <div class="eyebrow">{{ command.category }}</div>
+            <h2>{{ command.command_names }}</h2>
+            <div class="usage">{{ command.usage }}</div>
+            {% if command.aliases_text %}<div class="aliases">别名：{{ command.aliases_text }}</div>{% endif %}
+        </div>
+        <div class="detail-content">
+            <div class="detail-label">命令说明</div>
+            <div class="summary">{{ command.summary }}</div>
+            <div class="detail">{{ command.detail }}</div>
+        </div>
+    </section>
+    {% else %}
+    <main class="groups">
+        {% for group in groups %}
+        <section class="group">
+            <h2>{{ group.name }}</h2>
+            {% for command in group.commands %}
+            <div class="command">
+                <div class="usage">{{ command.usage }}</div>
+                <div class="summary">{{ command.summary }}</div>
+            </div>
+            {% endfor %}
+        </section>
+        {% endfor %}
+    </main>
+    {% endif %}
+</body>
+</html>

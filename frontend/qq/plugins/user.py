@@ -23,6 +23,20 @@ gm_cmd = on_command("gm", priority=5)
 adapter = QQAdapter()
 
 
+def _parse_info_args(raw_args: str) -> tuple[str | None, str | None]:
+    """Parse ``info [username] [gamemode]`` while preserving spaced usernames."""
+    text = raw_args.strip()
+    if not text:
+        return None, None
+
+    username_part, separator, mode_part = text.rpartition(" ")
+    candidate = normalize_gamemode(mode_part if separator else text)
+    if candidate:
+        return (username_part.strip() or None), candidate
+
+    return text, None
+
+
 async def handle_info_text(event: MessageEvent, args):
     """文字版用户信息"""
     username_arg = args.extract_plain_text().strip()
@@ -51,20 +65,27 @@ async def handle_info_short(event: MessageEvent, args=CommandArg()):
 @info_cmd.handle()
 async def handle_info(event: MessageEvent, args=CommandArg()):
     """图片版用户信息"""
-    username_arg = args.extract_plain_text().strip()
+    username_arg, explicit_mode = _parse_info_args(args.extract_plain_text())
 
     try:
         context = await adapter.get_user_context(event)
-        username = await UserService.resolve_username(
-            context, username_arg if username_arg else None
-        )
+        username = await UserService.resolve_username(context, username_arg)
     except Exception as e:
         await adapter.handle_error(event, e, locale="zh")
         return
 
     try:
-        user_info = await UserService.get_user_info(username)
-        image = await render_user_card_image(asdict(user_info))
+        query_mode = explicit_mode or context.current_gamemode
+        user_info = await UserService.get_user_info(username, mode=query_mode)
+        card_data = asdict(user_info)
+        card_data["saved_gamemode"] = context.current_gamemode
+        card_data["query_gamemode"] = (
+            query_mode
+            or user_info.statistics.get("mode")
+            or user_info.playmode
+        )
+        card_data["compare_saved_gamemode"] = explicit_mode is not None
+        image = await render_user_card_image(card_data)
         await adapter.send_image_bytes(event, image)
     except Exception as e:
         await adapter.handle_error(event, e, locale="zh")
